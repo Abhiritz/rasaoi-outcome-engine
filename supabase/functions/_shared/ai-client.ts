@@ -5,13 +5,15 @@
  * Required secret: GEMINI_API_KEY
  *   supabase secrets set GEMINI_API_KEY=your_google_ai_studio_key
  *
- * Optional: GEMINI_MODEL (default gemini-2.0-flash-lite — higher free-tier RPM)
+ * Optional: GEMINI_MODEL (default gemini-2.0-flash — stable on free tier; override as needed)
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export const DEFAULT_GEMINI_MODEL =
-  Deno.env.get("GEMINI_MODEL")?.trim() || "gemini-2.0-flash-lite";
+  Deno.env.get("GEMINI_MODEL")?.trim() || "gemini-2.0-flash";
+
+const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.0-flash-lite"];
 
 const MAX_RETRIES = 2;
 const RETRY_BASE_MS = 2_500;
@@ -40,6 +42,16 @@ function isRateLimitError(err: unknown): boolean {
   return /429|rate limit|quota|resource exhausted|too many requests/i.test(msg);
 }
 
+function isModelError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /not found|404|model.*invalid|unsupported|deprecated|discontinued/i.test(msg);
+}
+
+function modelsToTry(preferred: string): string[] {
+  const ordered = [preferred, ...FALLBACK_MODELS];
+  return [...new Set(ordered.filter(Boolean))];
+}
+
 async function sleep(ms: number): Promise<void> {
   await new Promise((r) => setTimeout(r, ms));
 }
@@ -51,51 +63,53 @@ export async function geminiToolCall(
   userPrompt: string,
   tool: GeminiToolDef,
 ): Promise<string> {
-  const resolvedModel = model || DEFAULT_GEMINI_MODEL;
   let lastErr: unknown;
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const genAI = new GoogleGenerativeAI(getGeminiApiKey());
-      const generativeModel = genAI.getGenerativeModel({
-        model: resolvedModel,
-        systemInstruction: systemPrompt,
-        tools: [
-          {
-            functionDeclarations: [
-              {
-                name: tool.name,
-                description: tool.description,
-                parameters: tool.parameters,
-              },
-            ],
-          },
-        ],
-      });
+  for (const resolvedModel of modelsToTry(model || DEFAULT_GEMINI_MODEL)) {
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const genAI = new GoogleGenerativeAI(getGeminiApiKey());
+        const generativeModel = genAI.getGenerativeModel({
+          model: resolvedModel,
+          systemInstruction: systemPrompt,
+          tools: [
+            {
+              functionDeclarations: [
+                {
+                  name: tool.name,
+                  description: tool.description,
+                  parameters: tool.parameters,
+                },
+              ],
+            },
+          ],
+        });
 
-      const result = await generativeModel.generateContent({
-        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-        toolConfig: {
-          functionCallingConfig: {
-            mode: "ANY",
-            allowedFunctionNames: [tool.name],
+        const result = await generativeModel.generateContent({
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          toolConfig: {
+            functionCallingConfig: {
+              mode: "ANY",
+              allowedFunctionNames: [tool.name],
+            },
           },
-        },
-      });
+        });
 
-      const calls = result.response.functionCalls();
-      const first = calls?.[0];
-      if (!first?.args) {
-        throw new Error("No structured tool response from Gemini.");
+        const calls = result.response.functionCalls();
+        const first = calls?.[0];
+        if (!first?.args) {
+          throw new Error("No structured tool response from Gemini.");
+        }
+        return typeof first.args === "string" ? first.args : JSON.stringify(first.args);
+      } catch (e) {
+        lastErr = e;
+        if (isRateLimitError(e) && attempt < MAX_RETRIES) {
+          await sleep(RETRY_BASE_MS * (attempt + 1));
+          continue;
+        }
+        if (isModelError(e)) break;
+        throw e;
       }
-      return typeof first.args === "string" ? first.args : JSON.stringify(first.args);
-    } catch (e) {
-      lastErr = e;
-      if (isRateLimitError(e) && attempt < MAX_RETRIES) {
-        await sleep(RETRY_BASE_MS * (attempt + 1));
-        continue;
-      }
-      throw e;
     }
   }
 
@@ -108,29 +122,31 @@ export async function geminiJsonObject(
   systemPrompt: string,
   userPrompt: string,
 ): Promise<string> {
-  const resolvedModel = model || DEFAULT_GEMINI_MODEL;
   let lastErr: unknown;
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const genAI = new GoogleGenerativeAI(getGeminiApiKey());
-      const generativeModel = genAI.getGenerativeModel({
-        model: resolvedModel,
-        systemInstruction: systemPrompt,
-        generationConfig: { responseMimeType: "application/json" },
-      });
+  for (const resolvedModel of modelsToTry(model || DEFAULT_GEMINI_MODEL)) {
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const genAI = new GoogleGenerativeAI(getGeminiApiKey());
+        const generativeModel = genAI.getGenerativeModel({
+          model: resolvedModel,
+          systemInstruction: systemPrompt,
+          generationConfig: { responseMimeType: "application/json" },
+        });
 
-      const result = await generativeModel.generateContent(userPrompt);
-      const text = result.response.text();
-      if (!text?.trim()) throw new Error("Gemini returned empty JSON response.");
-      return text;
-    } catch (e) {
-      lastErr = e;
-      if (isRateLimitError(e) && attempt < MAX_RETRIES) {
-        await sleep(RETRY_BASE_MS * (attempt + 1));
-        continue;
+        const result = await generativeModel.generateContent(userPrompt);
+        const text = result.response.text();
+        if (!text?.trim()) throw new Error("Gemini returned empty JSON response.");
+        return text;
+      } catch (e) {
+        lastErr = e;
+        if (isRateLimitError(e) && attempt < MAX_RETRIES) {
+          await sleep(RETRY_BASE_MS * (attempt + 1));
+          continue;
+        }
+        if (isModelError(e)) break;
+        throw e;
       }
-      throw e;
     }
   }
 

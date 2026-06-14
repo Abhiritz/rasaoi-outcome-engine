@@ -327,6 +327,16 @@ function normalizeRestaurants(raw: unknown[], transcript: string): GeneratedRest
     .slice(0, 3);
 }
 
+function sanitizeErrorMessage(msg: string): string {
+  if (/GEMINI_API_KEY|GOOGLE_AI_API_KEY|not configured/i.test(msg)) {
+    return "Gemini API key is not configured on the server. Set GEMINI_API_KEY in Supabase secrets.";
+  }
+  if (/API key not valid|invalid api key/i.test(msg)) {
+    return "Gemini API key is invalid. Update GEMINI_API_KEY in Supabase secrets.";
+  }
+  return msg.slice(0, 240);
+}
+
 function validateAndNormalize(raw: unknown, transcript: string): AgenticPayload {
   const obj = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const dialsRaw = obj.dials && typeof obj.dials === "object" ? (obj.dials as Record<string, unknown>) : {};
@@ -412,7 +422,7 @@ Deno.serve(async (req) => {
         );
       }
       console.error("parse-intent Gemini error:", msg);
-      return new Response(JSON.stringify({ error: "Veda could not generate a response." }), {
+      return new Response(JSON.stringify({ error: sanitizeErrorMessage(msg) || "Veda could not generate a response." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

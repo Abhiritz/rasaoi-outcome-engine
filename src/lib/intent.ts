@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import {
   assertGeminiCooldown,
   isRateLimitMessage,
@@ -96,14 +97,29 @@ function buildIntentFromResponse(
   };
 }
 
-function parseInvokeError(error: unknown, data: unknown): never {
-  const dataErr =
-    data && typeof data === "object" && "error" in data
-      ? String((data as { error: unknown }).error)
-      : "";
-  const msg =
-    dataErr ||
-    (error instanceof Error ? error.message : String(error ?? "Unknown error"));
+async function extractInvokeErrorMessage(error: unknown, data: unknown): Promise<string> {
+  if (data && typeof data === "object" && "error" in data) {
+    const errText = String((data as { error: unknown }).error).trim();
+    if (errText) return errText;
+  }
+
+  if (error instanceof FunctionsHttpError && error.context) {
+    try {
+      const body = await error.context.clone().json();
+      if (body && typeof body === "object" && "error" in body) {
+        const errText = String((body as { error: unknown }).error).trim();
+        if (errText) return errText;
+      }
+    } catch {
+      // ignore JSON parse failures
+    }
+  }
+
+  return error instanceof Error ? error.message : String(error ?? "Unknown error");
+}
+
+async function parseInvokeError(error: unknown, data: unknown): Promise<never> {
+  const msg = await extractInvokeErrorMessage(error, data);
 
   if (isRateLimitMessage(msg)) {
     throw new RateLimitError(45_000, "Gemini free-tier limit reached. Please wait ~45 seconds and try once.");
@@ -128,7 +144,7 @@ export async function parseIntent(transcript: string): Promise<ParsedIntent> {
   });
 
   if (error || (data && typeof data === "object" && "error" in data && data.error)) {
-    parseInvokeError(error, data);
+    await parseInvokeError(error, data);
   }
 
   markGeminiCall();
