@@ -408,15 +408,15 @@ Deno.serve(async (req) => {
       if (/429|rate limit|quota|resource exhausted/i.test(msg)) {
         return new Response(
           JSON.stringify({
-            error: "Gemini free-tier rate limit reached. Please wait 45–60 seconds before trying again.",
-            retry_after_seconds: 45,
+            error: "Gemini free-tier rate limit reached. Please wait 60–90 seconds before trying again.",
+            retry_after_seconds: 90,
           }),
           {
             status: 429,
             headers: {
               ...corsHeaders,
               "Content-Type": "application/json",
-              "Retry-After": "45",
+              "Retry-After": "90",
             },
           },
         );

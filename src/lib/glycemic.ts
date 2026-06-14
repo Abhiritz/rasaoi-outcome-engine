@@ -1,7 +1,8 @@
-// Blood-sugar lens client lib. Estimates glycemic load via edge function,
-// caches per-dish in localStorage, and exposes carrier-swap helpers.
+// Blood-sugar lens client lib. Uses local heuristics (free-tier safe) with optional
+// Gemini edge fallback only when explicitly enabled and cooldown allows.
 import { supabase } from "@/integrations/supabase/client";
 import {
+  assertGeminiCooldown,
   getGeminiCooldownRemainingMs,
   isRateLimitMessage,
   markGeminiCall,
@@ -21,6 +22,9 @@ export interface GLEstimate {
 
 const CACHE_KEY = "rasaoi.gl_cache.v1";
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Set VITE_GLYCEMIC_LIVE=true to allow Gemini edge calls (not recommended on free tier). */
+const LIVE_GLYCEMIC_ENABLED = import.meta.env.VITE_GLYCEMIC_LIVE === "true";
 
 interface CacheEntry { ts: number; value: GLEstimate }
 
@@ -44,6 +48,46 @@ function cacheKey(name: string, carrier?: string): string {
   return (name + "|" + (carrier ?? "")).toLowerCase().trim();
 }
 
+const HIGH_GL =
+  /\b(rice|biryani|naan|paratha|roti|bread|pasta|noodle|spaghetti|fries|potato|tortilla|pizza|dessert|sweet|sugar|syrup|fried rice|pad thai)\b/i;
+const LOW_GL =
+  /\b(salad|sashimi|ceviche|grilled|steamed|broccoli|greens|soup|dal|lentil|cucumber|raita|tikka(?!\s*masala)|tandoori|kebab|sabzi|chaat(?!\s*sweet))\b/i;
+const PROTEIN_FIBER = /\b(chicken|fish|salmon|shrimp|lentil|dal|beans|tofu|paneer|vegetable|greens|salad)\b/i;
+const ADDED_SUGAR = /\b(sweet|sugar|syrup|honey|dessert|glaze|ketchup|bbq)\b/i;
+
+function heuristicGLEstimate(d: { name: string; cuisine?: string; carrier?: string }): GLEstimate {
+  const blob = `${d.name} ${d.carrier ?? ""} ${d.cuisine ?? ""}`.toLowerCase();
+  let glycemic_load: GLLevel = "med";
+  let carbs_g = 35;
+
+  if (HIGH_GL.test(blob)) {
+    glycemic_load = "high";
+    carbs_g = 55;
+  } else if (LOW_GL.test(blob)) {
+    glycemic_load = "low";
+    carbs_g = 12;
+  }
+
+  const fiber_protein_paired = PROTEIN_FIBER.test(blob) && !HIGH_GL.test(blob);
+  const added_sugar = ADDED_SUGAR.test(blob);
+  const swap = suggestCarrierSwap(d.carrier ?? (HIGH_GL.test(blob) ? d.name : undefined));
+
+  return {
+    name: d.name,
+    carbs_g,
+    glycemic_load,
+    added_sugar,
+    fiber_protein_paired,
+    swap_suggestion: swap?.replacement ?? (glycemic_load === "high" ? "Ask for extra greens or half the starch portion" : ""),
+    why:
+      glycemic_load === "low"
+        ? "Mostly protein and veg — minimal fast carbs."
+        : glycemic_load === "high"
+          ? "Starch or refined carbs likely to raise blood sugar."
+          : "Balanced plate — moderate carb load.",
+  };
+}
+
 export async function estimateGlycemic(
   dishes: { name: string; cuisine?: string; carrier?: string }[],
 ): Promise<Record<string, GLEstimate>> {
@@ -64,38 +108,49 @@ export async function estimateGlycemic(
     }
   }
 
-  if (need.length) {
-    try {
-      const cooldownMs = getGeminiCooldownRemainingMs();
-      if (cooldownMs > 0) {
-        await new Promise((r) => setTimeout(r, cooldownMs + 500));
-      }
+  for (const d of need) {
+    const est = heuristicGLEstimate(d);
+    const k = cacheKey(d.name, d.carrier);
+    result[k] = est;
+    cache[k] = { ts: now, value: est };
+  }
+  saveCache(cache);
 
-      const { data, error } = await supabase.functions.invoke("estimate-glycemic", {
-        body: { dishes: need },
-      });
-      if (error) throw error;
-      markGeminiCall();
-      const estimates = (data?.estimates ?? []) as GLEstimate[];
-      // Match estimates back to requested dishes by order (model preserves order),
-      // falling back to fuzzy name match.
-      need.forEach((d, i) => {
-        const est =
-          estimates[i] ??
-          estimates.find((e) => e.name?.toLowerCase().includes(d.name.toLowerCase()));
-        if (!est) return;
-        const k = cacheKey(d.name, d.carrier);
-        result[k] = est;
-        cache[k] = { ts: now, value: est };
-      });
-      saveCache(cache);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (!isRateLimitMessage(msg)) {
-        console.error("estimateGlycemic failed:", e);
-      }
+  const canCallLive =
+    LIVE_GLYCEMIC_ENABLED &&
+    need.length > 0 &&
+    getGeminiCooldownRemainingMs() === 0;
+
+  if (!canCallLive) {
+    return result;
+  }
+
+  try {
+    assertGeminiCooldown();
+    const { data, error } = await supabase.functions.invoke("estimate-glycemic", {
+      body: { dishes: need.slice(0, 3) },
+    });
+    if (error) throw error;
+    markGeminiCall();
+
+    const estimates = (data?.estimates ?? []) as GLEstimate[];
+    need.slice(0, 3).forEach((d, i) => {
+      const est =
+        estimates[i] ??
+        estimates.find((e) => e.name?.toLowerCase().includes(d.name.toLowerCase()));
+      if (!est) return;
+      const k = cacheKey(d.name, d.carrier);
+      result[k] = est;
+      cache[k] = { ts: now, value: est };
+    });
+    saveCache(cache);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (!isRateLimitMessage(msg)) {
+      console.warn("estimateGlycemic live fallback skipped:", msg);
     }
   }
+
   return result;
 }
 

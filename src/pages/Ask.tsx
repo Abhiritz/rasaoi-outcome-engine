@@ -117,7 +117,7 @@ const Ask = () => {
             </div>
             {cooldownSec > 0 && (
               <p className="text-[11px] text-muted-foreground italic text-center">
-                Gemini free tier — one request every ~45s. Repeating the same question uses cache (no API call).
+                Gemini free tier — one request every ~60s. Repeating the same question uses cache (no API call).
               </p>
             )}
           </div>

@@ -2,8 +2,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import {
   assertGeminiCooldown,
+  GEMINI_RATE_LIMIT_PENALTY_MS,
   isRateLimitMessage,
   markGeminiCall,
+  markGeminiRateLimited,
   RateLimitError,
 } from "@/lib/rateLimit";
 import {
@@ -118,11 +120,38 @@ async function extractInvokeErrorMessage(error: unknown, data: unknown): Promise
   return error instanceof Error ? error.message : String(error ?? "Unknown error");
 }
 
+async function extractRetryAfterMs(error: unknown, data: unknown): Promise<number | null> {
+  const read = (obj: unknown): number | null => {
+    if (!obj || typeof obj !== "object") return null;
+    const retry = (obj as { retry_after_seconds?: unknown }).retry_after_seconds;
+    if (typeof retry === "number" && retry > 0) return retry * 1000;
+    return null;
+  };
+
+  const fromData = read(data);
+  if (fromData) return fromData;
+
+  if (error instanceof FunctionsHttpError && error.context) {
+    try {
+      const body = await error.context.clone().json();
+      return read(body);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 async function parseInvokeError(error: unknown, data: unknown): Promise<never> {
   const msg = await extractInvokeErrorMessage(error, data);
 
   if (isRateLimitMessage(msg)) {
-    throw new RateLimitError(45_000, "Gemini free-tier limit reached. Please wait ~45 seconds and try once.");
+    const retryMs = (await extractRetryAfterMs(error, data)) ?? GEMINI_RATE_LIMIT_PENALTY_MS;
+    markGeminiRateLimited(retryMs);
+    throw new RateLimitError(
+      retryMs,
+      `Gemini free-tier limit reached. Please wait ${Math.ceil(retryMs / 1000)} seconds and try once.`,
+    );
   }
   throw new Error(msg);
 }

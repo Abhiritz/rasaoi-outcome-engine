@@ -13,10 +13,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 export const DEFAULT_GEMINI_MODEL =
   Deno.env.get("GEMINI_MODEL")?.trim() || "gemini-2.0-flash";
 
-const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.0-flash-lite"];
-
-const MAX_RETRIES = 2;
-const RETRY_BASE_MS = 2_500;
+const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-2.5-flash"];
+const MAX_RETRIES = 1;
+const RETRY_BASE_MS = 3_000;
 
 export interface GeminiToolDef {
   name: string;
@@ -103,11 +102,16 @@ export async function geminiToolCall(
         return typeof first.args === "string" ? first.args : JSON.stringify(first.args);
       } catch (e) {
         lastErr = e;
-        if (isRateLimitError(e) && attempt < MAX_RETRIES) {
+        if (isRateLimitError(e)) {
+          throw e;
+        }
+        if (isModelError(e)) {
+          break;
+        }
+        if (attempt < MAX_RETRIES) {
           await sleep(RETRY_BASE_MS * (attempt + 1));
           continue;
         }
-        if (isModelError(e)) break;
         throw e;
       }
     }
@@ -140,11 +144,16 @@ export async function geminiJsonObject(
         return text;
       } catch (e) {
         lastErr = e;
-        if (isRateLimitError(e) && attempt < MAX_RETRIES) {
+        if (isRateLimitError(e)) {
+          throw e;
+        }
+        if (isModelError(e)) {
+          break;
+        }
+        if (attempt < MAX_RETRIES) {
           await sleep(RETRY_BASE_MS * (attempt + 1));
           continue;
         }
-        if (isModelError(e)) break;
         throw e;
       }
     }
