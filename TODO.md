@@ -39,7 +39,7 @@ This file is designed as a portable summary so the system can be reasoned about 
 **Branch:** `feature/agentic-generation-loop`
 
 - [x] Git isolation: create `feature/agentic-generation-loop` branch from clean `main`
-- [x] Rewrite `parse-intent/index.ts` — Dynamic Response Generator (Gemini synthesizes 5 UI-ready restaurants + menus)
+- [x] Rewrite `parse-intent/index.ts` — Dynamic Response Generator (Gemini synthesizes 3 UI-ready restaurants + menus; token-optimized for free tier)
 - [x] Semantic engineering in SYSTEM_PROMPT: Jain / Thai / wellness / event context rules baked into generation
 - [x] Server-side Jain post-filter on generated restaurants before response
 - [x] Refactor `src/lib/veda.ts` — pass-through router (`mapAgentRestaurantsToScored`, `resolveAgenticOutcomes`); legacy scoring removed
@@ -49,6 +49,23 @@ This file is designed as a portable summary so the system can be reasoned about 
 - [ ] **Follow-up:** Re-invoke agent when user adjusts dials on Reading page (currently display-only pass-through)
 - [ ] **Follow-up:** Merge `feature/agentic-generation-loop` → `main` after QA sign-off
 - [x] Log in `CONFLICT_RESOLUTION_REPORTS.md` (ARCH-001)
+- [x] Publish client handover in `handover-report.html`
+
+---
+
+## RL-001: Gemini free-tier rate-limit protection (429 handling)
+
+**Branch:** `feature/agentic-generation-loop`
+
+- [x] Switch default edge model to `gemini-2.0-flash-lite` (`_shared/ai-client.ts`) — higher free RPM; optional `GEMINI_MODEL` override
+- [x] Server retry on 429: up to 2 retries with 2.5s backoff; `Retry-After: 45` header from `parse-intent`
+- [x] Reduce agent payload: 3 restaurants × 2–3 menu items (lower token cost per call)
+- [x] Client cooldown module `src/lib/rateLimit.ts` — 45s between live Gemini calls
+- [x] Transcript cache in `intent.ts` — identical query within 15 min skips API call
+- [x] `Ask.tsx` cooldown countdown + friendly `RateLimitError` toast
+- [x] `glycemic.ts` defers `estimate-glycemic` until client cooldown clears (avoids back-to-back Gemini hits)
+- [x] Deploy `parse-intent` to personal Supabase (`kiugplotjcnmpwjlxajc`)
+- [x] Log in `CONFLICT_RESOLUTION_REPORTS.md` (RL-001)
 - [x] Publish client handover in `handover-report.html`
 
 ---

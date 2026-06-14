@@ -7,8 +7,8 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 |-------|-------|
 | **Product** | Rasaoi Outcome Engine |
 | **Maintainer** | Engineering / CTO |
-| **Last updated** | 2026-06-11 |
-| **Total resolutions** | 6 (2 CRS + 1 DIE + 1 ARCH + 1 MIG + 1 DEV) |
+| **Last updated** | 2026-05-27 |
+| **Total resolutions** | 7 (2 CRS + 1 DIE + 1 ARCH + 1 RL + 1 MIG + 1 DEV) |
 
 ---
 
@@ -16,12 +16,80 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 
 | ID | Title | Date | Status |
 |----|-------|------|--------|
+| [RL-001](#rl-001-gemini-free-tier-rate-limit-protection) | Gemini free-tier rate-limit protection | 2026-05-27 | RESOLVED |
 | [ARCH-001](#arch-001-pivot-to-pure-agentic-generation-loop) | Pivot to Pure Agentic Generation Loop | 2026-06-11 | IN PROGRESS |
 | [DIE-001](#die-001-hard-exclusion-gate-for-strict-dietary-restrictions) | Hard-exclusion gate for strict dietary restrictions | 2026-05-27 | SUPERSEDED (ARCH-001) |
 | [DEV-003](#dev-003-zero-billing-google-places-api-mocking-layer) | Zero-billing Google Places API mocking layer | 2026-05-27 | RESOLVED |
 | [MIG-001](#mig-001-independent-supabase-migration-with-upstream-lovable-sync) | Independent Supabase migration with upstream Lovable sync | 2026-05-27 | IN PROGRESS |
 | [CRS-002](#crs-002-conceptual-health-filters-overridden-by-baseline-cultural-bias) | Conceptual health filters overridden by baseline cultural bias | 2026-05-27 | RESOLVED |
 | [CRS-001](#crs-001-explicit-cuisine-intent-mis-routed-to-indian-options) | Explicit cuisine intent mis-routed to Indian options | 2026-05-27 | RESOLVED |
+
+---
+
+## RL-001: Gemini free-tier rate-limit protection
+
+- **Client-Facing Summary**: On Google AI Studio’s free tier, rapid “Ask Veda” submissions triggered HTTP **429 (rate limit exceeded)** errors and blank failures. Rasaoi now paces Gemini calls client- and server-side: a ~45s cooldown between live requests, automatic retry with backoff on the edge, a lighter default model (`gemini-2.0-flash-lite`), smaller generation payloads, and a 15-minute cache for identical questions so repeat queries do not hit the API.
+- **Date Resolved**: 2026-05-27
+- **Status**: RESOLVED
+
+### 1. Technical Root Cause Analysis
+
+#### User Symptom
+- User on Gemini free tier submits multiple queries in quick succession.
+- `parse-intent` returns 429; Ask page shows generic “Veda couldn't hear you” error.
+- Blood-sugar lens can fire `estimate-glycemic` immediately after `parse-intent`, doubling RPM pressure.
+
+#### System Conflict
+
+| Layer | Expected behavior | Actual behavior |
+|-------|-------------------|-----------------|
+| **Gemini API (free tier)** | Low RPM / TPM quotas | Bursty double calls (intent + glycemic) exceeded quota |
+| **Edge `ai-client.ts`** | Graceful retry / model selection | Single attempt; heavier default model |
+| **Client `Ask.tsx`** | Clear pacing UX | No cooldown; user could spam submit |
+| **Client `intent.ts`** | Dedupe identical transcripts | Every submit invoked edge function |
+
+#### Root Cause
+1. **No client pacing** — users could submit faster than free-tier RPM allows.
+2. **No transcript cache** — minor rephrases or accidental double-clicks re-hit Gemini.
+3. **Back-to-back edge calls** — blood-sugar lens invoked `estimate-glycemic` within seconds of `parse-intent`.
+4. **Heavy generation payload** — 5 restaurants × full menus increased tokens per call.
+5. **Weak 429 surfacing** — errors not classified as rate limits; no `Retry-After` guidance.
+
+### 2. Resolution & Verification
+
+#### Fix Applied
+
+**A. Shared Gemini client (`supabase/functions/_shared/ai-client.ts`)**
+- Default model → `gemini-2.0-flash-lite` (override via `GEMINI_MODEL` secret).
+- Up to 2 retries on 429 with 2.5s linear backoff.
+
+**B. Lighter agent payload (`parse-intent/index.ts`)**
+- Generate **3** restaurants with 2–3 menu items each (down from 5).
+- Return HTTP 429 with `Retry-After: 45` when Gemini quota exhausted.
+
+**C. Client rate-limit module (`src/lib/rateLimit.ts`)**
+- `assertGeminiCooldown()` / `markGeminiCall()` — 45s sessionStorage gate.
+- `RateLimitError` with human-readable wait message.
+
+**D. Intent pipeline (`src/lib/intent.ts`)**
+- 15-minute transcript cache (normalized text) — cache hit skips edge invoke.
+- Parse 429 responses into `RateLimitError`.
+
+**E. UX (`src/pages/Ask.tsx`)**
+- Button shows live countdown (`Wait 45s (free tier)`).
+- Dedicated toast title for rate-limit errors.
+
+**F. Glycemic deferral (`src/lib/glycemic.ts`)**
+- Waits for client cooldown before calling `estimate-glycemic`.
+- Marks Gemini call after successful invoke.
+
+#### Validation
+
+```text
+npm test -- --run
+npm run build
+npx supabase functions deploy parse-intent --no-verify-jwt
+```
 
 ---
 
@@ -43,7 +111,7 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 
 | Before | After (ARCH-001) |
 |--------|------------------|
-| `parse-intent` → dials + filters only | `parse-intent` → **full UI payload** (dials + filters + 5 synthetic restaurants) |
+| `parse-intent` → dials + filters only | `parse-intent` → **full UI payload** (dials + filters + 3 synthetic restaurants) |
 | Supabase + Google Places + mock JSON lookup | **No lookup** — Gemini generates venues |
 | `veda.ts` token scoring / dietary gates | `veda.ts` **pass-through** (`mapAgentRestaurantsToScored`) |
 | `Index.tsx` merges DB + live Places | `Index.tsx` renders `intent.scored_restaurants` from session |
@@ -52,7 +120,7 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 
 **A. Dynamic Response Generator (`parse-intent/index.ts`)**
 - New tool: `generate_dining_response`
-- SYSTEM_PROMPT instructs Gemini to synthesize 5 restaurants with full `menu_items`, `match_score`, `why`, and constraint-aware descriptions.
+- SYSTEM_PROMPT instructs Gemini to synthesize 3 restaurants with full `menu_items`, `match_score`, `why`, and constraint-aware descriptions.
 - Jain / Vegan / Halal / Kosher / Thai / wellness rules embedded in generation instructions.
 - Lightweight server Jain post-filter strips violators before response.
 

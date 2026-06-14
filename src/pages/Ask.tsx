@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { MitraPact } from "@/components/MitraPact";
 import { MicCapture } from "@/components/MicCapture";
-import { parseIntent } from "@/lib/intent";
+import { parseIntent, RateLimitError, getGeminiCooldownRemainingMs } from "@/lib/intent";
 import { setBloodSugarLens } from "@/lib/memory";
 import { toast } from "@/hooks/use-toast";
 
@@ -18,24 +18,40 @@ const Ask = () => {
   const navigate = useNavigate();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [cooldownSec, setCooldownSec] = useState(0);
+
   useEffect(() => {
     document.title = "Rasaoi — Ask Veda";
   }, []);
 
+  useEffect(() => {
+    const tick = () => {
+      const ms = getGeminiCooldownRemainingMs();
+      setCooldownSec(ms > 0 ? Math.ceil(ms / 1000) : 0);
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [busy]);
+
   const submit = async () => {
     const t = text.trim();
-    if (!t || busy) return;
+    if (!t || busy || cooldownSec > 0) return;
     setBusy(true);
     try {
       const parsed = await parseIntent(t);
-      // Auto-flip lens on if the AI detected a blood-sugar intent.
       if (parsed.lens === "blood_sugar") {
         setBloodSugarLens(true);
       }
       navigate("/reading");
     } catch (e) {
+      const isRateLimit = e instanceof RateLimitError;
       const msg = e instanceof Error ? e.message : "Something went wrong";
-      toast({ variant: "destructive", title: "Veda couldn't hear you", description: msg });
+      toast({
+        variant: "destructive",
+        title: isRateLimit ? "Free-tier rate limit" : "Veda couldn't hear you",
+        description: msg,
+      });
       setBusy(false);
     }
   };
@@ -83,13 +99,15 @@ const Ask = () => {
             <div className="flex justify-center">
               <button
                 onClick={submit}
-                disabled={!text.trim() || busy}
+                disabled={!text.trim() || busy || cooldownSec > 0}
                 className="inline-flex items-center gap-2 bg-primary text-card border border-gold/40 px-6 py-3 rounded-sm text-[11px] uppercase tracking-[0.25em] font-semibold hover:bg-gold hover:text-primary transition-elegant disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {busy ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" /> Veda is listening
                   </>
+                ) : cooldownSec > 0 ? (
+                  <>Wait {cooldownSec}s (free tier)</>
                 ) : (
                   <>
                     Ask Veda <ArrowRight className="w-4 h-4" />
@@ -97,6 +115,11 @@ const Ask = () => {
                 )}
               </button>
             </div>
+            {cooldownSec > 0 && (
+              <p className="text-[11px] text-muted-foreground italic text-center">
+                Gemini free tier — one request every ~45s. Repeating the same question uses cache (no API call).
+              </p>
+            )}
           </div>
 
           <div className="space-y-3 pt-2">

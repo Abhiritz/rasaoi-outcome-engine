@@ -44,8 +44,8 @@
           class="bg-sky-500/30 border border-sky-300/50 text-sky-100 px-3 py-1 rounded-full font-semibold hover:bg-sky-500/40 transition">
           Deployment Live → rasaoi-delta.vercel.app
         </a>
-        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Report generated: 11 Jun 2026</span>
-        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Items logged: 6</span>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Report generated: 27 May 2026</span>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Items logged: 7</span>
         <span class="bg-violet-500/20 border border-violet-300/40 text-violet-100 px-3 py-1 rounded-full font-semibold">Branch: feature/agentic-generation-loop</span>
       </div>
     </div>
@@ -78,11 +78,11 @@
       <article class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
         <div class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">ARCH-001</p>
-            <h2 class="font-serif text-2xl text-rasaoi mt-1">Pure Agentic Generation Loop</h2>
+            <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">RL-001</p>
+            <h2 class="font-serif text-2xl text-rasaoi mt-1">Gemini Free-Tier Rate-Limit Protection</h2>
           </div>
-          <span class="inline-flex items-center gap-1.5 bg-violet-100 text-violet-900 border border-violet-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
-            In Progress
+          <span class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
+            Resolved
           </span>
         </div>
 
@@ -90,14 +90,14 @@
           <div class="bg-amber-50 border-l-4 border-rasaoi-gold px-4 py-3 rounded-r-lg">
             <p class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-1">Client summary</p>
             <p class="text-stone-700 leading-relaxed">
-              Rasaoi has pivoted from erratic database and mock-file lookups to a <strong>Pure Agentic Generation Loop</strong>. Veda (Gemini) now synthesizes the entire recommendation — restaurants, menus, prices, match scores, and context-aware descriptions — in one call. Jain queries receive explicitly compliant synthetic venues; Thai queries receive purely Thai instances; birthday and wellness context is woven into every description. No Dal Tadka or Tandoori Chicken can leak from stale fixture fallbacks.
+              Rapid “Ask Veda” submissions on Google AI Studio’s <strong>free tier</strong> were hitting HTTP <strong>429 rate limits</strong>, causing failed recommendations. Rasaoi now paces Gemini usage: a ~45 second cooldown between live calls, automatic server retry, a lighter default model, smaller generation payloads (3 restaurants), a 15-minute cache for identical questions, and a visible countdown on the Ask screen so users know when they can try again.
             </p>
           </div>
 
           <div class="grid sm:grid-cols-3 gap-4 text-sm">
             <div class="border border-stone-200 rounded-lg p-4">
-              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Date started</p>
-              <p class="font-semibold text-rasaoi">11 Jun 2026</p>
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Date resolved</p>
+              <p class="font-semibold text-rasaoi">27 May 2026</p>
             </div>
             <div class="border border-stone-200 rounded-lg p-4">
               <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Git branch</p>
@@ -105,34 +105,29 @@
             </div>
             <div class="border border-stone-200 rounded-lg p-4">
               <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Impact area</p>
-              <p class="font-semibold text-rasaoi">Core recommendation architecture</p>
+              <p class="font-semibold text-rasaoi">Reliability on free-tier Gemini</p>
             </div>
           </div>
         </div>
       </article>
 
       <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-6">
-        <h3 class="font-serif text-xl text-rasaoi border-b border-stone-100 pb-3 mb-4">New pipeline</h3>
+        <h3 class="font-serif text-xl text-rasaoi border-b border-stone-100 pb-3 mb-4">Protections added</h3>
         <ul class="list-disc pl-5 space-y-2 text-sm text-stone-700">
-          <li><strong>Ask Veda</strong> → user transcript sent to <code class="bg-stone-100 px-1 rounded text-xs">parse-intent</code> edge function.</li>
-          <li><strong>Gemini generates</strong> → 5 synthetic restaurants with full <code class="bg-stone-100 px-1 rounded text-xs">menu_items</code>, <code class="bg-stone-100 px-1 rounded text-xs">match_score</code>, and constraint-aware <code class="bg-stone-100 px-1 rounded text-xs">why</code> text.</li>
-          <li><strong>Veda pass-through</strong> → <code class="bg-stone-100 px-1 rounded text-xs">veda.ts</code> maps agent JSON to UI types — no token scoring, no mock lookup.</li>
-          <li><strong>Reading page</strong> → renders agent payload from session; Supabase restaurant fetch and Google Places search bypassed.</li>
+          <li><strong>Client cooldown</strong> — 45s between live Gemini calls; Ask button shows live countdown.</li>
+          <li><strong>Transcript cache</strong> — identical question within 15 min reuses session (no API call).</li>
+          <li><strong>Lighter model</strong> — default <code class="bg-stone-100 px-1 rounded text-xs">gemini-2.0-flash-lite</code> on edge functions.</li>
+          <li><strong>Server retry</strong> — up to 2 retries with backoff; <code class="bg-stone-100 px-1 rounded text-xs">Retry-After: 45</code> on hard 429.</li>
+          <li><strong>Smaller payload</strong> — 3 restaurants × 2–3 menu items per generation.</li>
+          <li><strong>Glycemic deferral</strong> — blood-sugar estimates wait for cooldown so intent + glycemic don’t double-hit RPM.</li>
         </ul>
       </section>
 
-      <section class="bg-violet-50 border border-violet-200 rounded-xl p-6">
-        <h3 class="font-serif text-xl text-violet-900 mb-2">Before vs after</h3>
-        <div class="grid sm:grid-cols-2 gap-4 text-sm">
-          <div class="bg-white border border-rose-100 rounded-lg p-4">
-            <p class="text-xs uppercase tracking-wider text-rose-600 font-semibold mb-2">Before</p>
-            <p class="text-stone-700">Intent parser → DB/mock lookup → token scoring → cuisine-bank fallbacks. Mixed Jain + birthday queries broke across layers.</p>
-          </div>
-          <div class="bg-white border border-emerald-200 rounded-lg p-4">
-            <p class="text-xs uppercase tracking-wider text-emerald-700 font-semibold mb-2">After</p>
-            <p class="text-stone-700">Single Gemini call generates fully compliant synthetic restaurants. Semantic constraints enforced at generation time.</p>
-          </div>
-        </div>
+      <section class="bg-sky-50 border border-sky-200 rounded-xl p-6">
+        <h3 class="font-serif text-xl text-sky-900 mb-2">Usage guidance (free tier)</h3>
+        <p class="text-sm text-stone-700 leading-relaxed">
+          Wait for the countdown to clear before submitting a new question. Repeating the exact same query within 15 minutes uses cache. Blood-sugar GL badges may appear ~45s after results when the lens is active.
+        </p>
       </section>
     </div>
 
@@ -155,6 +150,15 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-stone-100" id="history-body">
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">RL-001</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Gemini free-tier rate-limit protection</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-05-27</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-300">Resolved</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">45s client cooldown, transcript cache, lighter model, smaller payloads — no more 429 spam on free tier.</td>
+              </tr>
               <tr class="hover:bg-stone-50">
                 <td class="px-4 py-3 font-mono text-xs text-stone-500">ARCH-001</td>
                 <td class="px-4 py-3 font-medium text-rasaoi">Pure Agentic Generation Loop</td>
@@ -219,12 +223,12 @@
       <!-- Summary cards for history tab -->
       <div class="grid sm:grid-cols-3 gap-4">
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
-          <p class="text-3xl font-serif text-rasaoi font-bold">6</p>
+          <p class="text-3xl font-serif text-rasaoi font-bold">7</p>
           <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">Total logged</p>
         </div>
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
-          <p class="text-3xl font-serif text-amber-700 font-bold">1</p>
-          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">In progress (MIG-001)</p>
+          <p class="text-3xl font-serif text-amber-700 font-bold">2</p>
+          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">In progress (ARCH-001, MIG-001)</p>
         </div>
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
           <p class="text-3xl font-serif text-rasaoi-gold font-bold">100%</p>

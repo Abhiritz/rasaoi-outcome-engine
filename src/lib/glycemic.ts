@@ -1,6 +1,11 @@
 // Blood-sugar lens client lib. Estimates glycemic load via edge function,
 // caches per-dish in localStorage, and exposes carrier-swap helpers.
 import { supabase } from "@/integrations/supabase/client";
+import {
+  getGeminiCooldownRemainingMs,
+  isRateLimitMessage,
+  markGeminiCall,
+} from "@/lib/rateLimit";
 
 export type GLLevel = "low" | "med" | "high";
 
@@ -61,10 +66,16 @@ export async function estimateGlycemic(
 
   if (need.length) {
     try {
+      const cooldownMs = getGeminiCooldownRemainingMs();
+      if (cooldownMs > 0) {
+        await new Promise((r) => setTimeout(r, cooldownMs + 500));
+      }
+
       const { data, error } = await supabase.functions.invoke("estimate-glycemic", {
         body: { dishes: need },
       });
       if (error) throw error;
+      markGeminiCall();
       const estimates = (data?.estimates ?? []) as GLEstimate[];
       // Match estimates back to requested dishes by order (model preserves order),
       // falling back to fuzzy name match.
@@ -79,7 +90,10 @@ export async function estimateGlycemic(
       });
       saveCache(cache);
     } catch (e) {
-      console.error("estimateGlycemic failed:", e);
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!isRateLimitMessage(msg)) {
+        console.error("estimateGlycemic failed:", e);
+      }
     }
   }
   return result;

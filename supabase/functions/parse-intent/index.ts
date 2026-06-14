@@ -14,13 +14,13 @@ const SYSTEM_PROMPT = `You are Veda, the Dynamic Response Generator for Rasaoi �
 Your job is NOT to parse intent for a database lookup. You MUST synthesize a complete, UI-ready JSON response:
 - Dial values reflecting the user's energy, social context, budget, and purity preferences
 - Structured filters extracted from the utterance
-- Exactly 5 unique synthetic restaurants with full menu_items, prices, context-aware descriptions, and match scores
+- Exactly 3 unique synthetic restaurants (free-tier token budget) with menu_items, prices, and match scores
 
 GENERATION RULES (MANDATORY):
 
 1. JAIN / STRICT DIETARY
 If the query mentions Jain, ahimsa, or strict Jain dietary rules:
-- Generate exactly 5 unique Indian restaurants where EVERY dish is 100% free of meat, poultry, seafood, eggs, onion, garlic, and root vegetables (potato, carrot, etc.).
+- Generate exactly 3 unique Indian restaurants where EVERY dish is 100% free of meat, poultry, seafood, eggs, onion, garlic, and root vegetables (potato, carrot, etc.).
 - Every restaurant name, signature_dish, menu item name, and description MUST explicitly state Jain compliance (e.g. "Jain Paneer Tikka — no onion, no garlic, ahimsa kitchen").
 - NEVER output Dal Tadka, Tandoori Chicken, Butter Chicken, or any standard dish unless prefixed with "Jain" and described as onion-garlic-free.
 - Weave birthday/celebration context naturally into descriptions when present.
@@ -39,7 +39,7 @@ Apply the same zero-tolerance rule: every generated dish must comply; descriptio
 5. MOOD & EVENT CONTEXT
 - Birthday, anniversary, date night, "for my friend" → raise context dial and weave celebratory language into restaurant descriptions and why fields.
 
-6. RESTAURANT OBJECT REQUIREMENTS (each of 5)
+6. RESTAURANT OBJECT REQUIREMENTS (each of 3)
 - name: unique, plausible local restaurant name
 - cuisine: canonical Title Case
 - price_tier: 1-4 integer
@@ -48,7 +48,7 @@ Apply the same zero-tolerance rule: every generated dish must comply; descriptio
 - signature_dish: hero dish matching all constraints
 - dish_outcome: short outcome phrase for the signature
 - description: 1-2 sentences, context-aware (mentions Jain/birthday/wellness when relevant)
-- menu_items: array of 3-5 objects, each with name, description (ingredient-explicit), price_usd (number)
+- menu_items: array of 2-3 objects, each with name, description (ingredient-explicit), price_usd (number)
 - match_score: 0-100 integer (rank #1 highest)
 - why: warm 1-sentence explanation for this match
 - inference_tags: array of 2-4 short tags (e.g. "Jain compliant", "Celebratory", "Gut-friendly")
@@ -68,7 +68,7 @@ const TOOL_SCHEMA = {
   type: "function",
   function: {
     name: "generate_dining_response",
-    description: "Generate complete Rasaoi dining response with dials, filters, and 5 synthetic restaurants.",
+    description: "Generate complete Rasaoi dining response with dials, filters, and 3 synthetic restaurants.",
     parameters: {
       type: "object",
       properties: {
@@ -324,7 +324,7 @@ function normalizeRestaurants(raw: unknown[], transcript: string): GeneratedRest
 
   return filtered
     .sort((a, b) => b.match_score - a.match_score)
-    .slice(0, 5);
+    .slice(0, 3);
 }
 
 function validateAndNormalize(raw: unknown, transcript: string): AgenticPayload {
@@ -395,11 +395,21 @@ Deno.serve(async (req) => {
       parsed = JSON.parse(argsJson);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      if (/429|rate limit|quota/i.test(msg)) {
-        return new Response(JSON.stringify({ error: "Rate limit reached. Please wait a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      if (/429|rate limit|quota|resource exhausted/i.test(msg)) {
+        return new Response(
+          JSON.stringify({
+            error: "Gemini free-tier rate limit reached. Please wait 45–60 seconds before trying again.",
+            retry_after_seconds: 45,
+          }),
+          {
+            status: 429,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json",
+              "Retry-After": "45",
+            },
+          },
+        );
       }
       console.error("parse-intent Gemini error:", msg);
       return new Response(JSON.stringify({ error: "Veda could not generate a response." }), {
