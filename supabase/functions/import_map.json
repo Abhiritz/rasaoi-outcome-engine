@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@google/generative-ai": "npm:@google/generative-ai@^0.24.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2.49.4",
+    "@shared/": "./_shared/"
+  }
+}

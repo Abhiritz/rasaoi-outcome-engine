@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rasaoi — Client Handover Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            rasaoi: { DEFAULT: "#1b3d3a", light: "#2a5550", gold: "#c9a227" },
+          },
+          fontFamily: {
+            serif: ["Georgia", "Cormorant Garamond", "serif"],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      .tab-panel { display: block !important; }
+      body { background: white; }
+    }
+    .tab-active { border-bottom: 3px solid #c9a227; color: #1b3d3a; font-weight: 600; }
+    .tab-inactive { border-bottom: 3px solid transparent; color: #6b7280; }
+  </style>
+</head>
+<body class="bg-stone-50 text-gray-800 antialiased">
+
+  <!-- Header -->
+  <header class="bg-rasaoi text-white">
+    <div class="max-w-5xl mx-auto px-6 py-10">
+      <p class="text-rasaoi-gold text-xs tracking-[0.3em] uppercase font-semibold mb-2">Basis Advise LLC · Rasaoi</p>
+      <h1 class="font-serif text-4xl md:text-5xl tracking-tight mb-3">Client Handover Report</h1>
+      <p class="text-stone-300 max-w-2xl text-sm md:text-base leading-relaxed">
+        Resolution summaries for issues fixed in the Rasaoi Outcome Engine. Suitable for print, PDF export, or direct client delivery.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3 text-xs">
+        <a href="https://rasaoi-delta.vercel.app" target="_blank" rel="noopener noreferrer"
+          class="bg-sky-500/30 border border-sky-300/50 text-sky-100 px-3 py-1 rounded-full font-semibold hover:bg-sky-500/40 transition">
+          Deployment Live → rasaoi-delta.vercel.app
+        </a>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Report generated: 27 May 2026</span>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Items logged: 5</span>
+        <span class="bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 px-3 py-1 rounded-full font-semibold">Billing-free dev: ACTIVE</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-5xl mx-auto px-6 py-8">
+
+    <!-- Tabs -->
+    <nav class="no-print flex border-b border-stone-200 mb-8 gap-6" role="tablist" aria-label="Report views">
+      <button id="tab-current" role="tab" aria-selected="true" aria-controls="panel-current"
+        class="tab-active pb-3 text-sm uppercase tracking-wider transition-colors"
+        onclick="switchTab('current')">
+        Current Resolution Detail
+      </button>
+      <button id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history"
+        class="tab-inactive pb-3 text-sm uppercase tracking-wider transition-colors"
+        onclick="switchTab('history')">
+        All-Time Resolution History
+      </button>
+      <div class="ml-auto no-print">
+        <button onclick="window.print()" class="text-xs uppercase tracking-wider bg-rasaoi text-white px-4 py-2 rounded-md hover:bg-rasaoi-light transition">
+          Print / Save PDF
+        </button>
+      </div>
+    </nav>
+
+    <!-- TAB 1: Current resolution -->
+    <div id="panel-current" role="tabpanel" class="tab-panel space-y-6">
+
+      <article class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <div class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">DIE-001</p>
+            <h2 class="font-serif text-2xl text-rasaoi mt-1">Hard-Exclusion Gate for Strict Dietary Restrictions</h2>
+          </div>
+          <span class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
+            Resolved
+          </span>
+        </div>
+
+        <div class="px-6 py-5 space-y-5">
+          <div class="bg-amber-50 border-l-4 border-rasaoi-gold px-4 py-3 rounded-r-lg">
+            <p class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-1">Client summary</p>
+            <p class="text-stone-700 leading-relaxed">
+              When a guest has a <strong>strict religious or lifestyle diet</strong> — for example <em>"my friend is a Jain, it is his birthday"</em> — Rasaoi enforces a <strong>zero-tolerance safety gate at every layer</strong>. Non-compliant dishes are removed before scoring <em>and</em> from every nested recommendation slot (hero + alternates + triple-outcome arrays). Dal Tadka, Tandoori Chicken, and other violators cannot slip through cuisine-bank fallbacks. Birthday context never overrides Jain rules.
+            </p>
+          </div>
+
+          <div class="grid sm:grid-cols-3 gap-4 text-sm">
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Date resolved</p>
+              <p class="font-semibold text-rasaoi">27 May 2026</p>
+            </div>
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Status</p>
+              <p class="font-semibold text-emerald-700">RESOLVED</p>
+            </div>
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Impact area</p>
+              <p class="font-semibold text-rasaoi">Intent parsing &amp; recommendation safety</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-6">
+        <h3 class="font-serif text-xl text-rasaoi border-b border-stone-100 pb-3 mb-4">Gatekeeper architecture</h3>
+        <ul class="list-disc pl-5 space-y-2 text-sm text-stone-700">
+          <li><strong>Intent layer</strong> — <code class="bg-stone-100 px-1 rounded text-xs">parse-intent</code> extracts <code class="bg-stone-100 px-1 rounded text-xs">filters.dietary</code> (jain, vegan, halal, kosher); celebratory keywords only raise <code class="bg-stone-100 px-1 rounded text-xs">dials.context</code>, never erase dietary rules.</li>
+          <li><strong>Transcript guard</strong> — server-side regex cross-check ensures Jain/vegan/halal/kosher mentions survive even if the LLM omits them.</li>
+          <li><strong>Veda gatekeeper</strong> — <code class="bg-stone-100 px-1 rounded text-xs">passesStrictDietaryGate()</code> runs on each venue's dish blob; violators are dropped before any score math.</li>
+          <li><strong>Nested array gate</strong> — <code class="bg-stone-100 px-1 rounded text-xs">buildTripleOutcome()</code> filters every dish slot; Jain bank replaces generic Indian fallbacks; ambiguous dishes (Dal Tadka) blocked unless explicitly Jain.</li>
+          <li><strong>Mock fixtures</strong> — Full <code class="bg-stone-100 px-1 rounded text-xs">menu_items</code> arrays with explicit ingredient keywords; Jain kitchens carry Jain Paneer Tikka, Jain Dal Makhani, Fresh Fruit Salad.</li>
+        </ul>
+      </section>
+
+      <section class="bg-rose-50 border border-rose-200 rounded-xl p-6">
+        <h3 class="font-serif text-xl text-rose-900 mb-2">Jain conflict — before vs after</h3>
+        <div class="grid sm:grid-cols-2 gap-4 text-sm">
+          <div class="bg-white border border-rose-100 rounded-lg p-4">
+            <p class="text-xs uppercase tracking-wider text-rose-600 font-semibold mb-2">Before</p>
+            <p class="text-stone-700">Query: <em>"my friend is a jain, it is his birthday"</em> → Tandoori Chicken ranked first (high context + Indian purity boosts).</p>
+          </div>
+          <div class="bg-white border border-emerald-200 rounded-lg p-4">
+            <p class="text-xs uppercase tracking-wider text-emerald-700 font-semibold mb-2">After</p>
+            <p class="text-stone-700">Same query → Tandoori and Dal Tadka excluded at every layer; all three outcome slots show Jain-compliant dishes only (Jain Paneer Tikka, Jain Dal Makhani, Fresh Fruit Salad).</p>
+          </div>
+        </div>
+        <code class="block mt-4 bg-white border border-rose-200 rounded px-3 py-2 text-xs text-stone-700">npm test -- --run → 15 passed (veda + pairings nested leak tests)</code>
+      </section>
+    </div>
+
+    <!-- TAB 2: All-time history -->
+    <div id="panel-history" role="tabpanel" class="tab-panel hidden space-y-6">
+
+      <div class="bg-white rounded-xl border border-stone-200 shadow-sm p-6">
+        <h2 class="font-serif text-2xl text-rasaoi mb-1">All-Time Resolution History</h2>
+        <p class="text-sm text-stone-500 mb-6">Chronological register of every conflict resolved in the Rasaoi Outcome Engine.</p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left border border-stone-200 rounded-lg overflow-hidden">
+            <thead class="bg-rasaoi text-white text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3">ID</th>
+                <th class="px-4 py-3">Issue</th>
+                <th class="px-4 py-3">Date</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Client impact</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100" id="history-body">
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">DIE-001</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Hard-exclusion gate for strict dietary restrictions</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-05-27</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-300">Resolved</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">Jain/Vegan/Halal/Kosher block violators in hero + nested outcome arrays — Dal Tadka/Tandoori cannot leak via bank fallbacks.</td>
+              </tr>
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">DEV-003</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Zero-billing Google Places API mocking layer</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-05-27</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-300">Resolved</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">Full dev loop without Google Cloud billing; simulated location arrays.</td>
+              </tr>
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">MIG-001</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Independent Supabase migration with Lovable sync</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-05-27</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-amber-100 text-amber-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-300">In progress</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">Cursor-native dev + repeatable schema sync when client edits in Lovable.</td>
+              </tr>
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">CRS-002</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Conceptual health filters overridden by cultural bias</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-05-27</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-300">Resolved</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">“Raw, fresh, gut friendly, desi” now surfaces light Indian options over Tandoori/Korma defaults.</td>
+              </tr>
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">CRS-001</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Explicit cuisine intent mis-routed to Indian options</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-05-27</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-300">Resolved</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">Thai (and other cuisine) requests now surface matching restaurants first.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="text-xs text-stone-400 mt-4 text-center">New rows are appended here as issues are resolved. Internal detail: see <code class="bg-stone-100 px-1 rounded">CONFLICT_RESOLUTION_REPORTS.md</code>.</p>
+      </div>
+
+      <!-- Summary cards for history tab -->
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
+          <p class="text-3xl font-serif text-rasaoi font-bold">5</p>
+          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">Total logged</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
+          <p class="text-3xl font-serif text-amber-700 font-bold">1</p>
+          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">In progress (MIG-001)</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
+          <p class="text-3xl font-serif text-rasaoi-gold font-bold">100%</p>
+          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">Regression tests passing</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="border-t border-stone-200 bg-white mt-12">
+    <div class="max-w-5xl mx-auto px-6 py-6 flex flex-wrap justify-between gap-4 text-xs text-stone-500">
+      <span>Rasaoi · A System of Outcome · Basis Advise LLC</span>
+      <span>Confidential — for client handover purposes</span>
+    </div>
+  </footer>
+
+  <script>
+    function switchTab(which) {
+      const currentPanel = document.getElementById("panel-current");
+      const historyPanel = document.getElementById("panel-history");
+      const tabCurrent = document.getElementById("tab-current");
+      const tabHistory = document.getElementById("tab-history");
+
+      if (which === "current") {
+        currentPanel.classList.remove("hidden");
+        historyPanel.classList.add("hidden");
+        tabCurrent.classList.add("tab-active");
+        tabCurrent.classList.remove("tab-inactive");
+        tabCurrent.setAttribute("aria-selected", "true");
+        tabHistory.classList.remove("tab-active");
+        tabHistory.classList.add("tab-inactive");
+        tabHistory.setAttribute("aria-selected", "false");
+      } else {
+        historyPanel.classList.remove("hidden");
+        currentPanel.classList.add("hidden");
+        tabHistory.classList.add("tab-active");
+        tabHistory.classList.remove("tab-inactive");
+        tabHistory.setAttribute("aria-selected", "true");
+        tabCurrent.classList.remove("tab-active");
+        tabCurrent.classList.add("tab-inactive");
+        tabCurrent.setAttribute("aria-selected", "false");
+      }
+    }
+  </script>
+</body>
+</html>

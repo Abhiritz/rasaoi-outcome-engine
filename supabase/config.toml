@@ -1,0 +1,36 @@
+# Rasaoi Outcome Engine — Supabase CLI configuration
+# Personal project ref is stored after: supabase link --project-ref <YOUR_REF>
+# Do NOT commit client (Lovable) project credentials here.
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+# Edge functions — JWT verification disabled for anon-key + CORS browser calls.
+# Re-enable per-function when auth is added to the app.
+
+[functions.parse-intent]
+verify_jwt = false
+
+[functions.estimate-glycemic]
+verify_jwt = false
+
+[functions.places-search]
+verify_jwt = false
+
+[functions.ingest-menu]
+verify_jwt = false
+
+[functions.commit-dishes]
+verify_jwt = false

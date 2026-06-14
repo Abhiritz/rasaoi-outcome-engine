@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rasaoi — Client Handover Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            rasaoi: { DEFAULT: "#1b3d3a", light: "#2a5550", gold: "#c9a227" },
+          },
+          fontFamily: {
+            serif: ["Georgia", "Cormorant Garamond", "serif"],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      .tab-panel { display: block !important; }
+      body { background: white; }
+    }
+    .tab-active { border-bottom: 3px solid #c9a227; color: #1b3d3a; font-weight: 600; }
+    .tab-inactive { border-bottom: 3px solid transparent; color: #6b7280; }
+  </style>
+</head>
+<body class="bg-stone-50 text-gray-800 antialiased">
+
+  <!-- Header -->
+  <header class="bg-rasaoi text-white">
+    <div class="max-w-5xl mx-auto px-6 py-10">
+      <p class="text-rasaoi-gold text-xs tracking-[0.3em] uppercase font-semibold mb-2">Basis Advise LLC · Rasaoi</p>
+      <h1 class="font-serif text-4xl md:text-5xl tracking-tight mb-3">Client Handover Report</h1>
+      <p class="text-stone-300 max-w-2xl text-sm md:text-base leading-relaxed">
+        Resolution summaries for issues fixed in the Rasaoi Outcome Engine. Suitable for print, PDF export, or direct client delivery.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3 text-xs">
+        <a href="https://rasaoi-delta.vercel.app" target="_blank" rel="noopener noreferrer"
+          class="bg-sky-500/30 border border-sky-300/50 text-sky-100 px-3 py-1 rounded-full font-semibold hover:bg-sky-500/40 transition">
+          Deployment Live → rasaoi-delta.vercel.app
+        </a>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Report generated: 27 May 2026</span>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Resolutions logged: 1</span>
+        <span class="bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 px-3 py-1 rounded-full font-semibold">All current items: RESOLVED</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-5xl mx-auto px-6 py-8">
+
+    <!-- Tabs -->
+    <nav class="no-print flex border-b border-stone-200 mb-8 gap-6" role="tablist" aria-label="Report views">
+      <button id="tab-current" role="tab" aria-selected="true" aria-controls="panel-current"
+        class="tab-active pb-3 text-sm uppercase tracking-wider transition-colors"
+        onclick="switchTab('current')">
+        Current Resolution Detail
+      </button>
+      <button id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history"
+        class="tab-inactive pb-3 text-sm uppercase tracking-wider transition-colors"
+        onclick="switchTab('history')">
+        All-Time Resolution History
+      </button>
+      <div class="ml-auto no-print">
+        <button onclick="window.print()" class="text-xs uppercase tracking-wider bg-rasaoi text-white px-4 py-2 rounded-md hover:bg-rasaoi-light transition">
+          Print / Save PDF
+        </button>
+      </div>
+    </nav>
+
+    <!-- TAB 1: Current resolution -->
+    <div id="panel-current" role="tabpanel" class="tab-panel space-y-6">
+
+      <article class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <div class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">CRS-001</p>
+            <h2 class="font-serif text-2xl text-rasaoi mt-1">Explicit Cuisine Intent Mis-Routed to Indian Options</h2>
+          </div>
+          <span class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            Resolved
+          </span>
+        </div>
+
+        <div class="px-6 py-5 space-y-5">
+          <div class="bg-amber-50 border-l-4 border-rasaoi-gold px-4 py-3 rounded-r-lg">
+            <p class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-1">Client summary</p>
+            <p class="text-stone-700 leading-relaxed">
+              When diners asked for a specific cuisine (for example Thai), Rasaoi could still highlight Indian restaurants and dishes like Tandoori Chicken.
+              The app now interprets cuisine requests more accurately and prioritizes restaurants that genuinely match what you asked for — so recommendations feel intentional, not random.
+            </p>
+          </div>
+
+          <div class="grid sm:grid-cols-3 gap-4 text-sm">
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Date resolved</p>
+              <p class="font-semibold text-rasaoi">27 May 2026</p>
+            </div>
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Status</p>
+              <p class="font-semibold text-emerald-700">RESOLVED</p>
+            </div>
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Impact area</p>
+              <p class="font-semibold text-rasaoi">Recommendations &amp; intent</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-6">
+        <h3 class="font-serif text-xl text-rasaoi border-b border-stone-100 pb-3 mb-4">1. Technical Root Cause Analysis</h3>
+
+        <div class="space-y-4 text-sm leading-relaxed">
+          <div>
+            <p class="text-xs uppercase tracking-wider text-stone-500 font-semibold mb-1">User symptom</p>
+            <p>Guests requesting <strong>Thai</strong> (sometimes alongside phrases like “for my partner” or “nearby”) received hero suggestions for <strong>Indian</strong> venues — often featuring Tandoori Chicken — despite no Indian cue in the request.</p>
+          </div>
+
+          <div>
+            <p class="text-xs uppercase tracking-wider text-stone-500 font-semibold mb-1">System conflict</p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border border-stone-200 rounded-lg overflow-hidden mt-1">
+                <thead class="bg-stone-100 text-stone-600 uppercase tracking-wider">
+                  <tr>
+                    <th class="px-3 py-2">Layer</th>
+                    <th class="px-3 py-2">Expected</th>
+                    <th class="px-3 py-2">Observed failure</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-100">
+                  <tr>
+                    <td class="px-3 py-2 font-medium">AI intent parser</td>
+                    <td class="px-3 py-2">Extract <code class="bg-stone-100 px-1 rounded">cuisine: Thai</code></td>
+                    <td class="px-3 py-2 text-red-700">Occasional default / hallucinated Indian filters</td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2 font-medium">Veda ranker</td>
+                    <td class="px-3 py-2">Cuisine intent drives hero pick</td>
+                    <td class="px-3 py-2 text-red-700">Cuisine filter never passed into scoring</td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2 font-medium">UI sort</td>
+                    <td class="px-3 py-2">Thai venues surface first</td>
+                    <td class="px-3 py-2 text-red-700">Soft re-sort lost to high purity/promo scores</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs uppercase tracking-wider text-stone-500 font-semibold mb-1">Root cause</p>
+            <p>The AI parser lacked server-side validation, so incorrect filters could pass through unchanged. Separately, the ranking engine rewarded purity and wellness attributes (where Indian curated data is strong) without penalizing cuisine mismatches — allowing Indian signature dishes to mathematically outrank true Thai matches.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-6">
+        <h3 class="font-serif text-xl text-rasaoi border-b border-stone-100 pb-3 mb-4">2. Resolution &amp; Verification</h3>
+
+        <div class="space-y-4 text-sm leading-relaxed">
+          <div>
+            <p class="text-xs uppercase tracking-wider text-stone-500 font-semibold mb-1">Fix applied</p>
+            <ul class="list-disc pl-5 space-y-2 text-stone-700">
+              <li><strong>Stricter AI instructions</strong> — explicit rules: never invent cuisines/dishes; relative phrases must not override food keywords.</li>
+              <li><strong>Server validation</strong> — transcript cross-check corrects or fills cuisine; strips conflicting dish hallucinations.</li>
+              <li><strong>Ranking gates</strong> — matching cuisine +48 points; mismatch −42 points before other wellness boosts apply.</li>
+              <li><strong>Full pipeline wiring</strong> — cuisine filter now flows from parser → ranker on every recommendation path.</li>
+            </ul>
+          </div>
+
+          <div>
+            <p class="text-xs uppercase tracking-wider text-stone-500 font-semibold mb-1">Files modified</p>
+            <ul class="grid sm:grid-cols-2 gap-2 text-xs font-mono text-stone-600">
+              <li class="bg-stone-50 border border-stone-200 rounded px-2 py-1">supabase/functions/parse-intent/index.ts</li>
+              <li class="bg-stone-50 border border-stone-200 rounded px-2 py-1">src/lib/veda.ts</li>
+              <li class="bg-stone-50 border border-stone-200 rounded px-2 py-1">src/pages/Index.tsx</li>
+              <li class="bg-stone-50 border border-stone-200 rounded px-2 py-1">src/lib/veda.test.ts</li>
+            </ul>
+          </div>
+
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <p class="text-xs uppercase tracking-wider text-emerald-800 font-semibold mb-2">Validation proof</p>
+            <p class="text-emerald-900 text-sm mb-2">Automated regression suite confirms Thai intent outranks a heavily boosted Indian Tandoori Chicken venue.</p>
+            <code class="block bg-white border border-emerald-200 rounded px-3 py-2 text-xs text-stone-700">npm test -- --run src/lib/veda.test.ts → 3 passed</code>
+          </div>
+
+          <p class="text-xs text-stone-500 italic">Note: Redeploy the <code class="bg-stone-100 px-1 rounded">parse-intent</code> edge function for parser changes to apply in your hosted environment.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 2: All-time history -->
+    <div id="panel-history" role="tabpanel" class="tab-panel hidden space-y-6">
+
+      <div class="bg-white rounded-xl border border-stone-200 shadow-sm p-6">
+        <h2 class="font-serif text-2xl text-rasaoi mb-1">All-Time Resolution History</h2>
+        <p class="text-sm text-stone-500 mb-6">Chronological register of every conflict resolved in the Rasaoi Outcome Engine.</p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left border border-stone-200 rounded-lg overflow-hidden">
+            <thead class="bg-rasaoi text-white text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3">ID</th>
+                <th class="px-4 py-3">Issue</th>
+                <th class="px-4 py-3">Date</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Client impact</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100" id="history-body">
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">CRS-001</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Explicit cuisine intent mis-routed to Indian options</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-05-27</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-300">Resolved</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">Thai (and other cuisine) requests now surface matching restaurants first.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="text-xs text-stone-400 mt-4 text-center">New rows are appended here as issues are resolved. Internal detail: see <code class="bg-stone-100 px-1 rounded">CONFLICT_RESOLUTION_REPORTS.md</code>.</p>
+      </div>
+
+      <!-- Summary cards for history tab -->
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
+          <p class="text-3xl font-serif text-rasaoi font-bold">1</p>
+          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">Total resolved</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
+          <p class="text-3xl font-serif text-emerald-700 font-bold">0</p>
+          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">Open conflicts</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
+          <p class="text-3xl font-serif text-rasaoi-gold font-bold">100%</p>
+          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">Regression tests passing</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="border-t border-stone-200 bg-white mt-12">
+    <div class="max-w-5xl mx-auto px-6 py-6 flex flex-wrap justify-between gap-4 text-xs text-stone-500">
+      <span>Rasaoi · A System of Outcome · Basis Advise LLC</span>
+      <span>Confidential — for client handover purposes</span>
+    </div>
+  </footer>
+
+  <script>
+    function switchTab(which) {
+      const currentPanel = document.getElementById("panel-current");
+      const historyPanel = document.getElementById("panel-history");
+      const tabCurrent = document.getElementById("tab-current");
+      const tabHistory = document.getElementById("tab-history");
+
+      if (which === "current") {
+        currentPanel.classList.remove("hidden");
+        historyPanel.classList.add("hidden");
+        tabCurrent.classList.add("tab-active");
+        tabCurrent.classList.remove("tab-inactive");
+        tabCurrent.setAttribute("aria-selected", "true");
+        tabHistory.classList.remove("tab-active");
+        tabHistory.classList.add("tab-inactive");
+        tabHistory.setAttribute("aria-selected", "false");
+      } else {
+        historyPanel.classList.remove("hidden");
+        currentPanel.classList.add("hidden");
+        tabHistory.classList.add("tab-active");
+        tabHistory.classList.remove("tab-inactive");
+        tabHistory.setAttribute("aria-selected", "true");
+        tabCurrent.classList.remove("tab-active");
+        tabCurrent.classList.add("tab-inactive");
+        tabCurrent.setAttribute("aria-selected", "false");
+      }
+    }
+  </script>
+</body>
+</html>

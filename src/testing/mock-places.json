@@ -1,0 +1,237 @@
+{
+  "meta": {
+    "description": "Google Places API (New) searchText response fixtures for billing-free local dev",
+    "apiVersion": "places.googleapis.com/v1/places:searchText",
+    "searchCenters": {
+      "elDoradoHills": { "lat": 38.6857, "lng": -121.0827 },
+      "folsom": { "lat": 38.678, "lng": -121.1761 }
+    },
+    "defaultRadiusMeters": 24140
+  },
+  "places": [
+    {
+      "id": "mock-ind-heavy-spice-route",
+      "displayName": { "text": "Spice Route Tandoori", "languageCode": "en" },
+      "primaryType": "indian_restaurant",
+      "types": ["indian_restaurant", "restaurant", "food", "point_of_interest"],
+      "formattedAddress": "4370 Town Center Blvd, El Dorado Hills, CA 95762, USA",
+      "location": { "latitude": 38.6891, "longitude": -121.0654 },
+      "priceLevel": "PRICE_LEVEL_MODERATE",
+      "rating": 4.6,
+      "userRatingCount": 842,
+      "editorialSummary": { "text": "North Indian tandoori chicken with garlic-onion marinade, dal tadka with onion tempering, and navratan korma." },
+      "reviews": [
+        { "rating": 5, "text": { "text": "Signature tandoori chicken — clay-oven chicken with garlic and onion. Dal tadka has classic onion-garlic tadka." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0101"
+    },
+    {
+      "id": "mock-ind-heavy-mughal-palace",
+      "displayName": { "text": "Mughal Palace Indian Grill", "languageCode": "en" },
+      "primaryType": "indian_restaurant",
+      "types": ["indian_restaurant", "restaurant", "food"],
+      "formattedAddress": "850 Sibley St, Folsom, CA 95630, USA",
+      "location": { "latitude": 38.6742, "longitude": -121.1688 },
+      "priceLevel": "PRICE_LEVEL_MODERATE",
+      "rating": 4.4,
+      "userRatingCount": 1203,
+      "editorialSummary": { "text": "Butter chicken, chicken biryani, dal tadka with garlic, and creamy North Indian favorites." },
+      "reviews": [
+        { "rating": 4, "text": { "text": "Navratan korma with onion base and chicken tikka dosa — not vegetarian." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0102"
+    },
+    {
+      "id": "mock-ind-light-sprout-kitchen",
+      "displayName": { "text": "Fresh Sprout Kitchen", "languageCode": "en" },
+      "primaryType": "vegetarian_restaurant",
+      "types": ["vegetarian_restaurant", "indian_restaurant", "restaurant", "health_food_restaurant"],
+      "formattedAddress": "2200 Francisco Dr, El Dorado Hills, CA 95762, USA",
+      "location": { "latitude": 38.6918, "longitude": -121.0721 },
+      "priceLevel": "PRICE_LEVEL_MODERATE",
+      "rating": 4.8,
+      "userRatingCount": 412,
+      "editorialSummary": { "text": "Desi-inspired fresh sprout chaat, cucumber raita, fermented kanji, and light salads." },
+      "reviews": [
+        { "rating": 5, "text": { "text": "Gut-friendly probiotic lassi and raw sprout chaat — light and fresh." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0103"
+    },
+    {
+      "id": "mock-ind-light-sattvic-bowl",
+      "displayName": { "text": "Sattvic Bowl Bar", "languageCode": "en" },
+      "primaryType": "health_food_restaurant",
+      "types": ["health_food_restaurant", "indian_restaurant", "restaurant"],
+      "formattedAddress": "1010 Riley St, Folsom, CA 95630, USA",
+      "location": { "latitude": 38.6775, "longitude": -121.1712 },
+      "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+      "rating": 4.7,
+      "userRatingCount": 289,
+      "editorialSummary": { "text": "Homestyle desi bowls with moong sprout salad, kachumber, and low-oil dhokla." },
+      "reviews": [
+        { "rating": 5, "text": { "text": "Perfect for a light gut-friendly meal — fresh vegetables and yogurt raita." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0104"
+    },
+    {
+      "id": "mock-thai-bangkok-garden",
+      "displayName": { "text": "Bangkok Garden Thai", "languageCode": "en" },
+      "primaryType": "thai_restaurant",
+      "types": ["thai_restaurant", "restaurant", "food"],
+      "formattedAddress": "3909 Park Dr, El Dorado Hills, CA 95762, USA",
+      "location": { "latitude": 38.6842, "longitude": -121.0812 },
+      "priceLevel": "PRICE_LEVEL_MODERATE",
+      "rating": 4.5,
+      "userRatingCount": 678,
+      "editorialSummary": { "text": "Pad thai, tom yum, and basil chicken in a casual setting." },
+      "reviews": [
+        { "rating": 5, "text": { "text": "Authentic Thai — pad see ew and larb are excellent." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0201"
+    },
+    {
+      "id": "mock-thai-basil-house",
+      "displayName": { "text": "Thai Basil House", "languageCode": "en" },
+      "primaryType": "thai_restaurant",
+      "types": ["thai_restaurant", "restaurant"],
+      "formattedAddress": "195 Placerville Rd, Folsom, CA 95630, USA",
+      "location": { "latitude": 38.6711, "longitude": -121.1622 },
+      "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+      "rating": 4.3,
+      "userRatingCount": 534,
+      "editorialSummary": { "text": "Quick Thai noodles, drunken noodles, and fresh herb salads." },
+      "reviews": [
+        { "rating": 4, "text": { "text": "Great tom yum and panang curry for date night." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0202"
+    },
+    {
+      "id": "mock-italian-trattoria-sole",
+      "displayName": { "text": "Trattoria Sole", "languageCode": "en" },
+      "primaryType": "italian_restaurant",
+      "types": ["italian_restaurant", "restaurant", "food"],
+      "formattedAddress": "4360 Town Center Blvd, El Dorado Hills, CA 95762, USA",
+      "location": { "latitude": 38.6885, "longitude": -121.0648 },
+      "priceLevel": "PRICE_LEVEL_EXPENSIVE",
+      "rating": 4.6,
+      "userRatingCount": 921,
+      "editorialSummary": { "text": "Wood-fired margherita pizza and handmade pasta." },
+      "reviews": [
+        { "rating": 5, "text": { "text": "Celebratory risotto and sourdough pizza." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0301"
+    },
+    {
+      "id": "mock-healthy-green-bowl",
+      "displayName": { "text": "Green Bowl Co", "languageCode": "en" },
+      "primaryType": "health_food_restaurant",
+      "types": ["health_food_restaurant", "restaurant", "food"],
+      "formattedAddress": "1000 White Rock Rd, El Dorado Hills, CA 95762, USA",
+      "location": { "latitude": 38.6925, "longitude": -121.0588 },
+      "priceLevel": "PRICE_LEVEL_MODERATE",
+      "rating": 4.7,
+      "userRatingCount": 356,
+      "editorialSummary": { "text": "Grain bowls, poke, protein salads, and cold-pressed juices." },
+      "reviews": [
+        { "rating": 5, "text": { "text": "Fresh seasonal salads and salmon poke bowl." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0401"
+    },
+    {
+      "id": "mock-japanese-sakura-sushi",
+      "displayName": { "text": "Sakura Sushi & Ramen", "languageCode": "en" },
+      "primaryType": "japanese_restaurant",
+      "types": ["japanese_restaurant", "sushi_restaurant", "restaurant"],
+      "formattedAddress": "1870 Prairie City Rd, Folsom, CA 95630, USA",
+      "location": { "latitude": 38.6655, "longitude": -121.1455 },
+      "priceLevel": "PRICE_LEVEL_MODERATE",
+      "rating": 4.4,
+      "userRatingCount": 445,
+      "editorialSummary": { "text": "Sashimi, teriyaki, and tonkotsu ramen." },
+      "reviews": [
+        { "rating": 4, "text": { "text": "Clean sushi and light miso soup." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0501"
+    },
+    {
+      "id": "mock-mexican-casa-fiesta",
+      "displayName": { "text": "Casa Fiesta Taqueria", "languageCode": "en" },
+      "primaryType": "mexican_restaurant",
+      "types": ["mexican_restaurant", "restaurant", "food"],
+      "formattedAddress": "2500 E Bidwell St, Folsom, CA 95630, USA",
+      "location": { "latitude": 38.6728, "longitude": -121.1388 },
+      "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+      "rating": 4.2,
+      "userRatingCount": 712,
+      "editorialSummary": { "text": "Street tacos, burritos, and fresh salsa bar." },
+      "reviews": [
+        { "rating": 4, "text": { "text": "Great carne asada tacos for a quick bite." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0601"
+    },
+    {
+      "id": "mock-med-mezze-table",
+      "displayName": { "text": "Mezze Mediterranean Table", "languageCode": "en" },
+      "primaryType": "mediterranean_restaurant",
+      "types": ["mediterranean_restaurant", "restaurant", "food"],
+      "formattedAddress": "4242 Fowler Ln, Diamond Springs, CA 95619, USA",
+      "location": { "latitude": 38.7012, "longitude": -120.8122 },
+      "priceLevel": "PRICE_LEVEL_MODERATE",
+      "rating": 4.5,
+      "userRatingCount": 298,
+      "editorialSummary": { "text": "Hummus, falafel, grilled kebabs, and herb-forward plates." },
+      "reviews": [
+        { "rating": 5, "text": { "text": "Anti-inflammatory grilled chicken and hummus plate." } }
+      ],
+      "nationalPhoneNumber": "+1 530-555-0701"
+    },
+    {
+      "id": "mock-ind-jain-ahimsa",
+      "displayName": { "text": "Ahimsa Jain Kitchen", "languageCode": "en" },
+      "primaryType": "vegetarian_restaurant",
+      "types": ["vegetarian_restaurant", "indian_restaurant", "restaurant", "food"],
+      "formattedAddress": "2080 Vine St, El Dorado Hills, CA 95762, USA",
+      "location": { "latitude": 38.6875, "longitude": -121.0698 },
+      "priceLevel": "PRICE_LEVEL_MODERATE",
+      "rating": 4.9,
+      "userRatingCount": 318,
+      "editorialSummary": { "text": "Authentic Jain cuisine — Jain Paneer Tikka, Jain Dal Makhani, Jain Moong Dal, and Fresh Fruit Salad. Strictly no meat, no onion, no garlic, no root vegetables." },
+      "reviews": [
+        { "rating": 5, "text": { "text": "Perfect for Jain birthdays — ahimsa kitchen. Jain Paneer Tikka and Jain Dal Makhani are onion-and-garlic-free." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0901"
+    },
+    {
+      "id": "mock-ind-jain-shuddha",
+      "displayName": { "text": "Shuddha Jain Bhojan", "languageCode": "en" },
+      "primaryType": "vegetarian_restaurant",
+      "types": ["vegetarian_restaurant", "indian_restaurant", "restaurant"],
+      "formattedAddress": "803 Sibley St, Folsom, CA 95630, USA",
+      "location": { "latitude": 38.6768, "longitude": -121.1675 },
+      "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+      "rating": 4.8,
+      "userRatingCount": 204,
+      "editorialSummary": { "text": "Shuddha Jain plates: Jain Dal Makhani, Jain Moong Dal, Jain Papad Platter, Fresh Fruit Salad — all onion-and-garlic-free, no root vegetables." },
+      "reviews": [
+        { "rating": 5, "text": { "text": "Celebration-friendly Jain food — Jain Dal Makhani and Fresh Fruit Salad without compromising religious rules." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0902"
+    },
+    {
+      "id": "mock-american-hills-gastropub",
+      "displayName": { "text": "Hills Gastropub", "languageCode": "en" },
+      "primaryType": "american_restaurant",
+      "types": ["american_restaurant", "bar", "restaurant"],
+      "formattedAddress": "4950 Robert J Mathews Pkwy, El Dorado Hills, CA 95762, USA",
+      "location": { "latitude": 38.6932, "longitude": -121.0512 },
+      "priceLevel": "PRICE_LEVEL_MODERATE",
+      "rating": 4.1,
+      "userRatingCount": 567,
+      "editorialSummary": { "text": "Grass-fed burgers, gastropub fare, and local craft beer." },
+      "reviews": [
+        { "rating": 4, "text": { "text": "Solid burger and fries for a social night out." } }
+      ],
+      "nationalPhoneNumber": "+1 916-555-0801"
+    }
+  ]
+}
