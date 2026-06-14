@@ -90,7 +90,7 @@
           <div class="bg-amber-50 border-l-4 border-rasaoi-gold px-4 py-3 rounded-r-lg">
             <p class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-1">Client summary</p>
             <p class="text-stone-700 leading-relaxed">
-              Rapid “Ask Veda” submissions on Google AI Studio’s <strong>free tier</strong> were hitting HTTP <strong>429 rate limits</strong>, causing failed recommendations. Rasaoi now paces Gemini usage: a ~45 second cooldown between live calls, automatic server retry, a lighter default model, smaller generation payloads (3 restaurants), a 15-minute cache for identical questions, and a visible countdown on the Ask screen so users know when they can try again.
+              Rapid “Ask Veda” submissions on Google AI Studio’s <strong>free tier</strong> were hitting HTTP <strong>429 rate limits</strong>. Rasaoi now limits usage to <strong>one Gemini call per question</strong>: 60s client cooldown, 90s penalty after a 429, fail-fast server behavior (no retry storms), smaller payloads (3 restaurants), 15-minute transcript cache, and local blood-sugar heuristics so the glycemic lens never triggers a second API call.
             </p>
           </div>
 
@@ -114,19 +114,19 @@
       <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-6">
         <h3 class="font-serif text-xl text-rasaoi border-b border-stone-100 pb-3 mb-4">Protections added</h3>
         <ul class="list-disc pl-5 space-y-2 text-sm text-stone-700">
-          <li><strong>Client cooldown</strong> — 45s between live Gemini calls; Ask button shows live countdown.</li>
+          <li><strong>Client cooldown</strong> — 60s between live Gemini calls; 90s block after a 429; Ask button shows countdown.</li>
           <li><strong>Transcript cache</strong> — identical question within 15 min reuses session (no API call).</li>
-          <li><strong>Lighter model</strong> — default <code class="bg-stone-100 px-1 rounded text-xs">gemini-2.0-flash-lite</code> on edge functions.</li>
-          <li><strong>Server retry</strong> — up to 2 retries with backoff; <code class="bg-stone-100 px-1 rounded text-xs">Retry-After: 45</code> on hard 429.</li>
+          <li><strong>Stable model</strong> — default <code class="bg-stone-100 px-1 rounded text-xs">gemini-2.0-flash</code> on edge functions.</li>
+          <li><strong>Fail fast on 429</strong> — no multi-model retry storms (was up to 9 calls per click).</li>
           <li><strong>Smaller payload</strong> — 3 restaurants × 2–3 menu items per generation.</li>
-          <li><strong>Glycemic deferral</strong> — blood-sugar estimates wait for cooldown so intent + glycemic don’t double-hit RPM.</li>
+          <li><strong>Local glycemic heuristics</strong> — blood-sugar GL badges without a second Gemini call.</li>
         </ul>
       </section>
 
       <section class="bg-sky-50 border border-sky-200 rounded-xl p-6">
         <h3 class="font-serif text-xl text-sky-900 mb-2">Usage guidance (free tier)</h3>
         <p class="text-sm text-stone-700 leading-relaxed">
-          Wait for the countdown to clear before submitting a new question. Repeating the exact same query within 15 minutes uses cache. Blood-sugar GL badges may appear ~45s after results when the lens is active.
+          Wait for the countdown to clear before submitting a new question. Repeating the exact same query within 15 minutes uses cache. Blood-sugar GL badges use local heuristics — no extra wait and no second API call.
         </p>
       </section>
     </div>
@@ -157,7 +157,7 @@
                 <td class="px-4 py-3">
                   <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-300">Resolved</span>
                 </td>
-                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">45s client cooldown, transcript cache, lighter model, smaller payloads — no more 429 spam on free tier.</td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">60s cooldown, fail-fast 429, local GL heuristics — one Gemini call per Ask on free tier.</td>
               </tr>
               <tr class="hover:bg-stone-50">
                 <td class="px-4 py-3 font-mono text-xs text-stone-500">ARCH-001</td>

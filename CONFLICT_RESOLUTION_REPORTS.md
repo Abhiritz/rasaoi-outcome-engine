@@ -7,7 +7,7 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 |-------|-------|
 | **Product** | Rasaoi Outcome Engine |
 | **Maintainer** | Engineering / CTO |
-| **Last updated** | 2026-05-27 |
+| **Last updated** | 2026-05-27 (RL-001 follow-up) |
 | **Total resolutions** | 7 (2 CRS + 1 DIE + 1 ARCH + 1 RL + 1 MIG + 1 DEV) |
 
 ---
@@ -28,8 +28,8 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 
 ## RL-001: Gemini free-tier rate-limit protection
 
-- **Client-Facing Summary**: On Google AI Studio’s free tier, rapid “Ask Veda” submissions triggered HTTP **429 (rate limit exceeded)** errors and blank failures. Rasaoi now paces Gemini calls client- and server-side: a ~45s cooldown between live requests, automatic retry with backoff on the edge, a lighter default model (`gemini-2.0-flash-lite`), smaller generation payloads, and a 15-minute cache for identical questions so repeat queries do not hit the API.
-- **Date Resolved**: 2026-05-27
+- **Client-Facing Summary**: On Google AI Studio’s free tier, rapid “Ask Veda” submissions triggered HTTP **429 (rate limit exceeded)** errors. Rasaoi now uses a **single Gemini call per question** with client pacing (**60s cooldown**, **90s penalty after 429**), fail-fast server behavior (no retry storms), `gemini-2.0-flash` default, smaller payloads (3 restaurants), transcript cache (15 min), and **local blood-sugar heuristics** so the glycemic lens does not fire a second API call.
+- **Date Resolved**: 2026-05-27 (initial + follow-up same day)
 - **Status**: RESOLVED
 
 ### 1. Technical Root Cause Analysis
@@ -53,35 +53,39 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 2. **No transcript cache** — minor rephrases or accidental double-clicks re-hit Gemini.
 3. **Back-to-back edge calls** — blood-sugar lens invoked `estimate-glycemic` within seconds of `parse-intent`.
 4. **Heavy generation payload** — 5 restaurants × full menus increased tokens per call.
-5. **Weak 429 surfacing** — errors not classified as rate limits; no `Retry-After` guidance.
+5. **Weak 429 surfacing** — errors not classified as rate limits; generic “non-2xx” in UI.
+6. **Retry storm (RL-001b)** — on 429, edge client retried 2× per model across 3 models → up to **9 Gemini calls per single Ask click**, making quota exhaustion worse.
 
 ### 2. Resolution & Verification
 
 #### Fix Applied
 
 **A. Shared Gemini client (`supabase/functions/_shared/ai-client.ts`)**
-- Default model → `gemini-2.0-flash-lite` (override via `GEMINI_MODEL` secret).
-- Up to 2 retries on 429 with 2.5s linear backoff.
+- Default model → `gemini-2.0-flash` (override via `GEMINI_MODEL` secret).
+- **Fail fast on 429** — throw immediately; do not retry or cycle models when rate-limited.
+- Model fallback only for model-not-found errors (`gemini-2.5-flash` chain).
 
 **B. Lighter agent payload (`parse-intent/index.ts`)**
 - Generate **3** restaurants with 2–3 menu items each (down from 5).
-- Return HTTP 429 with `Retry-After: 45` when Gemini quota exhausted.
+- Return HTTP 429 with `Retry-After: 90` when Gemini quota exhausted.
+- Sanitized error messages in 500 responses (API key / model errors).
 
 **C. Client rate-limit module (`src/lib/rateLimit.ts`)**
-- `assertGeminiCooldown()` / `markGeminiCall()` — 45s sessionStorage gate.
+- `assertGeminiCooldown()` / `markGeminiCall()` — **60s** sessionStorage gate.
+- `markGeminiRateLimited()` — **90s block** after server 429.
 - `RateLimitError` with human-readable wait message.
 
 **D. Intent pipeline (`src/lib/intent.ts`)**
 - 15-minute transcript cache (normalized text) — cache hit skips edge invoke.
-- Parse 429 responses into `RateLimitError`.
+- Parse `FunctionsHttpError` JSON body + 429 → `RateLimitError` with `retry_after_seconds`.
 
 **E. UX (`src/pages/Ask.tsx`)**
-- Button shows live countdown (`Wait 45s (free tier)`).
+- Button shows live countdown (`Wait Ns (free tier)`).
 - Dedicated toast title for rate-limit errors.
 
-**F. Glycemic deferral (`src/lib/glycemic.ts`)**
-- Waits for client cooldown before calling `estimate-glycemic`.
-- Marks Gemini call after successful invoke.
+**F. Glycemic — local heuristics (`src/lib/glycemic.ts`)**
+- Keyword-based GL estimates (rice/pasta/salad/grilled rules) — **no live Gemini on free tier**.
+- Optional live `estimate-glycemic` only when `VITE_GLYCEMIC_LIVE=true` and cooldown clear.
 
 #### Validation
 

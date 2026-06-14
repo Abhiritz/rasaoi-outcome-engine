@@ -57,16 +57,18 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 **Branch:** `feature/agentic-generation-loop`
 
-- [x] Switch default edge model to `gemini-2.0-flash-lite` (`_shared/ai-client.ts`) — higher free RPM; optional `GEMINI_MODEL` override
-- [x] Server retry on 429: up to 2 retries with 2.5s backoff; `Retry-After: 45` header from `parse-intent`
+- [x] Default edge model `gemini-2.0-flash` with model fallback chain (`_shared/ai-client.ts`); optional `GEMINI_MODEL` override
+- [x] **Fail fast on 429** — no retry storms or multi-model cycling when rate-limited (was causing up to 9 Gemini calls per click)
 - [x] Reduce agent payload: 3 restaurants × 2–3 menu items (lower token cost per call)
-- [x] Client cooldown module `src/lib/rateLimit.ts` — 45s between live Gemini calls
+- [x] Client cooldown `src/lib/rateLimit.ts` — **60s** between live Gemini calls; **90s penalty** after a 429 (`markGeminiRateLimited`)
 - [x] Transcript cache in `intent.ts` — identical query within 15 min skips API call
+- [x] Parse `FunctionsHttpError` response body — Ask toast shows real server message (not generic non-2xx)
 - [x] `Ask.tsx` cooldown countdown + friendly `RateLimitError` toast
-- [x] `glycemic.ts` defers `estimate-glycemic` until client cooldown clears (avoids back-to-back Gemini hits)
+- [x] **Blood-sugar lens: local GL heuristics** in `glycemic.ts` — no live `estimate-glycemic` on free tier (opt-in via `VITE_GLYCEMIC_LIVE=true`)
 - [x] Deploy `parse-intent` to personal Supabase (`kiugplotjcnmpwjlxajc`)
 - [x] Log in `CONFLICT_RESOLUTION_REPORTS.md` (RL-001)
 - [x] Publish client handover in `handover-report.html`
+- [x] Document free-tier usage in `README.md`
 
 ---
 
@@ -154,8 +156,8 @@ This file is designed as a portable summary so the system can be reasoned about 
   - Hero + alternates implemented via `HeroCard` and `MiniCard`.
 
 - [x] **Blood‑sugar / glycemic lens (simulated FR‑06)**
-  - Client: `src/lib/glycemic.ts`.
-  - Edge: `supabase/functions/estimate-glycemic`.
+  - Client: `src/lib/glycemic.ts` — **local keyword heuristics** on free tier (no extra Gemini call).
+  - Edge: `supabase/functions/estimate-glycemic` — optional live path when `VITE_GLYCEMIC_LIVE=true`.
   - Integrated into `Index.tsx` sort and hero/alternates GL badges + carrier swaps.
 
 - [x] **Flash promo economic response (FR‑05)**
