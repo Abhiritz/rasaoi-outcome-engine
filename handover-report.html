@@ -44,9 +44,9 @@
           class="bg-sky-500/30 border border-sky-300/50 text-sky-100 px-3 py-1 rounded-full font-semibold hover:bg-sky-500/40 transition">
           Deployment Live → rasaoi-delta.vercel.app
         </a>
-        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Report generated: 27 May 2026</span>
-        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Items logged: 5</span>
-        <span class="bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 px-3 py-1 rounded-full font-semibold">Billing-free dev: ACTIVE</span>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Report generated: 11 Jun 2026</span>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Items logged: 6</span>
+        <span class="bg-violet-500/20 border border-violet-300/40 text-violet-100 px-3 py-1 rounded-full font-semibold">Branch: feature/agentic-generation-loop</span>
       </div>
     </div>
   </header>
@@ -78,11 +78,11 @@
       <article class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
         <div class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">DIE-001</p>
-            <h2 class="font-serif text-2xl text-rasaoi mt-1">Hard-Exclusion Gate for Strict Dietary Restrictions</h2>
+            <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">ARCH-001</p>
+            <h2 class="font-serif text-2xl text-rasaoi mt-1">Pure Agentic Generation Loop</h2>
           </div>
-          <span class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
-            Resolved
+          <span class="inline-flex items-center gap-1.5 bg-violet-100 text-violet-900 border border-violet-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
+            In Progress
           </span>
         </div>
 
@@ -90,51 +90,49 @@
           <div class="bg-amber-50 border-l-4 border-rasaoi-gold px-4 py-3 rounded-r-lg">
             <p class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-1">Client summary</p>
             <p class="text-stone-700 leading-relaxed">
-              When a guest has a <strong>strict religious or lifestyle diet</strong> — for example <em>"my friend is a Jain, it is his birthday"</em> — Rasaoi enforces a <strong>zero-tolerance safety gate at every layer</strong>. Non-compliant dishes are removed before scoring <em>and</em> from every nested recommendation slot (hero + alternates + triple-outcome arrays). Dal Tadka, Tandoori Chicken, and other violators cannot slip through cuisine-bank fallbacks. Birthday context never overrides Jain rules.
+              Rasaoi has pivoted from erratic database and mock-file lookups to a <strong>Pure Agentic Generation Loop</strong>. Veda (Gemini) now synthesizes the entire recommendation — restaurants, menus, prices, match scores, and context-aware descriptions — in one call. Jain queries receive explicitly compliant synthetic venues; Thai queries receive purely Thai instances; birthday and wellness context is woven into every description. No Dal Tadka or Tandoori Chicken can leak from stale fixture fallbacks.
             </p>
           </div>
 
           <div class="grid sm:grid-cols-3 gap-4 text-sm">
             <div class="border border-stone-200 rounded-lg p-4">
-              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Date resolved</p>
-              <p class="font-semibold text-rasaoi">27 May 2026</p>
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Date started</p>
+              <p class="font-semibold text-rasaoi">11 Jun 2026</p>
             </div>
             <div class="border border-stone-200 rounded-lg p-4">
-              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Status</p>
-              <p class="font-semibold text-emerald-700">RESOLVED</p>
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Git branch</p>
+              <p class="font-semibold text-violet-800 font-mono text-xs">feature/agentic-generation-loop</p>
             </div>
             <div class="border border-stone-200 rounded-lg p-4">
               <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Impact area</p>
-              <p class="font-semibold text-rasaoi">Intent parsing &amp; recommendation safety</p>
+              <p class="font-semibold text-rasaoi">Core recommendation architecture</p>
             </div>
           </div>
         </div>
       </article>
 
       <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-6">
-        <h3 class="font-serif text-xl text-rasaoi border-b border-stone-100 pb-3 mb-4">Gatekeeper architecture</h3>
+        <h3 class="font-serif text-xl text-rasaoi border-b border-stone-100 pb-3 mb-4">New pipeline</h3>
         <ul class="list-disc pl-5 space-y-2 text-sm text-stone-700">
-          <li><strong>Intent layer</strong> — <code class="bg-stone-100 px-1 rounded text-xs">parse-intent</code> extracts <code class="bg-stone-100 px-1 rounded text-xs">filters.dietary</code> (jain, vegan, halal, kosher); celebratory keywords only raise <code class="bg-stone-100 px-1 rounded text-xs">dials.context</code>, never erase dietary rules.</li>
-          <li><strong>Transcript guard</strong> — server-side regex cross-check ensures Jain/vegan/halal/kosher mentions survive even if the LLM omits them.</li>
-          <li><strong>Veda gatekeeper</strong> — <code class="bg-stone-100 px-1 rounded text-xs">passesStrictDietaryGate()</code> runs on each venue's dish blob; violators are dropped before any score math.</li>
-          <li><strong>Nested array gate</strong> — <code class="bg-stone-100 px-1 rounded text-xs">buildTripleOutcome()</code> filters every dish slot; Jain bank replaces generic Indian fallbacks; ambiguous dishes (Dal Tadka) blocked unless explicitly Jain.</li>
-          <li><strong>Mock fixtures</strong> — Full <code class="bg-stone-100 px-1 rounded text-xs">menu_items</code> arrays with explicit ingredient keywords; Jain kitchens carry Jain Paneer Tikka, Jain Dal Makhani, Fresh Fruit Salad.</li>
+          <li><strong>Ask Veda</strong> → user transcript sent to <code class="bg-stone-100 px-1 rounded text-xs">parse-intent</code> edge function.</li>
+          <li><strong>Gemini generates</strong> → 5 synthetic restaurants with full <code class="bg-stone-100 px-1 rounded text-xs">menu_items</code>, <code class="bg-stone-100 px-1 rounded text-xs">match_score</code>, and constraint-aware <code class="bg-stone-100 px-1 rounded text-xs">why</code> text.</li>
+          <li><strong>Veda pass-through</strong> → <code class="bg-stone-100 px-1 rounded text-xs">veda.ts</code> maps agent JSON to UI types — no token scoring, no mock lookup.</li>
+          <li><strong>Reading page</strong> → renders agent payload from session; Supabase restaurant fetch and Google Places search bypassed.</li>
         </ul>
       </section>
 
-      <section class="bg-rose-50 border border-rose-200 rounded-xl p-6">
-        <h3 class="font-serif text-xl text-rose-900 mb-2">Jain conflict — before vs after</h3>
+      <section class="bg-violet-50 border border-violet-200 rounded-xl p-6">
+        <h3 class="font-serif text-xl text-violet-900 mb-2">Before vs after</h3>
         <div class="grid sm:grid-cols-2 gap-4 text-sm">
           <div class="bg-white border border-rose-100 rounded-lg p-4">
             <p class="text-xs uppercase tracking-wider text-rose-600 font-semibold mb-2">Before</p>
-            <p class="text-stone-700">Query: <em>"my friend is a jain, it is his birthday"</em> → Tandoori Chicken ranked first (high context + Indian purity boosts).</p>
+            <p class="text-stone-700">Intent parser → DB/mock lookup → token scoring → cuisine-bank fallbacks. Mixed Jain + birthday queries broke across layers.</p>
           </div>
           <div class="bg-white border border-emerald-200 rounded-lg p-4">
             <p class="text-xs uppercase tracking-wider text-emerald-700 font-semibold mb-2">After</p>
-            <p class="text-stone-700">Same query → Tandoori and Dal Tadka excluded at every layer; all three outcome slots show Jain-compliant dishes only (Jain Paneer Tikka, Jain Dal Makhani, Fresh Fruit Salad).</p>
+            <p class="text-stone-700">Single Gemini call generates fully compliant synthetic restaurants. Semantic constraints enforced at generation time.</p>
           </div>
         </div>
-        <code class="block mt-4 bg-white border border-rose-200 rounded px-3 py-2 text-xs text-stone-700">npm test -- --run → 15 passed (veda + pairings nested leak tests)</code>
       </section>
     </div>
 
@@ -157,6 +155,15 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-stone-100" id="history-body">
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">ARCH-001</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Pure Agentic Generation Loop</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-06-11</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-violet-100 text-violet-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-violet-300">In progress</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">Gemini synthesizes full restaurant payload; DB/mock lookup bypassed on feature branch.</td>
+              </tr>
               <tr class="hover:bg-stone-50">
                 <td class="px-4 py-3 font-mono text-xs text-stone-500">DIE-001</td>
                 <td class="px-4 py-3 font-medium text-rasaoi">Hard-exclusion gate for strict dietary restrictions</td>
@@ -212,7 +219,7 @@
       <!-- Summary cards for history tab -->
       <div class="grid sm:grid-cols-3 gap-4">
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
-          <p class="text-3xl font-serif text-rasaoi font-bold">5</p>
+          <p class="text-3xl font-serif text-rasaoi font-bold">6</p>
           <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">Total logged</p>
         </div>
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">

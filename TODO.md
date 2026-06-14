@@ -34,6 +34,25 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## ARCH-001: Pivot from database filtering to Pure Agentic Generation Loop
+
+**Branch:** `feature/agentic-generation-loop`
+
+- [x] Git isolation: create `feature/agentic-generation-loop` branch from clean `main`
+- [x] Rewrite `parse-intent/index.ts` — Dynamic Response Generator (Gemini synthesizes 5 UI-ready restaurants + menus)
+- [x] Semantic engineering in SYSTEM_PROMPT: Jain / Thai / wellness / event context rules baked into generation
+- [x] Server-side Jain post-filter on generated restaurants before response
+- [x] Refactor `src/lib/veda.ts` — pass-through router (`mapAgentRestaurantsToScored`, `resolveAgenticOutcomes`); legacy scoring removed
+- [x] Refactor `src/lib/intent.ts` — store `scored_restaurants` + `generation_mode: agentic` in session
+- [x] Refactor `src/pages/Index.tsx` — bypass Supabase restaurant fetch + Google Places lookup; render agent payload directly
+- [x] Update `veda.test.ts` for pass-through mapping tests
+- [ ] **Follow-up:** Re-invoke agent when user adjusts dials on Reading page (currently display-only pass-through)
+- [ ] **Follow-up:** Merge `feature/agentic-generation-loop` → `main` after QA sign-off
+- [x] Log in `CONFLICT_RESOLUTION_REPORTS.md` (ARCH-001)
+- [x] Publish client handover in `handover-report.html`
+
+---
+
 ## DIE-001: Hard-exclusion gate for strict dietary restrictions (Jain / Vegan / Halal / Kosher)
 
 - [x] Extend `parse-intent` SYSTEM_PROMPT: `STRICT DIETARY RULES` block — extract `filters.dietary` (`jain`, `vegan`, `halal`, `kosher`); birthday/celebration must not override

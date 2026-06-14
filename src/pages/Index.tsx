@@ -5,15 +5,13 @@ import { Dial } from "@/components/Dial";
 import { HeroCard } from "@/components/HeroCard";
 import { MiniCard } from "@/components/MiniCard";
 import { CuisineFilter } from "@/components/CuisineFilter";
-import { RestaurantSearch } from "@/components/RestaurantSearch";
 import { MitraPact } from "@/components/MitraPact";
 import { VitalityPanel } from "@/components/VitalityPanel";
 import { CheckinBanner } from "@/components/CheckinBanner";
 import { IntentPill } from "@/components/IntentPill";
-import { searchPlaces } from "@/lib/google-places";
-import { scoreRestaurants, type DialState, type Restaurant, type Promo, type ScoredRestaurant } from "@/lib/veda";
-import { loadTwin, getBloodSugarLens, setBloodSugarLens } from "@/lib/memory";
-import { loadIntent, clearIntent, findRestaurantByName, type ParsedIntent } from "@/lib/intent";
+import { resolveAgenticOutcomes, type DialState, type Promo, type ScoredRestaurant } from "@/lib/veda";
+import { getBloodSugarLens, setBloodSugarLens } from "@/lib/memory";
+import { loadIntent, clearIntent, type ParsedIntent } from "@/lib/intent";
 import { estimateGlycemic, type GLEstimate } from "@/lib/glycemic";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ArrowLeft, Info, Droplet } from "lucide-react";
@@ -21,15 +19,12 @@ import { ArrowLeft, Info, Droplet } from "lucide-react";
 const Index = () => {
   const navigate = useNavigate();
   const [intent, setIntent] = useState<ParsedIntent | null>(null);
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [agenticScored, setAgenticScored] = useState<ScoredRestaurant[]>([]);
   const [promos, setPromos] = useState<Promo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [pageTokens, setPageTokens] = useState<Record<string, string>>({});
   const [vitality, setVitality] = useState<number | null>(loadTwin().last_vitality_score ?? null);
   const [heroIdOverride, setHeroIdOverride] = useState<string | null>(null);
   const [cuisineFilter, setCuisineFilter] = useState<string | null>(null);
-  const [pinnedId, setPinnedId] = useState<string | null>(null);
   const [dials, setDials] = useState<DialState>({
     energy: 50,
     context: 40,
@@ -48,6 +43,7 @@ const Index = () => {
       return;
     }
     setIntent(i);
+    setAgenticScored(resolveAgenticOutcomes(i.scored_restaurants ?? []));
     document.title = "Rasaoi — Veda's Reading";
     // Auto-flip blood-sugar lens if the AI detected the signal.
     if (i.lens === "blood_sugar" && !getBloodSugarLens()) {
@@ -79,51 +75,19 @@ const Index = () => {
     return () => cancelAnimationFrame(raf);
   }, [navigate]);
 
-  const fetchLive = async (tokens?: Record<string, string>) => {
-    try {
-      const result = await searchPlaces({ pageTokens: tokens ?? {} });
-      return {
-        restaurants: result.restaurants,
-        nextPageTokens: result.nextPageTokens,
-      };
-    } catch (error) {
-      console.error("places-search error:", error);
-      return { restaurants: [] as Restaurant[], nextPageTokens: {} as Record<string, string> };
-    }
-  };
-
   useEffect(() => {
     (async () => {
-      const [rRes, pRes] = await Promise.all([
-        supabase.from("restaurants").select("*"),
-        supabase.from("active_promos").select("*"),
-      ]);
-      // Only surface restaurants whose menus we've actually parsed
-      // (menu_items is populated by the ingest pipeline from the dishes table).
-      const parsedOnly = (rRes.data ?? []).filter(
-        (r) => Array.isArray(r.menu_items) && r.menu_items.length > 0,
-      );
-      setRestaurants(parsedOnly);
+      const pRes = await supabase.from("active_promos").select("*");
       setPromos(pRes.data ?? []);
-      setPageTokens({});
       setLoading(false);
     })();
   }, []);
 
-  const loadMore = async () => {
-    // Disabled: we only surface restaurants with parsed menus.
-    setLoadingMore(false);
-  };
-
-  const twin = useMemo(
-    () => ({ ...loadTwin(), last_vitality_score: vitality ?? undefined }),
-    [vitality, restaurants],
-  );
   const cuisineOptions = useMemo(() => {
     const set = new Set<string>();
-    restaurants.forEach((r) => r.cuisine && set.add(r.cuisine));
+    agenticScored.forEach((s) => s.restaurant.cuisine && set.add(s.restaurant.cuisine));
     return Array.from(set).sort();
-  }, [restaurants]);
+  }, [agenticScored]);
 
   // Soft cuisine boost from intent: do NOT hard-filter — just remember the
   // hint so we can rank matches first and show "Showing Indian first".
@@ -136,11 +100,11 @@ const Index = () => {
   // Does any parsed menu actually contain the requested dish?
   const dishMatchCount = useMemo(() => {
     const wanted = intent?.filters?.dish?.toLowerCase().trim();
-    if (!wanted || restaurants.length === 0) return null;
+    if (!wanted || agenticScored.length === 0) return null;
     const tokens = wanted.split(/\s+/).filter((t) => t.length >= 3);
     if (!tokens.length) return null;
     let n = 0;
-    for (const r of restaurants) {
+    for (const { restaurant: r } of agenticScored) {
       const menu = Array.isArray(r.menu_items) ? (r.menu_items as { name?: string; description?: string }[]) : [];
       const hit = menu.some((m) => {
         const blob = ((m?.name ?? "") + " " + (m?.description ?? "")).toLowerCase();
@@ -149,26 +113,18 @@ const Index = () => {
       if (hit) n++;
     }
     return n;
-  }, [intent, restaurants]);
+  }, [intent, agenticScored]);
 
   const glOrder: Record<string, number> = { low: 0, med: 1, high: 2 };
 
   const scored = useMemo(() => {
-    const all = scoreRestaurants(
-      restaurants,
-      dials,
-      promos,
-      twin,
-      intent?.filters?.dish,
-      intent?.filters?.cuisine,
-      intent?.filters?.wellness_tags,
-      intent?.filters?.dietary,
-    );
-    const filtered = cuisineFilter ? all.filter((s) => s.restaurant.cuisine === cuisineFilter) : all;
+    const all = resolveAgenticOutcomes(agenticScored, dials, promos);
+    const filtered = cuisineFilter
+      ? all.filter((s) => s.restaurant.cuisine === cuisineFilter)
+      : all;
     const needsSort = (!cuisineFilter && intentCuisine) || lens;
     if (!needsSort) return filtered;
     return [...filtered].sort((a, b) => {
-      // Blood-sugar lens: low GL first (unknown treated as med).
       if (lens) {
         const aGL = glMap[a.restaurant.signature_dish?.toLowerCase() ?? ""]?.glycemic_load;
         const bGL = glMap[b.restaurant.signature_dish?.toLowerCase() ?? ""]?.glycemic_load;
@@ -176,7 +132,6 @@ const Index = () => {
         const bR = bGL ? glOrder[bGL] : 1;
         if (aR !== bR) return aR - bR;
       }
-      // Then cuisine match if applicable.
       if (!cuisineFilter && intentCuisine) {
         const aMatch = a.restaurant.cuisine === intentCuisine ? 1 : 0;
         const bMatch = b.restaurant.cuisine === intentCuisine ? 1 : 0;
@@ -184,22 +139,12 @@ const Index = () => {
       }
       return b.score - a.score;
     });
-  }, [restaurants, dials, promos, twin, cuisineFilter, intentCuisine, lens, glMap]);
+  }, [agenticScored, dials, promos, cuisineFilter, intentCuisine, lens, glMap]);
 
   // When lens is on, estimate GL for top-N visible signature dishes.
   useEffect(() => {
     if (!lens) return;
-    const all = scoreRestaurants(
-      restaurants,
-      dials,
-      promos,
-      twin,
-      intent?.filters?.dish,
-      intent?.filters?.cuisine,
-      intent?.filters?.wellness_tags,
-      intent?.filters?.dietary,
-    );
-    const topRestaurants = all.slice(0, 8).map((s) => s.restaurant);
+    const topRestaurants = agenticScored.slice(0, 8).map((s) => s.restaurant);
     const dishes = topRestaurants
       .filter((r) => r.signature_dish)
       .map((r) => ({ name: r.signature_dish!, cuisine: r.cuisine }));
@@ -215,79 +160,18 @@ const Index = () => {
       setGlMap((prev) => ({ ...prev, ...keyed }));
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lens, restaurants.length]);
+  }, [lens, agenticScored.length]);
 
-
-  // Reset override whenever the dial-driven ranking or filter changes
+  // ARCH-001: named-restaurant Places lookup disabled — agent generates all venues.
   useEffect(() => {
     setHeroIdOverride(null);
   }, [dials, vitality, cuisineFilter]);
 
-  // Active named-restaurant fetch: if intent names a restaurant we don't have,
-  // call places-search by name and merge the result, then auto-pin it.
-  const [nameLookupBusy, setNameLookupBusy] = useState(false);
-  const [nameLookupFailed, setNameLookupFailed] = useState(false);
-  const nameLookupTriedRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    const wanted = intent?.filters?.restaurant?.trim();
-    if (!wanted || restaurants.length === 0 || pinnedId) return;
-    if (nameLookupTriedRef.current === wanted.toLowerCase()) return;
-
-    const local = restaurants.find((r) => r.name.toLowerCase().includes(wanted.toLowerCase()));
-    if (local) {
-      setPinnedId(local.id);
-      nameLookupTriedRef.current = wanted.toLowerCase();
-      return;
-    }
-    // Not local — go fetch it.
-    nameLookupTriedRef.current = wanted.toLowerCase();
-    setNameLookupBusy(true);
-    setNameLookupFailed(false);
-    findRestaurantByName(wanted)
-      .then((found) => {
-        if (!found.length) {
-          setNameLookupFailed(true);
-          return;
-        }
-        // Pick the closest name match.
-        const best =
-          found.find((r) => r.name.toLowerCase().includes(wanted.toLowerCase())) ?? found[0];
-        const seen = new Set(restaurants.map((r) => r.id));
-        const fresh = found.filter((r) => !seen.has(r.id));
-        if (fresh.length) setRestaurants((prev) => [...prev, ...fresh]);
-        setPinnedId(best.id);
-      })
-      .catch((err) => {
-        console.error("name lookup failed:", err);
-        setNameLookupFailed(true);
-      })
-      .finally(() => setNameLookupBusy(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [intent, restaurants.length]);
-
-  // Determine hero (pinned restaurant > user override > top-scored)
+  // Determine hero (user override > top agentic match)
   let hero: ScoredRestaurant | null = null;
   let alternates: ScoredRestaurant[] = [];
 
-  if (pinnedId) {
-    // Score the pinned restaurant against current dials regardless of cuisine filter
-    const pinnedRestaurant = restaurants.find((r) => r.id === pinnedId);
-    if (pinnedRestaurant) {
-      const pinnedScored = scoreRestaurants(
-        [pinnedRestaurant],
-        dials,
-        promos,
-        twin,
-        intent?.filters?.dish,
-        intent?.filters?.cuisine,
-        intent?.filters?.wellness_tags,
-        intent?.filters?.dietary,
-      )[0];
-      if (pinnedScored) hero = pinnedScored;
-    }
-    alternates = [];
-  } else if (scored.length > 0) {
+  if (scored.length > 0) {
     if (heroIdOverride) {
       const found = scored.find((s) => s.restaurant.id === heroIdOverride);
       if (found) {
@@ -297,19 +181,7 @@ const Index = () => {
     }
     if (!hero) {
       hero = scored[0];
-      alternates = scored.slice(1);
-    }
-
-    // Guarantee at least 2 live (Google Places) results are visible alongside curated picks.
-    const TOP_N = 6;
-    const isLive = (s: ScoredRestaurant) => s.restaurant.id.startsWith("live:");
-    const top = alternates.slice(0, TOP_N);
-    if (!top.some(isLive)) {
-      const liveExtras = alternates.filter(isLive).slice(0, 2);
-      const curatedKeep = top.slice(0, Math.max(0, TOP_N - liveExtras.length));
-      alternates = [...curatedKeep, ...liveExtras];
-    } else {
-      alternates = top;
+      alternates = scored.slice(1, 7);
     }
   }
 
@@ -366,20 +238,15 @@ const Index = () => {
 
         {intent && <IntentPill intent={intent} />}
 
-        {nameLookupBusy && intent?.filters?.restaurant && (
-          <div className="text-[11px] uppercase tracking-[0.25em] text-gold/80 italic flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-            Finding "{intent.filters.restaurant}" on the map…
+        {intent?.generation_mode === "agentic" && (
+          <div className="rounded-sm border border-gold/30 bg-gold/5 px-4 py-3 text-sm">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-gold font-semibold">Agentic generation</span>
+            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+              Veda synthesized these restaurants and menus directly from your request — no database lookup.
+            </p>
           </div>
         )}
-        {nameLookupFailed && intent?.filters?.restaurant && (
-          <div className="rounded-sm border border-border/70 bg-card px-4 py-3 text-sm">
-            <span className="text-foreground/80">
-              Veda couldn't find <span className="serif italic text-primary">"{intent.filters.restaurant}"</span> nearby.
-            </span>{" "}
-            <span className="text-muted-foreground">Showing aligned alternatives instead — or refine below.</span>
-          </div>
-        )}
+
         {!loading && intent?.filters?.dish && dishMatchCount === 0 && (
           <div className="rounded-sm border border-border/70 bg-card px-4 py-3 text-sm">
             <span className="text-foreground/80">
@@ -410,7 +277,7 @@ const Index = () => {
                       <span className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground font-semibold">
                         Other Outcomes
                       </span>
-                      {intentCuisine && !cuisineFilter && !pinnedId && (
+                      {intentCuisine && !cuisineFilter && (
                         <span className="text-[10px] uppercase tracking-[0.2em] text-gold bg-gold/10 border border-gold/30 px-2 py-0.5 rounded-sm font-semibold">
                           Showing {intentCuisine} first
                         </span>
@@ -437,17 +304,6 @@ const Index = () => {
                     {/* Right-edge scroll affordance */}
                     <div className="pointer-events-none absolute right-0 top-0 bottom-3 w-10 bg-gradient-to-l from-background to-transparent" />
                   </div>
-                  {Object.keys(pageTokens).length > 0 && (
-                    <div className="flex justify-center mt-4">
-                      <button
-                        onClick={loadMore}
-                        disabled={loadingMore}
-                        className="text-[11px] uppercase tracking-[0.25em] text-gold border border-gold/40 px-5 py-2 rounded-sm hover:bg-gold/10 transition-elegant disabled:opacity-50"
-                      >
-                        {loadingMore ? "Scanning the map…" : "See more outcomes"}
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
             </>
@@ -488,13 +344,11 @@ const Index = () => {
                 hint="Standard · Natural · Good for you — ghee, cold-pressed, seed-oil free." />
             </section>
 
-            {!pinnedId && (
-              <CuisineFilter
-                value={cuisineFilter}
-                options={cuisineOptions}
-                onChange={setCuisineFilter}
-              />
-            )}
+            <CuisineFilter
+              value={cuisineFilter}
+              options={cuisineOptions}
+              onChange={setCuisineFilter}
+            />
 
             {/* Blood-sugar lens */}
             <div className="flex items-center justify-between gap-3 flex-wrap rounded-sm border border-border/60 bg-card px-4 py-3">
@@ -528,17 +382,6 @@ const Index = () => {
                 {lens ? "On" : "Turn on"}
               </button>
             </div>
-
-            <RestaurantSearch
-              restaurants={restaurants}
-              pinnedId={pinnedId}
-              onPin={setPinnedId}
-              onIngest={(found) => {
-                const seen = new Set(restaurants.map((r) => r.id));
-                const fresh = found.filter((r) => !seen.has(r.id));
-                if (fresh.length) setRestaurants([...restaurants, ...fresh]);
-              }}
-            />
 
             <VitalityPanel onChange={setVitality} />
           </div>

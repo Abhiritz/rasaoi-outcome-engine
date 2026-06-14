@@ -7,8 +7,8 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 |-------|-------|
 | **Product** | Rasaoi Outcome Engine |
 | **Maintainer** | Engineering / CTO |
-| **Last updated** | 2026-05-27 |
-| **Total resolutions** | 5 (2 CRS + 1 DIE + 1 MIG + 1 DEV) |
+| **Last updated** | 2026-06-11 |
+| **Total resolutions** | 6 (2 CRS + 1 DIE + 1 ARCH + 1 MIG + 1 DEV) |
 
 ---
 
@@ -16,11 +16,64 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 
 | ID | Title | Date | Status |
 |----|-------|------|--------|
-| [DIE-001](#die-001-hard-exclusion-gate-for-strict-dietary-restrictions) | Hard-exclusion gate for strict dietary restrictions | 2026-05-27 | RESOLVED |
+| [ARCH-001](#arch-001-pivot-to-pure-agentic-generation-loop) | Pivot to Pure Agentic Generation Loop | 2026-06-11 | IN PROGRESS |
+| [DIE-001](#die-001-hard-exclusion-gate-for-strict-dietary-restrictions) | Hard-exclusion gate for strict dietary restrictions | 2026-05-27 | SUPERSEDED (ARCH-001) |
 | [DEV-003](#dev-003-zero-billing-google-places-api-mocking-layer) | Zero-billing Google Places API mocking layer | 2026-05-27 | RESOLVED |
 | [MIG-001](#mig-001-independent-supabase-migration-with-upstream-lovable-sync) | Independent Supabase migration with upstream Lovable sync | 2026-05-27 | IN PROGRESS |
 | [CRS-002](#crs-002-conceptual-health-filters-overridden-by-baseline-cultural-bias) | Conceptual health filters overridden by baseline cultural bias | 2026-05-27 | RESOLVED |
 | [CRS-001](#crs-001-explicit-cuisine-intent-mis-routed-to-indian-options) | Explicit cuisine intent mis-routed to Indian options | 2026-05-27 | RESOLVED |
+
+---
+
+## ARCH-001: Pivot to Pure Agentic Generation Loop
+
+- **Client-Facing Summary**: Rasaoi no longer relies on erratic database lookups, mock fixture matching, or token-scoring heuristics for mixed semantic queries (Jain + birthday + desi + wellness). Veda now **generates** the complete recommendation payload — restaurants, menus, prices, and context-aware descriptions — in a single Gemini call. Jain queries receive explicitly compliant synthetic venues; Thai queries receive purely Thai instances; celebratory context is woven into descriptions.
+- **Date Started**: 2026-06-11
+- **Status**: IN PROGRESS (branch `feature/agentic-generation-loop`)
+- **Branch**: `feature/agentic-generation-loop` (isolated from `main`)
+
+### 1. Technical Root Cause Analysis
+
+#### Problem
+- Multi-constraint queries (Jain dietary + birthday + cultural tags) broke across layers: intent parser → DB/mock lookup → Veda token scoring → pairings cuisine banks.
+- Each layer could partially apply constraints while downstream layers re-introduced violators (e.g. Dal Tadka via `CUISINE_BANKS.Indian` fallback).
+- Mock Places and Supabase restaurant tables could not reliably encode every semantic intersection.
+
+#### Architectural Pivot
+
+| Before | After (ARCH-001) |
+|--------|------------------|
+| `parse-intent` → dials + filters only | `parse-intent` → **full UI payload** (dials + filters + 5 synthetic restaurants) |
+| Supabase + Google Places + mock JSON lookup | **No lookup** — Gemini generates venues |
+| `veda.ts` token scoring / dietary gates | `veda.ts` **pass-through** (`mapAgentRestaurantsToScored`) |
+| `Index.tsx` merges DB + live Places | `Index.tsx` renders `intent.scored_restaurants` from session |
+
+### 2. Implementation
+
+**A. Dynamic Response Generator (`parse-intent/index.ts`)**
+- New tool: `generate_dining_response`
+- SYSTEM_PROMPT instructs Gemini to synthesize 5 restaurants with full `menu_items`, `match_score`, `why`, and constraint-aware descriptions.
+- Jain / Vegan / Halal / Kosher / Thai / wellness rules embedded in generation instructions.
+- Lightweight server Jain post-filter strips violators before response.
+
+**B. Veda pass-through router (`src/lib/veda.ts`)**
+- Removed legacy scoring loops, mock filter hooks, wellness intersection matrix.
+- `mapAgentRestaurantsToScored()` + `resolveAgenticOutcomes()` pass agent output unchanged to UI.
+
+**C. Frontend pipeline (`intent.ts`, `Index.tsx`)**
+- `parseIntent()` stores `scored_restaurants` + `generation_mode: "agentic"` in session v2.
+- Reading page bypasses Supabase restaurant fetch and Places search.
+
+### 3. Validation
+
+```text
+npm test -- --run src/lib/veda.test.ts
+npm run build
+```
+
+### 4. Follow-ups
+- Re-generate on dial adjustment (currently pass-through display).
+- Merge branch after QA on Jain, Thai, and wellness intersection queries.
 
 ---
 

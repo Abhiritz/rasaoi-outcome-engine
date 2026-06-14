@@ -1,5 +1,5 @@
-// Veda Intent Parser — turns a spoken/typed request into dials + filters.
-// Uses native Google Gemini API with tool-calling for reliable structured output.
+// Veda Dynamic Response Generator — Pure Agentic Generation Loop (ARCH-001)
+// Gemini generates the complete UI-ready payload: dials, filters, and synthetic restaurants.
 
 import { DEFAULT_GEMINI_MODEL, geminiToolCall } from "../_shared/ai-client.ts";
 
@@ -9,90 +9,70 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are Veda, the reasoning engine for Rasaoi — a premium "System of Outcome" for dining.
-You translate a diner's natural-language request into structured dial values and filters.
+const SYSTEM_PROMPT = `You are Veda, the Dynamic Response Generator for Rasaoi — a premium "System of Outcome" for dining.
+
+Your job is NOT to parse intent for a database lookup. You MUST synthesize a complete, UI-ready JSON response:
+- Dial values reflecting the user's energy, social context, budget, and purity preferences
+- Structured filters extracted from the utterance
+- Exactly 5 unique synthetic restaurants with full menu_items, prices, context-aware descriptions, and match scores
+
+GENERATION RULES (MANDATORY):
+
+1. JAIN / STRICT DIETARY
+If the query mentions Jain, ahimsa, or strict Jain dietary rules:
+- Generate exactly 5 unique Indian restaurants where EVERY dish is 100% free of meat, poultry, seafood, eggs, onion, garlic, and root vegetables (potato, carrot, etc.).
+- Every restaurant name, signature_dish, menu item name, and description MUST explicitly state Jain compliance (e.g. "Jain Paneer Tikka — no onion, no garlic, ahimsa kitchen").
+- NEVER output Dal Tadka, Tandoori Chicken, Butter Chicken, or any standard dish unless prefixed with "Jain" and described as onion-garlic-free.
+- Weave birthday/celebration context naturally into descriptions when present.
+
+2. VEGAN / HALAL / KOSHER
+Apply the same zero-tolerance rule: every generated dish must comply; descriptions must state compliance explicitly.
+
+3. CUISINE PURITY
+- If the user asks for "Thai", generate ONLY Thai culinary instances (Pad Thai, Tom Yum, etc.) — no Indian defaults.
+- If "Italian", generate only Italian instances. Never cross-contaminate cuisines unless the user explicitly asks for fusion.
+
+4. WELLNESS + CULTURE INTERSECTION
+- "raw and fresh, gut friendly, desi" → generate light Indian options (sprout chaat, cucumber raita, moong dal) NOT heavy tandoori/korma.
+- Cultural tags (desi) affect cuisine and description tone, not heavy default dishes.
+
+5. MOOD & EVENT CONTEXT
+- Birthday, anniversary, date night, "for my friend" → raise context dial and weave celebratory language into restaurant descriptions and why fields.
+
+6. RESTAURANT OBJECT REQUIREMENTS (each of 5)
+- name: unique, plausible local restaurant name
+- cuisine: canonical Title Case
+- price_tier: 1-4 integer
+- purity_tier: "satellite" | "conscious" | "sovereign"
+- oil_profile: "standard" | "cold-pressed" | "seed-oil-free"
+- signature_dish: hero dish matching all constraints
+- dish_outcome: short outcome phrase for the signature
+- description: 1-2 sentences, context-aware (mentions Jain/birthday/wellness when relevant)
+- menu_items: array of 3-5 objects, each with name, description (ingredient-explicit), price_usd (number)
+- match_score: 0-100 integer (rank #1 highest)
+- why: warm 1-sentence explanation for this match
+- inference_tags: array of 2-4 short tags (e.g. "Jain compliant", "Celebratory", "Gut-friendly")
+- energy_tags, context_tags: arrays of relevant slugs
 
 DIAL SCALE (each 0-100):
-- energy: 0 = exhausted/sick/low recovery, 50 = moderate, 100 = peak/energized
-- context: 0 = solo/quick/fuel, 50 = casual social, 100 = celebratory/date/family event
-- budget: 0 = strict ~$25 ceiling, 50 = ~$50, 100 = unlimited splurge
-- purity: 0 = standard (anything goes), 50 = natural/conscious, 100 = sovereign (seed-oil-free, cold-pressed, ancient grains, anti-inflammatory)
+- energy: 0 exhausted → 100 peak
+- context: 0 solo/quick → 100 celebratory
+- budget: 0 ~$25 → 100 unlimited
+- purity: 0 standard → 100 sovereign
 
-MAPPING RULES:
-- "not feeling good", "tired", "off", "sick", "exhausted", "low energy" → energy 10-25, purity 75-90 (lean clean & restorative)
-- "great", "energized", "peak", "after workout" → energy 75-95
-- "date night", "celebrating", "anniversary", "family dinner" → context 80-95
-- "quick", "alone", "grab something", "in a rush" → context 5-20
-- "healthy", "clean", "good for me", "organic" → purity 75-90
-- "indulgent", "treat", "comfort food" → purity 20-40
-- "diabetic", "diabetes", "low sugar", "low carb", "blood sugar", "no rice", "no bread", "no naan", "keto" → set lens="blood_sugar"
-- Explicit dollar amounts: $25 → budget 0, $35 → budget 25, $50 → budget 50, $75 → budget 70, $100+ → budget 85+
-- No budget mentioned → budget 50 (neutral)
-- No energy mentioned → energy 50
-- No context mentioned → context 40
-- No purity mentioned → purity 70 (Rasaoi default leans clean)
-
-WELLNESS & DIETARY CONCEPT EXTRACTION (CRITICAL):
-- Extract conceptual dietary modifiers into filters.wellness_tags (array). Use ONLY these canonical slugs:
-  - "raw" — uncooked, raw vegetables, raw preparations
-  - "fresh" — fresh, crisp, salad-forward, not stale or heavy
-  - "gut_friendly" — gut-friendly, gut friendly, probiotic, fermented, digestive, microbiome
-  - "light" — light meal, low-oil, low oil, not heavy, lightly cooked
-  - "low_oil" — explicit low-oil / minimal oil requests
-  - "probiotic" — probiotic, fermented foods (kimchi, kanji, lassi, idli, dhokla, etc.)
-- These are NOT cuisines and must NEVER be placed in filters.dish or filters.cuisine.
-- When wellness modifiers appear, bump purity toward 78–92 (clean, restorative intent).
-- Multiple wellness tags may coexist — include every signal you detect.
-
-CULTURAL MODIFIERS (isolate from wellness — CRITICAL):
-- Cultural identity tags (e.g. "desi", "homestyle", "south indian", "punjabi") go in filters.culture_tag as spoken (e.g. "desi").
-- Map culture to cuisine ONLY when clear: "desi" / "desi food" / "indian home cooking" → filters.cuisine = "Indian".
-- When a user combines cultural + wellness ("raw and fresh, gut friendly, desi"), you MUST populate BOTH:
-  - filters.culture_tag (cultural aspect)
-  - filters.wellness_tags (wellness aspect)
-  - filters.cuisine from culture if applicable
-- NEVER let a cultural tag alone imply a default heavy dish (Tandoori, Korma, Biryani). Omit filters.dish unless a specific dish was named.
-
-STRICT DIETARY RULES (HIGHEST PRIORITY — zero tolerance):
-- Extract religious/lifestyle dietary requirements into filters.dietary using ONLY: "jain", "vegan", "halal", "kosher".
-- If the user mentions a strict restriction (e.g. "my friend is a Jain", "Jain food", "vegan only", "halal", "kosher"), you MUST set filters.dietary.
-- Event/social keywords ("birthday", "celebration", "anniversary", "party") affect dials.context ONLY — they must NEVER override or erase filters.dietary.
-- When filters.dietary is set, omit filters.dish if it would violate that diet (e.g. never set dish="Tandoori Chicken" when dietary="jain").
-- Jain means: no meat, poultry, seafood, eggs; no root vegetables (onion, garlic, potato, carrot, etc.).
-- Standard dishes like "Dal Tadka" or "Paneer Tikka" are NOT Jain unless explicitly prefixed "Jain" — never suggest them for Jain diners.
-- filters.dietary must flow to ALL recommendation slots (hero + alternates + nested dish arrays), not just the headline title.
-- Include dietary in restated_intent when present (e.g. "Jain · birthday · celebratory").
-
-FILTER EXTRACTION (CRITICAL — read carefully):
-- filters.cuisine: ONLY when the diner explicitly names a cuisine type (e.g. "Thai", "Indian", "Italian"). Use canonical Title Case ("Thai", not "thai food").
-- filters.dish: ONLY when the diner names a specific dish or food item (e.g. "pad thai", "shrimp curry", "tonkotsu ramen"). Do NOT put a cuisine label in filters.dish.
-- If a specific cuisine OR dish is requested, DO NOT populate unrelated cuisines or fallback/example dishes in the filters payload.
-- NEVER default to Indian, Tandoori, Biryani, or any cuisine/dish the user did not say. Empty filters fields are correct when unknown.
-- Relative/social phrases ("for my partner", "for my wife", "something nearby", "date night") affect dials/context — they must NOT block or replace an explicit food/cuisine keyword in the same utterance.
-- Example: "Thai food for my partner nearby" → filters.cuisine="Thai", filters.dish omitted, radius_mi if "nearby".
-- Example: "Low energy, $35, something healthy" → filters.cuisine omitted, filters.dish omitted.
-
-RESTATED INTENT: A short, warm, human phrase that confirms what you heard.
-Format like: "Low energy · ~$35 · clean & nearby" or "Thai · date night · nearby".
-Use middle-dot separators. Max 60 chars. If a cuisine was requested, include it in restated_intent.
-
-CONFIDENCE:
-- "high" if multiple clear signals
-- "medium" if some inference required
-- "low" if request is vague or off-topic`;
+restated_intent: warm confirmation, max 60 chars, middle-dot separated.
+confidence: high | medium | low
+lens: "blood_sugar" only if diabetic/low-carb/keto signals present`;
 
 const TOOL_SCHEMA = {
   type: "function",
   function: {
-    name: "parse_dining_intent",
-    description: "Convert the diner's request into dial values and filters.",
+    name: "generate_dining_response",
+    description: "Generate complete Rasaoi dining response with dials, filters, and 5 synthetic restaurants.",
     parameters: {
       type: "object",
       properties: {
-        restated_intent: {
-          type: "string",
-          description: "Warm, short confirmation of what you heard. Max 60 chars, middle-dot separated.",
-        },
+        restated_intent: { type: "string" },
         dials: {
           type: "object",
           properties: {
@@ -102,62 +82,96 @@ const TOOL_SCHEMA = {
             purity: { type: "number", minimum: 0, maximum: 100 },
           },
           required: ["energy", "context", "budget", "purity"],
-          additionalProperties: false,
         },
         filters: {
           type: "object",
           properties: {
-            cuisine: {
-              type: "string",
-              description:
-                "Canonical cuisine ONLY if explicitly requested (e.g. Thai, Indian, Italian). Omit if not stated. Never guess or default.",
-            },
-            dish: {
-              type: "string",
-              description:
-                "Specific dish/food phrase ONLY if explicitly requested (e.g. 'pad thai', 'spicy shrimp curry'). Omit cuisine labels and never invent signature dishes.",
-            },
-            restaurant: { type: "string", description: "Restaurant name if mentioned." },
-            radius_mi: { type: "number", description: "Distance in miles if 'nearby' or specific distance mentioned." },
-            max_price_usd: { type: "number", description: "Explicit dollar ceiling if stated." },
+            cuisine: { type: "string" },
+            dish: { type: "string" },
+            restaurant: { type: "string" },
+            radius_mi: { type: "number" },
+            max_price_usd: { type: "number" },
             wellness_tags: {
               type: "array",
               items: {
                 type: "string",
                 enum: ["raw", "fresh", "gut_friendly", "light", "low_oil", "probiotic"],
               },
-              description:
-                "Dietary/wellness concepts (raw, fresh, gut-friendly, light, etc.). Never put these in dish or cuisine fields.",
             },
-            culture_tag: {
-              type: "string",
-              description:
-                "Cultural modifier if stated (e.g. desi, homestyle). Isolate from wellness_tags; map to cuisine when appropriate.",
-            },
+            culture_tag: { type: "string" },
             dietary: {
               type: "string",
               enum: ["jain", "vegan", "halal", "kosher"],
-              description:
-                "Strict religious/lifestyle diet. REQUIRED when user mentions Jain, vegan, halal, or kosher. Never drop for birthday/event context.",
             },
           },
-          additionalProperties: false,
         },
         confidence: { type: "string", enum: ["high", "medium", "low"] },
-        lens: {
-          type: "string",
-          enum: ["blood_sugar"],
-          description:
-            "Set to 'blood_sugar' if the diner mentions diabetes, low sugar, low carb, blood sugar control, or asks to avoid rice/bread/naan.",
+        lens: { type: "string", enum: ["blood_sugar"] },
+        restaurants: {
+          type: "array",
+          minItems: 3,
+          maxItems: 6,
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              cuisine: { type: "string" },
+              price_tier: { type: "number", minimum: 1, maximum: 4 },
+              purity_tier: {
+                type: "string",
+                enum: ["satellite", "conscious", "sovereign"],
+              },
+              oil_profile: {
+                type: "string",
+                enum: ["standard", "cold-pressed", "seed-oil-free"],
+              },
+              grain_profile: {
+                type: "string",
+                enum: ["standard", "ancient", "grain-free"],
+              },
+              anti_inflammatory: { type: "boolean" },
+              sovereign_seal: { type: "boolean" },
+              signature_dish: { type: "string" },
+              dish_outcome: { type: "string" },
+              description: { type: "string" },
+              menu_items: {
+                type: "array",
+                minItems: 2,
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    description: { type: "string" },
+                    price_usd: { type: "number" },
+                  },
+                  required: ["name", "description"],
+                },
+              },
+              match_score: { type: "number", minimum: 0, maximum: 100 },
+              why: { type: "string" },
+              inference_tags: { type: "array", items: { type: "string" } },
+              energy_tags: { type: "array", items: { type: "string" } },
+              context_tags: { type: "array", items: { type: "string" } },
+              location_neighborhood: { type: "string" },
+            },
+            required: [
+              "name",
+              "cuisine",
+              "price_tier",
+              "signature_dish",
+              "dish_outcome",
+              "description",
+              "menu_items",
+              "match_score",
+              "why",
+            ],
+          },
         },
       },
-      required: ["restated_intent", "dials", "filters", "confidence"],
-      additionalProperties: false,
+      required: ["restated_intent", "dials", "filters", "confidence", "restaurants"],
     },
   },
 };
-
-// --- Server-side validation (defense against LLM hallucination) ---
 
 interface DialPayload {
   energy: number;
@@ -166,266 +180,154 @@ interface DialPayload {
   purity: number;
 }
 
-const WELLNESS_TAG_SLUGS = [
-  "raw",
-  "fresh",
-  "gut_friendly",
-  "light",
-  "low_oil",
-  "probiotic",
-] as const;
-
-type WellnessTag = (typeof WELLNESS_TAG_SLUGS)[number];
-
-function isWellnessTag(v: unknown): v is WellnessTag {
-  return typeof v === "string" && (WELLNESS_TAG_SLUGS as readonly string[]).includes(v);
+interface GeneratedMenuItem {
+  name: string;
+  description: string;
+  price_usd?: number;
 }
 
-const DIETARY_SLUGS = ["jain", "vegan", "halal", "kosher"] as const;
-type StrictDietary = (typeof DIETARY_SLUGS)[number];
-
-function isStrictDietary(v: unknown): v is StrictDietary {
-  return typeof v === "string" && (DIETARY_SLUGS as readonly string[]).includes(v);
+interface GeneratedRestaurant {
+  id: string;
+  name: string;
+  cuisine: string;
+  price_tier: number;
+  purity_tier: string;
+  oil_profile: string;
+  grain_profile: string;
+  anti_inflammatory: boolean;
+  sovereign_seal: boolean;
+  verified_clean_oils: boolean;
+  signature_dish: string;
+  dish_outcome: string;
+  description: string;
+  menu_items: GeneratedMenuItem[];
+  match_score: number;
+  why: string;
+  inference_tags: string[];
+  energy_tags: string[];
+  context_tags: string[];
+  location_neighborhood: string | null;
+  doordash_url: null;
+  ubereats_url: null;
+  base_purity_tier: string | null;
+  created_at: string;
 }
 
-interface FilterPayload {
-  cuisine?: string;
-  dish?: string;
-  restaurant?: string;
-  radius_mi?: number;
-  max_price_usd?: number;
-  wellness_tags?: WellnessTag[];
-  culture_tag?: string;
-  dietary?: StrictDietary;
-}
-
-interface ParsedPayload {
+interface AgenticPayload {
   restated_intent: string;
   dials: DialPayload;
-  filters: FilterPayload;
+  filters: Record<string, unknown>;
   confidence: "high" | "medium" | "low";
   lens?: "blood_sugar";
+  restaurants: GeneratedRestaurant[];
+  generation_mode: "agentic";
 }
-
-/** Ordered: first match wins when multiple cuisines appear in transcript. */
-const TRANSCRIPT_CUISINE_PATTERNS: { canonical: string; pattern: RegExp }[] = [
-  { canonical: "Thai", pattern: /\bthai\b|pad thai|tom yum|panang|massaman|larb\b/i },
-  { canonical: "Japanese", pattern: /\bjapanese\b|sushi|ramen|izakaya|sashimi|teriyaki/i },
-  { canonical: "Mexican", pattern: /\bmexican\b|taco|burrito|taqueria|enchilada|mole\b/i },
-  { canonical: "Italian", pattern: /\bitalian\b|pasta|pizza|risotto|trattoria/i },
-  { canonical: "Mediterranean", pattern: /\bmediterranean\b|greek\b|hummus|falafel|gyro/i },
-  { canonical: "Indian", pattern: /\bindian\b|tandoori|biryani\b|tikka masala|naan\b|dal\b/i },
-  { canonical: "Indian", pattern: /\bdesi\b|desi food|homestyle indian|indian home\b/i },
-  { canonical: "Healthy", pattern: /\bhealthy\b|salad bowl|grain bowl|poke\b/i },
-  { canonical: "American", pattern: /\bamerican\b|burger\b|bbq\b|steakhouse/i },
-];
-
-const INDIAN_DISH_MARKERS = /\b(tandoori|biryani|naan|dal\b|tikka masala|butter chicken|rogan josh)\b/i;
-
-/** Transcript-grounded wellness concept patterns → canonical slugs. */
-const TRANSCRIPT_WELLNESS_PATTERNS: { tag: WellnessTag; pattern: RegExp }[] = [
-  { tag: "raw", pattern: /\braw\b/i },
-  { tag: "fresh", pattern: /\bfresh\b|\bcrisp\b/i },
-  {
-    tag: "gut_friendly",
-    pattern: /gut[- ]?friendly|digestive health|good for (my )?gut|microbiome/i,
-  },
-  { tag: "probiotic", pattern: /\bprobiotic\b|\bfermented\b|kanji\b|kimchi\b/i },
-  { tag: "light", pattern: /\blight\b|low[- ]?oil|not heavy|lightly cooked/i },
-  { tag: "low_oil", pattern: /low[- ]?oil|minimal oil|less oil/i },
-];
-
-const CULTURE_TAG_PATTERNS: { tag: string; cuisine?: string; pattern: RegExp }[] = [
-  { tag: "desi", cuisine: "Indian", pattern: /\bdesi\b/i },
-  { tag: "homestyle", cuisine: "Indian", pattern: /\bhomestyle\b/i },
-];
-
-const DEFAULT_HEAVY_DISH_INVENTIONS =
-  /\b(tandoori chicken|chicken tikka|navratan korma|butter chicken|biryani)\b/i;
-
-const TRANSCRIPT_DIETARY_PATTERNS: { dietary: StrictDietary; pattern: RegExp }[] = [
-  { dietary: "jain", pattern: /\bjain\b|jain diet|jain food|jain vegetarian|ahimsa\b/i },
-  { dietary: "vegan", pattern: /\bvegan\b|plant[- ]only|no dairy\b/i },
-  { dietary: "halal", pattern: /\bhalal\b/i },
-  { dietary: "kosher", pattern: /\bkosher\b/i },
-];
-
-const MEAT_OR_NON_JAIN_DISH =
-  /\b(chicken|tandoori|mutton|lamb|beef|pork|fish|seafood|shrimp|prawn|egg|eggs|biryani|tikka|kebab|bacon|ham|sausage|turkey|duck|crab|lobster)\b/i;
-const THAI_DISH_MARKERS = /\b(pad thai|tom yum|panang|massaman|larb|basil chicken|drunken noodles)\b/i;
 
 function clampDial(n: unknown, fallback: number): number {
   const v = typeof n === "number" && Number.isFinite(n) ? Math.round(n) : fallback;
   return Math.max(0, Math.min(100, v));
 }
 
-function normalizeCuisineLabel(raw: string): string {
-  const s = raw.trim();
-  if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
 }
 
-function cuisinesEquivalent(a: string, b: string): boolean {
-  const x = a.toLowerCase().trim();
-  const y = b.toLowerCase().trim();
-  return x === y || x.includes(y) || y.includes(x);
+const JAIN_VIOLATION =
+  /\b(chicken|mutton|lamb|beef|pork|fish|seafood|egg|tandoori|biryani|butter chicken|dal tadka)\b/i;
+const JAIN_ROOT = /\b(onion|garlic|potato|potato)\b/i;
+
+function restaurantBlob(r: { name?: string; signature_dish?: string; description?: string; menu_items?: GeneratedMenuItem[] }): string {
+  const menu = (r.menu_items ?? []).map((m) => `${m.name} ${m.description}`).join(" ");
+  return `${r.name ?? ""} ${r.signature_dish ?? ""} ${r.description ?? ""} ${menu}`.toLowerCase();
 }
 
-function extractCuisineFromTranscript(transcript: string): string | undefined {
-  for (const { canonical, pattern } of TRANSCRIPT_CUISINE_PATTERNS) {
-    if (pattern.test(transcript)) return canonical;
-  }
-  return undefined;
+function passesJainGate(r: { name?: string; signature_dish?: string; description?: string; menu_items?: GeneratedMenuItem[] }): boolean {
+  const blob = restaurantBlob(r);
+  const jainSafe = /\b(jain|no onion|no garlic|ahimsa|shuddha|onion-and-garlic-free)\b/i.test(blob);
+  if (JAIN_VIOLATION.test(blob)) return false;
+  if (JAIN_ROOT.test(blob) && !jainSafe) return false;
+  return true;
 }
 
-function extractWellnessFromTranscript(transcript: string): WellnessTag[] {
-  const found = new Set<WellnessTag>();
-  for (const { tag, pattern } of TRANSCRIPT_WELLNESS_PATTERNS) {
-    if (pattern.test(transcript)) found.add(tag);
-  }
-  // "gut friendly" often co-occurs with fermented — probiotic is a subset signal
-  if (found.has("gut_friendly") && /\bfermented\b|\bprobiotic\b/i.test(transcript)) {
-    found.add("probiotic");
-  }
-  return WELLNESS_TAG_SLUGS.filter((t) => found.has(t));
+function normalizeRestaurants(raw: unknown[], transcript: string): GeneratedRestaurant[] {
+  const dietaryJain = /\bjain\b|ahimsa|jain food/i.test(transcript);
+  const now = new Date().toISOString();
+
+  const normalized = (Array.isArray(raw) ? raw : [])
+    .filter((r) => r && typeof r === "object")
+    .map((r, idx) => {
+      const o = r as Record<string, unknown>;
+      const name = typeof o.name === "string" ? o.name.trim() : `Veda Pick ${idx + 1}`;
+      const menuRaw = Array.isArray(o.menu_items) ? o.menu_items : [];
+      const menu_items: GeneratedMenuItem[] = menuRaw
+        .filter((m) => m && typeof m === "object")
+        .map((m) => {
+          const item = m as Record<string, unknown>;
+          return {
+            name: String(item.name ?? "House Special"),
+            description: String(item.description ?? ""),
+            price_usd: typeof item.price_usd === "number" ? item.price_usd : undefined,
+          };
+        });
+
+      const signature_dish =
+        typeof o.signature_dish === "string" ? o.signature_dish : menu_items[0]?.name ?? "Chef's Selection";
+      if (!menu_items.some((m) => m.name.toLowerCase() === signature_dish.toLowerCase())) {
+        menu_items.unshift({
+          name: signature_dish,
+          description: typeof o.dish_outcome === "string" ? o.dish_outcome : "Signature plate from this kitchen.",
+        });
+      }
+
+      return {
+        id: `agent:${slugify(name)}-${idx}`,
+        name,
+        cuisine: typeof o.cuisine === "string" ? o.cuisine : "Restaurant",
+        price_tier: clampDial(o.price_tier, 2),
+        purity_tier: ["satellite", "conscious", "sovereign"].includes(String(o.purity_tier))
+          ? String(o.purity_tier)
+          : "conscious",
+        oil_profile: ["standard", "cold-pressed", "seed-oil-free"].includes(String(o.oil_profile))
+          ? String(o.oil_profile)
+          : "standard",
+        grain_profile: ["standard", "ancient", "grain-free"].includes(String(o.grain_profile))
+          ? String(o.grain_profile)
+          : "standard",
+        anti_inflammatory: Boolean(o.anti_inflammatory),
+        sovereign_seal: Boolean(o.sovereign_seal),
+        verified_clean_oils: o.oil_profile === "seed-oil-free" || o.oil_profile === "cold-pressed",
+        signature_dish,
+        dish_outcome: typeof o.dish_outcome === "string" ? o.dish_outcome : "Aligned to your request.",
+        description: typeof o.description === "string" ? o.description : "",
+        menu_items,
+        match_score: clampDial(o.match_score, 90 - idx * 5),
+        why: typeof o.why === "string" ? o.why : `Selected for your request.`,
+        inference_tags: Array.isArray(o.inference_tags)
+          ? o.inference_tags.filter((t): t is string => typeof t === "string")
+          : [],
+        energy_tags: Array.isArray(o.energy_tags)
+          ? o.energy_tags.filter((t): t is string => typeof t === "string")
+          : ["balanced"],
+        context_tags: Array.isArray(o.context_tags)
+          ? o.context_tags.filter((t): t is string => typeof t === "string")
+          : ["social"],
+        location_neighborhood:
+          typeof o.location_neighborhood === "string" ? o.location_neighborhood : "El Dorado Hills · Folsom",
+        doordash_url: null,
+        ubereats_url: null,
+        base_purity_tier: null,
+        created_at: now,
+      } satisfies GeneratedRestaurant;
+    });
+
+  const filtered = dietaryJain ? normalized.filter(passesJainGate) : normalized;
+
+  return filtered
+    .sort((a, b) => b.match_score - a.match_score)
+    .slice(0, 5);
 }
 
-function extractCultureFromTranscript(transcript: string): { culture_tag?: string; cuisine?: string } {
-  for (const { tag, cuisine, pattern } of CULTURE_TAG_PATTERNS) {
-    if (pattern.test(transcript)) return { culture_tag: tag, cuisine };
-  }
-  return {};
-}
-
-function mergeWellnessTags(modelTags: unknown, transcript: string): WellnessTag[] {
-  const merged = new Set<WellnessTag>();
-  if (Array.isArray(modelTags)) {
-    for (const t of modelTags) {
-      if (isWellnessTag(t)) merged.add(t);
-    }
-  }
-  for (const t of extractWellnessFromTranscript(transcript)) merged.add(t);
-  return WELLNESS_TAG_SLUGS.filter((t) => merged.has(t));
-}
-
-function extractDietaryFromTranscript(transcript: string): StrictDietary | undefined {
-  for (const { dietary, pattern } of TRANSCRIPT_DIETARY_PATTERNS) {
-    if (pattern.test(transcript)) return dietary;
-  }
-  return undefined;
-}
-
-function mergeDietary(modelDietary: unknown, transcript: string): StrictDietary | undefined {
-  const fromTranscript = extractDietaryFromTranscript(transcript);
-  if (fromTranscript) return fromTranscript;
-  if (isStrictDietary(modelDietary)) return modelDietary;
-  return undefined;
-}
-
-function extractDishFromTranscript(transcript: string): string | undefined {
-  const t = transcript.trim();
-  if (extractDietaryFromTranscript(t)) return undefined;
-  if (THAI_DISH_MARKERS.test(t)) {
-    const m = t.match(THAI_DISH_MARKERS);
-    if (m) return m[0];
-  }
-  if (INDIAN_DISH_MARKERS.test(t)) {
-    const m = t.match(INDIAN_DISH_MARKERS);
-    if (m) return m[0];
-  }
-  return undefined;
-}
-
-function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
-  const raw = filters && typeof filters === "object" ? (filters as Record<string, unknown>) : {};
-  const transcriptCuisine = extractCuisineFromTranscript(transcript);
-  const transcriptDish = extractDishFromTranscript(transcript);
-  const transcriptCulture = extractCultureFromTranscript(transcript);
-  const wellness_tags = mergeWellnessTags(raw.wellness_tags, transcript);
-  const dietary = mergeDietary(raw.dietary, transcript);
-
-  let cuisine =
-    typeof raw.cuisine === "string" && raw.cuisine.trim() ? normalizeCuisineLabel(raw.cuisine) : undefined;
-  let dish = typeof raw.dish === "string" && raw.dish.trim() ? raw.dish.trim() : undefined;
-  let culture_tag =
-    typeof raw.culture_tag === "string" && raw.culture_tag.trim()
-      ? raw.culture_tag.trim().toLowerCase()
-      : transcriptCulture.culture_tag;
-  const restaurant =
-    typeof raw.restaurant === "string" && raw.restaurant.trim() ? raw.restaurant.trim() : undefined;
-  const radius_mi =
-    typeof raw.radius_mi === "number" && Number.isFinite(raw.radius_mi) ? raw.radius_mi : undefined;
-  const max_price_usd =
-    typeof raw.max_price_usd === "number" && Number.isFinite(raw.max_price_usd)
-      ? raw.max_price_usd
-      : undefined;
-
-  // Culture tag maps to cuisine without inventing heavy default dishes.
-  if (transcriptCulture.cuisine && !cuisine) {
-    cuisine = transcriptCulture.cuisine;
-  }
-  if (culture_tag && !cuisine) {
-    const mapped = CULTURE_TAG_PATTERNS.find((c) => c.tag === culture_tag)?.cuisine;
-    if (mapped) cuisine = mapped;
-  }
-
-  // Transcript is ground truth when model conflicts or omits explicit cuisine.
-  if (transcriptCuisine) {
-    if (!cuisine || !cuisinesEquivalent(cuisine, transcriptCuisine)) {
-      cuisine = transcriptCuisine;
-    }
-  }
-
-  // Strict dietary: strip violative invented dishes (e.g. Tandoori when Jain).
-  if (dietary === "jain" && dish && (MEAT_OR_NON_JAIN_DISH.test(dish) || DEFAULT_HEAVY_DISH_INVENTIONS.test(dish))) {
-    dish = undefined;
-  }
-  if (dietary === "vegan" && dish && MEAT_OR_NON_JAIN_DISH.test(dish)) {
-    dish = undefined;
-  }
-
-  // Wellness-only queries must not inherit model-invented heavy Indian dishes.
-  if (wellness_tags.length > 0 && dish && DEFAULT_HEAVY_DISH_INVENTIONS.test(dish)) {
-    if (!DEFAULT_HEAVY_DISH_INVENTIONS.test(transcript)) dish = undefined;
-  }
-
-  // Dish must not duplicate cuisine-only requests.
-  if (dish && cuisine && cuisinesEquivalent(dish, cuisine)) {
-    dish = undefined;
-  }
-
-  // Strip Indian default dishes when user asked for a different cuisine.
-  if (cuisine && cuisinesEquivalent(cuisine, "Thai") && dish && INDIAN_DISH_MARKERS.test(dish) && !THAI_DISH_MARKERS.test(dish)) {
-    dish = undefined;
-  }
-  if (cuisine && cuisinesEquivalent(cuisine, "Indian") && dish && THAI_DISH_MARKERS.test(dish) && !INDIAN_DISH_MARKERS.test(dish)) {
-    dish = undefined;
-  }
-
-  // Prefer transcript dish evidence when model invented an unrelated dish.
-  if (transcriptDish) {
-    if (!dish || (!dish.toLowerCase().includes(transcriptDish.toLowerCase()) && transcriptDish.length > 2)) {
-      dish = transcriptDish;
-    }
-  } else if (dish && cuisine && !transcript.toLowerCase().includes(dish.toLowerCase().slice(0, 6))) {
-    // Dish not substantiated in transcript — drop unless short token appears in utterance.
-    const dishCore = dish.toLowerCase().split(/\s+/).find((w) => w.length >= 4 && transcript.toLowerCase().includes(w));
-    if (!dishCore) dish = undefined;
-  }
-
-  const out: FilterPayload = {};
-  if (cuisine) out.cuisine = cuisine;
-  if (dish) out.dish = dish;
-  if (restaurant) out.restaurant = restaurant;
-  if (radius_mi != null) out.radius_mi = radius_mi;
-  if (max_price_usd != null) out.max_price_usd = max_price_usd;
-  if (wellness_tags.length) out.wellness_tags = wellness_tags;
-  if (culture_tag) out.culture_tag = culture_tag;
-  if (dietary) out.dietary = dietary;
-  return out;
-}
-
-function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
+function validateAndNormalize(raw: unknown, transcript: string): AgenticPayload {
   const obj = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const dialsRaw = obj.dials && typeof obj.dials === "object" ? (obj.dials as Record<string, unknown>) : {};
 
@@ -436,44 +338,30 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
     purity: clampDial(dialsRaw.purity, 70),
   };
 
-  const filters = sanitizeFilters(obj.filters, transcript);
-
-  // Wellness modifiers imply higher purity intent unless user asked for indulgence.
-  if (filters.wellness_tags?.length) {
-    const transcriptLower = transcript.toLowerCase();
-    const indulgent = /\bindulgent\b|comfort food|treat\b|heavy meal/i.test(transcriptLower);
-    if (!indulgent && dials.purity < 78) {
-      dials.purity = Math.min(92, dials.purity + 12);
-    }
-  }
+  const filters =
+    obj.filters && typeof obj.filters === "object" ? (obj.filters as Record<string, unknown>) : {};
 
   const confidence =
     obj.confidence === "high" || obj.confidence === "medium" || obj.confidence === "low"
       ? obj.confidence
       : "medium";
 
-  let restated =
+  const restated_intent =
     typeof obj.restated_intent === "string" && obj.restated_intent.trim()
-      ? obj.restated_intent.trim().slice(0, 60)
+      ? obj.restated_intent.trim().slice(0, 80)
       : "Your request";
 
-  if (filters.culture_tag && !restated.toLowerCase().includes(filters.culture_tag)) {
-    restated = `${filters.culture_tag} · ${restated}`.slice(0, 60);
-  } else if (filters.cuisine && !restated.toLowerCase().includes(filters.cuisine.toLowerCase())) {
-    restated = `${filters.cuisine} · ${restated}`.slice(0, 60);
-  }
-  if (filters.wellness_tags?.length) {
-    const wellnessLabel = filters.wellness_tags.slice(0, 2).join(" · ").replace(/_/g, " ");
-    if (!restated.toLowerCase().includes(wellnessLabel.split(" · ")[0])) {
-      restated = `${wellnessLabel} · ${restated}`.slice(0, 60);
-    }
-  }
-  if (filters.dietary && !restated.toLowerCase().includes(filters.dietary)) {
-    const label = filters.dietary.charAt(0).toUpperCase() + filters.dietary.slice(1);
-    restated = `${label} · ${restated}`.slice(0, 60);
-  }
+  const restaurants = normalizeRestaurants(obj.restaurants as unknown[], transcript);
 
-  const payload: ParsedPayload = { restated_intent: restated, dials, filters, confidence };
+  const payload: AgenticPayload = {
+    restated_intent,
+    dials,
+    filters,
+    confidence,
+    restaurants,
+    generation_mode: "agentic",
+  };
+
   if (obj.lens === "blood_sugar") payload.lens = "blood_sugar";
   return payload;
 }
@@ -514,14 +402,22 @@ Deno.serve(async (req) => {
         });
       }
       console.error("parse-intent Gemini error:", msg);
-      return new Response(JSON.stringify({ error: "Veda could not interpret that." }), {
+      return new Response(JSON.stringify({ error: "Veda could not generate a response." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const sanitized = validateAndSanitize(parsed, trimmedTranscript);
-    return new Response(JSON.stringify(sanitized), {
+    const payload = validateAndNormalize(parsed, trimmedTranscript);
+
+    if (payload.restaurants.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Veda could not generate compliant restaurants for this request." }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    return new Response(JSON.stringify(payload), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

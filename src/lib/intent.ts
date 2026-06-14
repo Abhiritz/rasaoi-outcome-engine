@@ -1,6 +1,12 @@
-import { searchPlaces } from "@/lib/google-places";
 import { supabase } from "@/integrations/supabase/client";
-import type { DialState, Restaurant } from "./veda";
+import {
+  mapAgentRestaurantsToScored,
+  type AgentGeneratedRestaurant,
+  type DialState,
+  type Restaurant,
+  type ScoredRestaurant,
+  GENERATION_MODE,
+} from "./veda";
 
 export interface ParsedIntent {
   restated_intent: string;
@@ -26,9 +32,13 @@ export interface ParsedIntent {
   lens?: "blood_sugar";
   transcript: string;
   ts: number;
+  /** ARCH-001: full agent-generated restaurant payload */
+  generation_mode?: typeof GENERATION_MODE;
+  restaurants?: AgentGeneratedRestaurant[];
+  scored_restaurants?: ScoredRestaurant[];
 }
 
-const STORAGE_KEY = "rasaoi.last_intent.v1";
+const STORAGE_KEY = "rasaoi.last_intent.v2";
 
 export async function parseIntent(transcript: string): Promise<ParsedIntent> {
   const { data, error } = await supabase.functions.invoke("parse-intent", {
@@ -36,7 +46,23 @@ export async function parseIntent(transcript: string): Promise<ParsedIntent> {
   });
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
-  const intent: ParsedIntent = { ...data, transcript, ts: Date.now() };
+
+  const generated = (data.restaurants ?? []) as AgentGeneratedRestaurant[];
+  const scored_restaurants = mapAgentRestaurantsToScored(generated);
+
+  const intent: ParsedIntent = {
+    restated_intent: data.restated_intent,
+    dials: data.dials,
+    filters: data.filters ?? {},
+    confidence: data.confidence,
+    lens: data.lens,
+    generation_mode: GENERATION_MODE,
+    restaurants: generated,
+    scored_restaurants,
+    transcript,
+    ts: Date.now(),
+  };
+
   saveIntent(intent);
   return intent;
 }
@@ -67,7 +93,7 @@ export function clearIntent() {
   }
 }
 
-export async function findRestaurantByName(name: string): Promise<Restaurant[]> {
-  const { restaurants } = await searchPlaces({ name });
-  return restaurants;
+/** @deprecated ARCH-001 — agent generates restaurants; no Places lookup. */
+export async function findRestaurantByName(_name: string): Promise<Restaurant[]> {
+  return [];
 }
