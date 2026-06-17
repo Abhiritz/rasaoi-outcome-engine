@@ -72,6 +72,28 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## ARCH-002: Database Self-Improvement Loop with AI Synthesis
+
+**Branch:** `feature/db-self-improvement-loop`
+
+- [x] Git isolation: branch `feature/db-self-improvement-loop` from `feature/agentic-generation-loop`
+- [x] Restore full `scoreRestaurants` + dietary gates in `src/lib/veda.ts` (from `main`)
+- [x] Add `evaluateMatchQuality()` — threshold + cuisine/dietary zero-hit triggers (`SELF_IMPROVEMENT_SCORE_THRESHOLD = 62`)
+- [x] New edge function `supabase/functions/generate-missing-data` — Gemini synthesizes 3 venues, inserts via service role
+- [x] Migration `synthesis_source` column + `restaurant_sources` audit trail
+- [x] Client orchestrator `src/lib/selfImprovement.ts` + `SelfImprovementLoader` progressive messages
+- [x] `Index.tsx` — DB query → quality gate → learning state → re-fetch → render (agentic fallback on 429)
+- [x] Regression: `evaluateMatchQuality` tests in `veda.test.ts`
+- [x] Log in `CONFLICT_RESOLUTION_REPORTS.md` (ARCH-002)
+- [x] Publish client handover in `handover-report.html`
+- [x] Dedicated Supabase project for branch: `gqlltdzsraaxcebirbgz` (see `supabase/BRANCH_PROJECTS.md`)
+- [x] `db push` — full Rasaoi schema + ARCH-002 `synthesis_source` migration
+- [x] Deploy edge functions to `gqlltdzsraaxcebirbgz`
+- [ ] **You:** `npx supabase secrets set GEMINI_API_KEY=...` on `gqlltdzsraaxcebirbgz` (copy from rasaoi-project dashboard)
+- [ ] **Follow-up:** Dedupe synthesis by transcript hash; admin review queue before prod Lovable DB writes
+
+---
+
 ## DIE-001: Hard-exclusion gate for strict dietary restrictions (Jain / Vegan / Halal / Kosher)
 
 - [x] Extend `parse-intent` SYSTEM_PROMPT: `STRICT DIETARY RULES` block — extract `filters.dietary` (`jain`, `vegan`, `halal`, `kosher`); birthday/celebration must not override

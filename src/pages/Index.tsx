@@ -1,27 +1,51 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Dial } from "@/components/Dial";
 import { HeroCard } from "@/components/HeroCard";
 import { MiniCard } from "@/components/MiniCard";
 import { CuisineFilter } from "@/components/CuisineFilter";
+import { SelfImprovementLoader } from "@/components/SelfImprovementLoader";
 import { MitraPact } from "@/components/MitraPact";
 import { VitalityPanel } from "@/components/VitalityPanel";
 import { CheckinBanner } from "@/components/CheckinBanner";
 import { IntentPill } from "@/components/IntentPill";
-import { resolveAgenticOutcomes, type DialState, type Promo, type ScoredRestaurant } from "@/lib/veda";
-import { getBloodSugarLens, setBloodSugarLens } from "@/lib/memory";
+import {
+  evaluateMatchQuality,
+  mapAgentRestaurantsToScored,
+  normalizeStrictDietary,
+  normalizeWellnessTags,
+  resolveAgenticOutcomes,
+  scoreRestaurants,
+  type DialState,
+  type Promo,
+  type Restaurant,
+  type ScoredRestaurant,
+} from "@/lib/veda";
+import { loadTwin, getBloodSugarLens, setBloodSugarLens } from "@/lib/memory";
 import { loadIntent, clearIntent, type ParsedIntent } from "@/lib/intent";
 import { estimateGlycemic, type GLEstimate } from "@/lib/glycemic";
+import { LEARNING_MESSAGES, pickLearningMessage, runSelfImprovementRoutine } from "@/lib/selfImprovement";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ArrowLeft, Info, Droplet } from "lucide-react";
+
+async function fetchParsedRestaurants(): Promise<Restaurant[]> {
+  const { data, error } = await supabase.from("restaurants").select("*");
+  if (error) throw error;
+  return (data ?? []).filter(
+    (r) => Array.isArray(r.menu_items) && (r.menu_items as unknown[]).length > 0,
+  );
+}
 
 const Index = () => {
   const navigate = useNavigate();
   const [intent, setIntent] = useState<ParsedIntent | null>(null);
-  const [agenticScored, setAgenticScored] = useState<ScoredRestaurant[]>([]);
+  const [scoredPool, setScoredPool] = useState<ScoredRestaurant[]>([]);
+  const [dataSource, setDataSource] = useState<"database" | "synthesized" | "agentic">("database");
   const [promos, setPromos] = useState<Promo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [learning, setLearning] = useState(false);
+  const [learningMessage, setLearningMessage] = useState(LEARNING_MESSAGES[0]);
   const [vitality, setVitality] = useState<number | null>(loadTwin().last_vitality_score ?? null);
   const [heroIdOverride, setHeroIdOverride] = useState<string | null>(null);
   const [cuisineFilter, setCuisineFilter] = useState<string | null>(null);
@@ -34,6 +58,28 @@ const Index = () => {
   const [lens, setLens] = useState<boolean>(getBloodSugarLens());
   const [glMap, setGlMap] = useState<Record<string, GLEstimate>>({});
   const animatedFromIntentRef = useRef(false);
+  const selfImprovementRanRef = useRef(false);
+  const learningStartedRef = useRef<number | null>(null);
+
+  const twin = useMemo(
+    () => ({ ...loadTwin(), last_vitality_score: vitality ?? undefined }),
+    [vitality],
+  );
+
+  const scoreFromDb = useCallback(
+    (restaurants: Restaurant[], promoList: Promo[], parsed: ParsedIntent) =>
+      scoreRestaurants(
+        restaurants,
+        parsed.dials,
+        promoList,
+        twin,
+        parsed.filters.dish,
+        parsed.filters.cuisine,
+        normalizeWellnessTags(parsed.filters.wellness_tags),
+        normalizeStrictDietary(parsed.filters.dietary),
+      ),
+    [twin],
+  );
 
   // On mount: load intent, redirect to / if none, then animate dials to parsed values.
   useEffect(() => {
@@ -43,15 +89,12 @@ const Index = () => {
       return;
     }
     setIntent(i);
-    setAgenticScored(resolveAgenticOutcomes(i.scored_restaurants ?? []));
+    setDials(i.dials);
     document.title = "Rasaoi — Veda's Reading";
-    // Auto-flip blood-sugar lens if the AI detected the signal.
     if (i.lens === "blood_sugar" && !getBloodSugarLens()) {
       setBloodSugarLens(true);
       setLens(true);
     }
-    // Apply cuisine filter from intent if it matches an option later (handled below).
-    // Animate the dials in over ~600ms from neutral to parsed values.
     if (animatedFromIntentRef.current) return;
     animatedFromIntentRef.current = true;
     const start = { energy: 50, context: 40, budget: 50, purity: 70 };
@@ -75,50 +118,122 @@ const Index = () => {
     return () => cancelAnimationFrame(raf);
   }, [navigate]);
 
+  // ARCH-002: DB query → quality gate → optional synthesis → re-fetch
   useEffect(() => {
+    if (!intent) return;
+    let cancelled = false;
+
     (async () => {
-      const pRes = await supabase.from("active_promos").select("*");
-      setPromos(pRes.data ?? []);
-      setLoading(false);
+      setLoading(true);
+      try {
+        const pRes = await supabase.from("active_promos").select("*");
+        const promoList = pRes.data ?? [];
+        if (!cancelled) setPromos(promoList);
+
+        let restaurants = await fetchParsedRestaurants();
+        let scored = scoreFromDb(restaurants, promoList, intent);
+        let quality = evaluateMatchQuality(scored, {
+          cuisine: intent.filters.cuisine,
+          dish: intent.filters.dish,
+          dietary: normalizeStrictDietary(intent.filters.dietary),
+          wellness_tags: normalizeWellnessTags(intent.filters.wellness_tags),
+          transcript: intent.transcript,
+        });
+
+        if (quality.needsImprovement && !selfImprovementRanRef.current) {
+          selfImprovementRanRef.current = true;
+          setLearning(true);
+          learningStartedRef.current = Date.now();
+          try {
+            await runSelfImprovementRoutine(intent);
+            restaurants = await fetchParsedRestaurants();
+            scored = scoreFromDb(restaurants, promoList, intent);
+            quality = evaluateMatchQuality(scored, {
+              cuisine: intent.filters.cuisine,
+              dish: intent.filters.dish,
+              dietary: normalizeStrictDietary(intent.filters.dietary),
+            });
+            if (!cancelled) {
+              setScoredPool(scored);
+              setDataSource("synthesized");
+            }
+          } catch (e) {
+            console.warn("Self-improvement routine skipped:", e);
+            const agentic = resolveAgenticOutcomes(
+              intent.scored_restaurants?.length
+                ? intent.scored_restaurants
+                : mapAgentRestaurantsToScored(intent.restaurants ?? [], promoList),
+            );
+            if (!cancelled) {
+              setScoredPool(agentic);
+              setDataSource("agentic");
+            }
+          } finally {
+            if (!cancelled) setLearning(false);
+          }
+        } else if (!cancelled) {
+          setScoredPool(scored);
+          setDataSource("database");
+        }
+      } catch (e) {
+        console.error("Reading page load failed:", e);
+        if (!cancelled && intent.scored_restaurants?.length) {
+          setScoredPool(resolveAgenticOutcomes(intent.scored_restaurants));
+          setDataSource("agentic");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [intent, scoreFromDb]);
+
+  useEffect(() => {
+    if (!learning) return;
+    const id = window.setInterval(() => {
+      const started = learningStartedRef.current ?? Date.now();
+      setLearningMessage(pickLearningMessage(Date.now() - started));
+    }, 800);
+    return () => window.clearInterval(id);
+  }, [learning]);
 
   const cuisineOptions = useMemo(() => {
     const set = new Set<string>();
-    agenticScored.forEach((s) => s.restaurant.cuisine && set.add(s.restaurant.cuisine));
+    scoredPool.forEach((s) => s.restaurant.cuisine && set.add(s.restaurant.cuisine));
     return Array.from(set).sort();
-  }, [agenticScored]);
+  }, [scoredPool]);
 
-  // Soft cuisine boost from intent: do NOT hard-filter — just remember the
-  // hint so we can rank matches first and show "Showing Indian first".
   const intentCuisine = useMemo(() => {
     if (!intent?.filters?.cuisine || cuisineOptions.length === 0) return null;
     const wanted = intent.filters.cuisine.toLowerCase();
     return cuisineOptions.find((c) => c.toLowerCase().includes(wanted) || wanted.includes(c.toLowerCase())) ?? null;
   }, [intent, cuisineOptions]);
 
-  // Does any parsed menu actually contain the requested dish?
   const dishMatchCount = useMemo(() => {
     const wanted = intent?.filters?.dish?.toLowerCase().trim();
-    if (!wanted || agenticScored.length === 0) return null;
+    if (!wanted || scoredPool.length === 0) return null;
     const tokens = wanted.split(/\s+/).filter((t) => t.length >= 3);
     if (!tokens.length) return null;
     let n = 0;
-    for (const { restaurant: r } of agenticScored) {
+    for (const { restaurant: r } of scoredPool) {
       const menu = Array.isArray(r.menu_items) ? (r.menu_items as { name?: string; description?: string }[]) : [];
-      const hit = menu.some((m) => {
-        const blob = ((m?.name ?? "") + " " + (m?.description ?? "")).toLowerCase();
-        return tokens.some((t) => blob.includes(t));
-      }) || tokens.some((t) => (r.signature_dish ?? "").toLowerCase().includes(t));
+      const hit =
+        menu.some((m) => {
+          const blob = ((m?.name ?? "") + " " + (m?.description ?? "")).toLowerCase();
+          return tokens.some((t) => blob.includes(t));
+        }) || tokens.some((t) => (r.signature_dish ?? "").toLowerCase().includes(t));
       if (hit) n++;
     }
     return n;
-  }, [intent, agenticScored]);
+  }, [intent, scoredPool]);
 
   const glOrder: Record<string, number> = { low: 0, med: 1, high: 2 };
 
   const scored = useMemo(() => {
-    const all = resolveAgenticOutcomes(agenticScored, dials, promos);
+    const all = resolveAgenticOutcomes(scoredPool);
     const filtered = cuisineFilter
       ? all.filter((s) => s.restaurant.cuisine === cuisineFilter)
       : all;
@@ -139,18 +254,17 @@ const Index = () => {
       }
       return b.score - a.score;
     });
-  }, [agenticScored, dials, promos, cuisineFilter, intentCuisine, lens, glMap]);
+  }, [scoredPool, cuisineFilter, intentCuisine, lens, glMap]);
 
-  // When lens is on, estimate GL for top-N visible signature dishes.
   useEffect(() => {
     if (!lens) return;
-    const topRestaurants = agenticScored.slice(0, 8).map((s) => s.restaurant);
-    const dishes = topRestaurants
+    const dishes = scored
+      .slice(0, 8)
+      .map((s) => s.restaurant)
       .filter((r) => r.signature_dish)
       .map((r) => ({ name: r.signature_dish!, cuisine: r.cuisine }));
     if (!dishes.length) return;
     estimateGlycemic(dishes).then((batch) => {
-      // Re-key into a simple `dishname` lookup for the sort comparator.
       const keyed: Record<string, GLEstimate> = {};
       for (const d of dishes) {
         const k = (d.name + "|").toLowerCase().trim();
@@ -159,15 +273,12 @@ const Index = () => {
       }
       setGlMap((prev) => ({ ...prev, ...keyed }));
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lens, agenticScored.length]);
+  }, [lens, scored]);
 
-  // ARCH-001: named-restaurant Places lookup disabled — agent generates all venues.
   useEffect(() => {
     setHeroIdOverride(null);
   }, [dials, vitality, cuisineFilter]);
 
-  // Determine hero (user override > top agentic match)
   let hero: ScoredRestaurant | null = null;
   let alternates: ScoredRestaurant[] = [];
 
@@ -238,16 +349,27 @@ const Index = () => {
 
         {intent && <IntentPill intent={intent} />}
 
-        {intent?.generation_mode === "agentic" && (
-          <div className="rounded-sm border border-gold/30 bg-gold/5 px-4 py-3 text-sm">
-            <span className="text-[10px] uppercase tracking-[0.22em] text-gold font-semibold">Agentic generation</span>
+        {dataSource === "synthesized" && !learning && (
+          <div className="rounded-sm border border-emerald-300/60 bg-emerald-50/80 px-4 py-3 text-sm">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-emerald-800 font-semibold">
+              Self-improving database
+            </span>
             <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-              Veda synthesized these restaurants and menus directly from your request — no database lookup.
+              Veda expanded the venue cache for your constraints — these matches are now persisted for future diners.
             </p>
           </div>
         )}
 
-        {!loading && intent?.filters?.dish && dishMatchCount === 0 && (
+        {dataSource === "agentic" && !learning && (
+          <div className="rounded-sm border border-gold/30 bg-gold/5 px-4 py-3 text-sm">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-gold font-semibold">Agentic fallback</span>
+            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+              Live synthesis unavailable — showing generated recommendations without database persistence.
+            </p>
+          </div>
+        )}
+
+        {!loading && !learning && intent?.filters?.dish && dishMatchCount === 0 && (
           <div className="rounded-sm border border-border/70 bg-card px-4 py-3 text-sm">
             <span className="text-foreground/80">
               No <span className="serif italic text-primary">"{intent.filters.dish}"</span> found in parsed menus nearby.
@@ -256,9 +378,10 @@ const Index = () => {
           </div>
         )}
 
-        {/* THE ANSWER — hero + alternates first */}
         <section className="space-y-6">
-          {loading ? (
+          {learning ? (
+            <SelfImprovementLoader message={learningMessage} />
+          ) : loading ? (
             <p className="text-center text-muted-foreground py-12">Calibrating reasoning engine…</p>
           ) : hero ? (
             <>
@@ -301,7 +424,6 @@ const Index = () => {
                         />
                       ))}
                     </div>
-                    {/* Right-edge scroll affordance */}
                     <div className="pointer-events-none absolute right-0 top-0 bottom-3 w-10 bg-gradient-to-l from-background to-transparent" />
                   </div>
                 </div>
@@ -312,7 +434,6 @@ const Index = () => {
           )}
         </section>
 
-        {/* REFINE — collapsed on mobile, open on desktop */}
         <details className="group rounded-sm border border-border/60 bg-card/50" open>
           <summary className="cursor-pointer list-none flex items-center justify-between px-4 py-3 select-none">
             <span className="text-[11px] uppercase tracking-[0.25em] text-primary font-semibold">
@@ -327,7 +448,6 @@ const Index = () => {
           </summary>
 
           <div className="px-4 pb-5 pt-2 space-y-6 border-t border-border/40">
-            {/* Dials */}
             <section className="grid sm:grid-cols-2 gap-4">
               <Dial label="Energy" leftLabel="Exhausted" rightLabel="Peak"
                 value={dials.energy} onChange={(v) => setDials({ ...dials, energy: v })}
@@ -341,7 +461,7 @@ const Index = () => {
                 hint="The ceiling, not the target." />
               <Dial label="Purity" leftLabel="Standard" rightLabel="Good for you"
                 value={dials.purity} onChange={(v) => setDials({ ...dials, purity: v })}
-                hint="Standard · Natural · Good for you — ghee, cold-pressed, seed-oil free." />
+                hint="Standard · Natural · Good for you — ghee, cold-pressed, seed-oil-free." />
             </section>
 
             <CuisineFilter
@@ -350,7 +470,6 @@ const Index = () => {
               onChange={setCuisineFilter}
             />
 
-            {/* Blood-sugar lens */}
             <div className="flex items-center justify-between gap-3 flex-wrap rounded-sm border border-border/60 bg-card px-4 py-3">
               <div className="flex items-start gap-2 text-sm">
                 <Droplet className={`w-4 h-4 mt-0.5 shrink-0 ${lens ? "fill-emerald-600 text-emerald-600" : "text-muted-foreground"}`} />

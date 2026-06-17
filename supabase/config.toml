@@ -34,3 +34,6 @@ verify_jwt = false
 
 [functions.commit-dishes]
 verify_jwt = false
+
+[functions.generate-missing-data]
+verify_jwt = false

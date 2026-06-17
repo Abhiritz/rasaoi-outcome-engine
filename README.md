@@ -40,9 +40,11 @@ See [MIGRATE_SYNC_README.md](./MIGRATE_SYNC_README.md) for full migration + Lova
 
 ---
 
-## Architecture (ARCH-001)
+## Architecture (ARCH-001 + ARCH-002)
 
-Ask Veda → `parse-intent` edge function → Gemini generates **3 synthetic restaurants** (menus, scores, descriptions) → `veda.ts` pass-through → Reading page renders agent payload. No DB/mock restaurant lookup on the agentic path.
+**Ask Veda** → `parse-intent` → dials + filters (+ optional agentic fallback payload).
+
+**Reading page (ARCH-002):** load `restaurants` from Supabase → `scoreRestaurants` → `evaluateMatchQuality()`. If weak (score &lt; 62 or zero cuisine/dietary hits), invoke `generate-missing-data` → insert 3 venues → re-fetch → re-score. Agentic session fallback if synthesis fails (e.g. 429).
 
 ---
 

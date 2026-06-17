@@ -7,8 +7,8 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 |-------|-------|
 | **Product** | Rasaoi Outcome Engine |
 | **Maintainer** | Engineering / CTO |
-| **Last updated** | 2026-05-27 (RL-001 follow-up) |
-| **Total resolutions** | 7 (2 CRS + 1 DIE + 1 ARCH + 1 RL + 1 MIG + 1 DEV) |
+| **Last updated** | 2026-05-27 (ARCH-002) |
+| **Total resolutions** | 8 (2 CRS + 1 DIE + 2 ARCH + 1 RL + 1 MIG + 1 DEV) |
 
 ---
 
@@ -16,6 +16,7 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 
 | ID | Title | Date | Status |
 |----|-------|------|--------|
+| [ARCH-002](#arch-002-database-self-improvement-loop-with-ai-synthesis) | Database Self-Improvement Loop with AI Synthesis | 2026-05-27 | IN PROGRESS |
 | [RL-001](#rl-001-gemini-free-tier-rate-limit-protection) | Gemini free-tier rate-limit protection | 2026-05-27 | RESOLVED |
 | [ARCH-001](#arch-001-pivot-to-pure-agentic-generation-loop) | Pivot to Pure Agentic Generation Loop | 2026-06-11 | IN PROGRESS |
 | [DIE-001](#die-001-hard-exclusion-gate-for-strict-dietary-restrictions) | Hard-exclusion gate for strict dietary restrictions | 2026-05-27 | SUPERSEDED (ARCH-001) |
@@ -23,6 +24,60 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 | [MIG-001](#mig-001-independent-supabase-migration-with-upstream-lovable-sync) | Independent Supabase migration with upstream Lovable sync | 2026-05-27 | IN PROGRESS |
 | [CRS-002](#crs-002-conceptual-health-filters-overridden-by-baseline-cultural-bias) | Conceptual health filters overridden by baseline cultural bias | 2026-05-27 | RESOLVED |
 | [CRS-001](#crs-001-explicit-cuisine-intent-mis-routed-to-indian-options) | Explicit cuisine intent mis-routed to Indian options | 2026-05-27 | RESOLVED |
+
+---
+
+## ARCH-002: Database Self-Improvement Loop with AI Synthesis
+
+- **Client-Facing Summary**: Rasaoi now **learns from imperfect matches**. When database results score below confidence or miss critical tags (Jain, Thai, etc.), Veda enters a visible learning state, synthesizes three constraint-compliant venues via Gemini, **persists them to Supabase**, re-queries, and renders improved outcomes — building a self-expanding culinary cache over time.
+- **Date Started**: 2026-05-27
+- **Status**: IN PROGRESS (branch `feature/db-self-improvement-loop`)
+
+### 1. Technical Root Cause Analysis
+
+#### Problem
+- Static seed data cannot cover every semantic intersection (Jain + birthday, Thai + wellness, etc.).
+- ARCH-001 agentic mode bypassed the database entirely — no institutional memory across sessions.
+- Low-scoring DB matches still surfaced to users without remediation.
+
+#### Architectural Pivot
+
+| Before | After (ARCH-002) |
+|--------|------------------|
+| Agent-only OR static DB | **DB-first** with quality gate |
+| No persistence of AI venues | `generate-missing-data` inserts rows + `restaurant_sources` audit |
+| Silent weak matches | **Learning UI** with progressive messages |
+| One-shot Gemini in parse-intent | Synthesis only when `evaluateMatchQuality()` fires (saves free-tier quota) |
+
+### 2. Implementation
+
+**A. Quality gate (`src/lib/veda.ts`)**
+- `evaluateMatchQuality()` — top score &lt; 62 OR zero cuisine/dietary keyword hits → trigger.
+- Full `scoreRestaurants` + dietary gates restored from `main`.
+
+**B. Synthesizer (`supabase/functions/generate-missing-data/index.ts`)**
+- Single Gemini tool call → 3 restaurants matching schema.
+- Service-role insert into `restaurants` + `restaurant_sources` note.
+- `synthesis_source = 'arch-002'` column (migration).
+
+**C. Client loop (`src/lib/selfImprovement.ts`, `Index.tsx`)**
+- Fetch DB → score → gate → `SelfImprovementLoader` → invoke edge → re-fetch → re-score.
+- Agentic session fallback if synthesis fails (429 / error).
+
+**D. UX (`SelfImprovementLoader.tsx`)**
+- Rotating messages: "Exploring further options…", "Synthesizing culinary preferences…", etc.
+
+### 3. Validation
+
+```text
+npm test -- --run src/lib/veda.test.ts
+npm run build
+npx supabase functions deploy generate-missing-data --no-verify-jwt
+```
+
+### 4. Follow-ups
+- Transcript-hash dedupe before re-synthesis.
+- Admin review queue before writing to Lovable production DB.
 
 ---
 

@@ -1,10 +1,14 @@
 import { describe, it, expect } from "vitest";
 import {
   cuisinesMatch,
+  evaluateMatchQuality,
   mapAgentRestaurantsToScored,
   normalizeWellnessTags,
   resolveAgenticOutcomes,
+  SELF_IMPROVEMENT_SCORE_THRESHOLD,
   type AgentGeneratedRestaurant,
+  type Restaurant,
+  type ScoredRestaurant,
   type WellnessTag,
 } from "./veda";
 
@@ -65,5 +69,58 @@ describe("normalizeWellnessTags", () => {
       "fresh",
       "gut_friendly",
     ] satisfies WellnessTag[]);
+  });
+});
+
+describe("evaluateMatchQuality (ARCH-002)", () => {
+  const thaiVenue: Restaurant = {
+    id: "1",
+    name: "Thai Paradise",
+    cuisine: "Thai",
+    purity_tier: "standard",
+    price_tier: 2,
+    energy_tags: ["grounding"],
+    context_tags: ["solo"],
+    signature_dish: "Tom Kha Gai",
+    dish_outcome: "gentle warmth",
+    menu_items: [{ name: "Tom Kha Gai", description: "Coconut chicken soup" }],
+    oil_profile: "standard",
+    grain_profile: "standard",
+    anti_inflammatory: false,
+    sovereign_seal: false,
+    verified_clean_oils: false,
+    base_purity_tier: null,
+    location_neighborhood: null,
+    doordash_url: null,
+    ubereats_url: null,
+    created_at: new Date().toISOString(),
+  };
+
+  const weak: ScoredRestaurant = {
+    restaurant: thaiVenue,
+    score: SELF_IMPROVEMENT_SCORE_THRESHOLD - 10,
+    why: "weak",
+    inferenceTags: [],
+  };
+
+  it("triggers when top score is below threshold", () => {
+    const report = evaluateMatchQuality([weak], { cuisine: "Thai" });
+    expect(report.needsImprovement).toBe(true);
+    expect(report.reasons.some((r) => r.includes("below threshold"))).toBe(true);
+  });
+
+  it("triggers when cuisine tag has zero hits", () => {
+    const report = evaluateMatchQuality(
+      [{ ...weak, restaurant: { ...thaiVenue, cuisine: "Indian" } }],
+      { cuisine: "Thai" },
+    );
+    expect(report.needsImprovement).toBe(true);
+    expect(report.cuisineKeywordHits).toBe(0);
+  });
+
+  it("passes when score and cuisine align", () => {
+    const strong: ScoredRestaurant = { ...weak, score: 88 };
+    const report = evaluateMatchQuality([strong], { cuisine: "Thai" });
+    expect(report.needsImprovement).toBe(false);
   });
 });

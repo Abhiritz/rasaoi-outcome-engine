@@ -45,8 +45,8 @@
           Deployment Live → rasaoi-delta.vercel.app
         </a>
         <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Report generated: 27 May 2026</span>
-        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Items logged: 7</span>
-        <span class="bg-violet-500/20 border border-violet-300/40 text-violet-100 px-3 py-1 rounded-full font-semibold">Branch: feature/agentic-generation-loop</span>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Items logged: 8</span>
+        <span class="bg-violet-500/20 border border-violet-300/40 text-violet-100 px-3 py-1 rounded-full font-semibold">Branch: feature/db-self-improvement-loop</span>
       </div>
     </div>
   </header>
@@ -78,11 +78,11 @@
       <article class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
         <div class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">RL-001</p>
-            <h2 class="font-serif text-2xl text-rasaoi mt-1">Gemini Free-Tier Rate-Limit Protection</h2>
+            <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">ARCH-002</p>
+            <h2 class="font-serif text-2xl text-rasaoi mt-1">Self-Improving Database Loop</h2>
           </div>
-          <span class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
-            Resolved
+          <span class="inline-flex items-center gap-1.5 bg-violet-100 text-violet-900 border border-violet-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
+            In Progress
           </span>
         </div>
 
@@ -90,44 +90,36 @@
           <div class="bg-amber-50 border-l-4 border-rasaoi-gold px-4 py-3 rounded-r-lg">
             <p class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-1">Client summary</p>
             <p class="text-stone-700 leading-relaxed">
-              Rapid “Ask Veda” submissions on Google AI Studio’s <strong>free tier</strong> were hitting HTTP <strong>429 rate limits</strong>. Rasaoi now limits usage to <strong>one Gemini call per question</strong>: 60s client cooldown, 90s penalty after a 429, fail-fast server behavior (no retry storms), smaller payloads (3 restaurants), 15-minute transcript cache, and local blood-sugar heuristics so the glycemic lens never triggers a second API call.
+              Rasaoi now <strong>learns from weak matches</strong>. When the database cannot satisfy a query (low score or missing Jain/Thai/etc.), Veda shows a <strong>learning state</strong>, synthesizes three compliant restaurants via AI, <strong>writes them into Supabase</strong>, re-queries, and presents perfect matches — while building a persistent venue cache for future diners.
             </p>
           </div>
 
           <div class="grid sm:grid-cols-3 gap-4 text-sm">
             <div class="border border-stone-200 rounded-lg p-4">
-              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Date resolved</p>
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Date started</p>
               <p class="font-semibold text-rasaoi">27 May 2026</p>
             </div>
             <div class="border border-stone-200 rounded-lg p-4">
               <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Git branch</p>
-              <p class="font-semibold text-violet-800 font-mono text-xs">feature/agentic-generation-loop</p>
+              <p class="font-semibold text-violet-800 font-mono text-xs">feature/db-self-improvement-loop</p>
             </div>
             <div class="border border-stone-200 rounded-lg p-4">
               <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Impact area</p>
-              <p class="font-semibold text-rasaoi">Reliability on free-tier Gemini</p>
+              <p class="font-semibold text-rasaoi">Self-learning data platform</p>
             </div>
           </div>
         </div>
       </article>
 
       <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-6">
-        <h3 class="font-serif text-xl text-rasaoi border-b border-stone-100 pb-3 mb-4">Protections added</h3>
-        <ul class="list-disc pl-5 space-y-2 text-sm text-stone-700">
-          <li><strong>Client cooldown</strong> — 60s between live Gemini calls; 90s block after a 429; Ask button shows countdown.</li>
-          <li><strong>Transcript cache</strong> — identical question within 15 min reuses session (no API call).</li>
-          <li><strong>Stable model</strong> — default <code class="bg-stone-100 px-1 rounded text-xs">gemini-2.0-flash</code> on edge functions.</li>
-          <li><strong>Fail fast on 429</strong> — no multi-model retry storms (was up to 9 calls per click).</li>
-          <li><strong>Smaller payload</strong> — 3 restaurants × 2–3 menu items per generation.</li>
-          <li><strong>Local glycemic heuristics</strong> — blood-sugar GL badges without a second Gemini call.</li>
-        </ul>
-      </section>
-
-      <section class="bg-sky-50 border border-sky-200 rounded-xl p-6">
-        <h3 class="font-serif text-xl text-sky-900 mb-2">Usage guidance (free tier)</h3>
-        <p class="text-sm text-stone-700 leading-relaxed">
-          Wait for the countdown to clear before submitting a new question. Repeating the exact same query within 15 minutes uses cache. Blood-sugar GL badges use local heuristics — no extra wait and no second API call.
-        </p>
+        <h3 class="font-serif text-xl text-rasaoi border-b border-stone-100 pb-3 mb-4">Self-improvement pipeline</h3>
+        <ol class="list-decimal pl-5 space-y-2 text-sm text-stone-700">
+          <li><strong>Query</strong> — load parsed restaurants from Supabase; score with Veda engine.</li>
+          <li><strong>Gate</strong> — <code class="bg-stone-100 px-1 rounded text-xs">evaluateMatchQuality()</code> checks score &lt; 62 or zero cuisine/dietary hits.</li>
+          <li><strong>Learn</strong> — progressive UI: "Exploring further options…" → "Synthesizing culinary preferences…"</li>
+          <li><strong>Synthesize</strong> — <code class="bg-stone-100 px-1 rounded text-xs">generate-missing-data</code> edge function inserts 3 venues.</li>
+          <li><strong>Re-fetch</strong> — database query re-runs; improved matches render immediately.</li>
+        </ol>
       </section>
     </div>
 
@@ -150,6 +142,15 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-stone-100" id="history-body">
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">ARCH-002</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Database self-improvement loop with AI synthesis</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-05-27</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-violet-100 text-violet-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-violet-300">In progress</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">Weak DB matches trigger AI synthesis + Supabase insert + re-fetch — self-expanding venue cache.</td>
+              </tr>
               <tr class="hover:bg-stone-50">
                 <td class="px-4 py-3 font-mono text-xs text-stone-500">RL-001</td>
                 <td class="px-4 py-3 font-medium text-rasaoi">Gemini free-tier rate-limit protection</td>
@@ -223,12 +224,12 @@
       <!-- Summary cards for history tab -->
       <div class="grid sm:grid-cols-3 gap-4">
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
-          <p class="text-3xl font-serif text-rasaoi font-bold">7</p>
+          <p class="text-3xl font-serif text-rasaoi font-bold">8</p>
           <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">Total logged</p>
         </div>
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
-          <p class="text-3xl font-serif text-amber-700 font-bold">2</p>
-          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">In progress (ARCH-001, MIG-001)</p>
+          <p class="text-3xl font-serif text-amber-700 font-bold">3</p>
+          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">In progress (ARCH-001, ARCH-002, MIG-001)</p>
         </div>
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
           <p class="text-3xl font-serif text-rasaoi-gold font-bold">100%</p>
