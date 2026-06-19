@@ -44,8 +44,8 @@
           class="bg-sky-500/30 border border-sky-300/50 text-sky-100 px-3 py-1 rounded-full font-semibold hover:bg-sky-500/40 transition">
           Deployment Live → rasaoi-delta.vercel.app
         </a>
-        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Report generated: 27 May 2026</span>
-        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Items logged: 5</span>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Report generated: 17 June 2026</span>
+        <span class="bg-white/10 border border-white/20 px-3 py-1 rounded-full">Items logged: 6</span>
         <span class="bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 px-3 py-1 rounded-full font-semibold">Billing-free dev: ACTIVE</span>
       </div>
     </div>
@@ -76,6 +76,50 @@
     <div id="panel-current" role="tabpanel" class="tab-panel space-y-6">
 
       <article class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <div class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">DATA-001</p>
+            <h2 class="font-serif text-2xl text-rasaoi mt-1">Indian Lighthouse Data — Folsom &amp; El Dorado Hills</h2>
+          </div>
+          <span class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
+            Resolved (personal dev)
+          </span>
+        </div>
+
+        <div class="px-6 py-5 space-y-5">
+          <div class="bg-amber-50 border-l-4 border-rasaoi-gold px-4 py-3 rounded-r-lg">
+            <p class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-1">Client summary</p>
+            <p class="text-stone-700 leading-relaxed">
+              Rasaoi's Reading page only shows restaurants with <strong>parsed menus in the database</strong>. We loaded <strong>eight real Indian venues</strong> (six in Folsom, two in El Dorado Hills) with <strong>144 dishes</strong> on the developer Supabase — including Jain-friendly items at five venues — so Indian, wellness, and dietary intents return locally relevant results. <strong>Client Lovable production data is unchanged.</strong>
+            </p>
+          </div>
+
+          <div class="grid sm:grid-cols-3 gap-4 text-sm">
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Date resolved</p>
+              <p class="font-semibold text-rasaoi">17 June 2026</p>
+            </div>
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Coverage</p>
+              <p class="font-semibold text-emerald-700">8 venues · 144 dishes</p>
+            </div>
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Scope</p>
+              <p class="font-semibold text-rasaoi">Personal dev Supabase only</p>
+            </div>
+          </div>
+
+          <section>
+            <h3 class="font-serif text-lg text-rasaoi mb-2">Venues loaded</h3>
+            <ul class="list-disc pl-5 space-y-1 text-sm text-stone-700">
+              <li><strong>Folsom:</strong> Mythaai, Taj Grill, Sanskrit, Mantra, Ruchi, Mylapore</li>
+              <li><strong>El Dorado Hills:</strong> India Oven, Bawarchi Indian Cuisine</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+
+      <article class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden opacity-90">
         <div class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">DIE-001</p>
@@ -158,6 +202,15 @@
             </thead>
             <tbody class="divide-y divide-stone-100" id="history-body">
               <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">DATA-001</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Indian lighthouse data — Folsom / EDH (personal dev)</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-06-17</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-300">Resolved</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">8 Indian venues, 144 parsed dishes on personal Supabase; Reading page gate satisfied. Lovable prod unchanged.</td>
+              </tr>
+              <tr class="hover:bg-stone-50">
                 <td class="px-4 py-3 font-mono text-xs text-stone-500">DIE-001</td>
                 <td class="px-4 py-3 font-medium text-rasaoi">Hard-exclusion gate for strict dietary restrictions</td>
                 <td class="px-4 py-3 whitespace-nowrap">2026-05-27</td>
@@ -180,9 +233,9 @@
                 <td class="px-4 py-3 font-medium text-rasaoi">Independent Supabase migration with Lovable sync</td>
                 <td class="px-4 py-3 whitespace-nowrap">2026-05-27</td>
                 <td class="px-4 py-3">
-                  <span class="inline-block bg-amber-100 text-amber-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-300">In progress</span>
+                  <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-300">Resolved</span>
                 </td>
-                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">Cursor-native dev + repeatable schema sync when client edits in Lovable.</td>
+                <td class="px-4 py-3 text-stone-600 text-xs max-w-xs">Cursor-native dev + repeatable schema sync when client edits in Lovable. Personal project linked.</td>
               </tr>
               <tr class="hover:bg-stone-50">
                 <td class="px-4 py-3 font-mono text-xs text-stone-500">CRS-002</td>
@@ -212,12 +265,12 @@
       <!-- Summary cards for history tab -->
       <div class="grid sm:grid-cols-3 gap-4">
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
-          <p class="text-3xl font-serif text-rasaoi font-bold">5</p>
+          <p class="text-3xl font-serif text-rasaoi font-bold">6</p>
           <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">Total logged</p>
         </div>
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
-          <p class="text-3xl font-serif text-amber-700 font-bold">1</p>
-          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">In progress (MIG-001)</p>
+          <p class="text-3xl font-serif text-emerald-700 font-bold">6</p>
+          <p class="text-xs uppercase tracking-wider text-stone-500 mt-1">Resolved</p>
         </div>
         <div class="bg-white border border-stone-200 rounded-xl p-5 text-center shadow-sm">
           <p class="text-3xl font-serif text-rasaoi-gold font-bold">100%</p>

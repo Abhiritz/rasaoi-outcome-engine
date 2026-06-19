@@ -7,8 +7,8 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 |-------|-------|
 | **Product** | Rasaoi Outcome Engine |
 | **Maintainer** | Engineering / CTO |
-| **Last updated** | 2026-05-27 |
-| **Total resolutions** | 5 (2 CRS + 1 DIE + 1 MIG + 1 DEV) |
+| **Last updated** | 2026-06-17 |
+| **Total resolutions** | 6 (2 CRS + 1 DIE + 1 MIG + 1 DEV + 1 DATA) |
 
 ---
 
@@ -16,11 +16,74 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 
 | ID | Title | Date | Status |
 |----|-------|------|--------|
+| [DATA-001](#data-001-personal-supabase-indian-lighthouse-coverage-folsom--edh) | Personal Supabase Indian lighthouse coverage (Folsom / EDH) | 2026-06-17 | RESOLVED |
 | [DIE-001](#die-001-hard-exclusion-gate-for-strict-dietary-restrictions) | Hard-exclusion gate for strict dietary restrictions | 2026-05-27 | RESOLVED |
 | [DEV-003](#dev-003-zero-billing-google-places-api-mocking-layer) | Zero-billing Google Places API mocking layer | 2026-05-27 | RESOLVED |
-| [MIG-001](#mig-001-independent-supabase-migration-with-upstream-lovable-sync) | Independent Supabase migration with upstream Lovable sync | 2026-05-27 | IN PROGRESS |
+| [MIG-001](#mig-001-independent-supabase-migration-with-upstream-lovable-sync) | Independent Supabase migration with upstream Lovable sync | 2026-05-27 | RESOLVED (personal) |
 | [CRS-002](#crs-002-conceptual-health-filters-overridden-by-baseline-cultural-bias) | Conceptual health filters overridden by baseline cultural bias | 2026-05-27 | RESOLVED |
 | [CRS-001](#crs-001-explicit-cuisine-intent-mis-routed-to-indian-options) | Explicit cuisine intent mis-routed to Indian options | 2026-05-27 | RESOLVED |
+
+---
+
+## DATA-001: Personal Supabase Indian lighthouse coverage (Folsom / EDH)
+
+- **Client-Facing Summary**: The Reading page only surfaces restaurants whose menus have been parsed into the database. The personal dev Supabase now includes **eight real Indian venues** across Folsom and El Dorado Hills — each with **15–21 dishes** — so Indian, Jain, and wellness intents return locally relevant options instead of empty or mock-only results. Client Lovable production data is unchanged.
+- **Date Resolved**: 2026-06-17
+- **Status**: RESOLVED (personal project `kiugplotjcnmpwjlxajc` only)
+
+### 1. Technical Context
+
+#### Problem
+- Seed migrations ship only **six demo restaurants** (one Indian: Mythaai) with **zero `dishes` rows**.
+- `Index.tsx` filters to restaurants where `menu_items.length > 0` — without ingest, Indian DB matches never appear on Reading.
+- Lovable client Supabase must not receive bulk data INSERT migrations from GitHub sync.
+
+#### Target
+- Populate **personal** Supabase with real Folsom/EDH Indian coverage.
+- Keep schema in shared migrations; keep **data** in personal-only scripts.
+
+### 2. Implementation
+
+#### A. Personal-only operator scripts (`scripts/personal/`)
+
+| File | Purpose |
+|------|---------|
+| `seed-indian-folsom-edh.sql` | Idempotent `restaurants` rows (8 venues, neighborhoods) |
+| `dish-data/*.json` | Curated dish catalogs from public menus |
+| `seed-dishes.mjs` | Commits dishes via `commit-dishes` (no Gemini) |
+| `bulk-ingest.mjs` | Live `ingest-menu` → `commit-dishes` when Gemini quota available |
+| `verify-reading.mjs` | Asserts Reading page visibility gate |
+| `venues.json` | Menu URL map for bulk ingest |
+| `README.md` | Operator runbook |
+
+Run:
+
+```powershell
+npx supabase link --project-ref kiugplotjcnmpwjlxajc
+npx supabase db query --linked -f scripts/personal/seed-indian-folsom-edh.sql
+node scripts/personal/seed-dishes.mjs
+node scripts/personal/verify-reading.mjs
+```
+
+#### B. Venues loaded
+
+| Neighborhood | Restaurants |
+|--------------|-------------|
+| Folsom | Mythaai, Taj Grill Indian Cuisine, Sanskrit, Mantra, Ruchi Indian Cuisine, Mylapore |
+| El Dorado Hills | India Oven, Bawarchi Indian Cuisine |
+
+**Totals:** 8 restaurants, 144 dishes, all with synced `menu_items`.
+
+#### C. Ingest path note
+
+Gemini free-tier daily quota blocked live `ingest-menu` during bootstrap (429). Curated JSON + `commit-dishes` used instead. Re-run `bulk-ingest.mjs` after quota reset for live menu refresh.
+
+#### Validation
+
+```text
+node scripts/personal/verify-reading.mjs → PASS (8 visible, 5 with Jain-friendly items)
+npm test → 15 passed
+```
 
 ---
 
@@ -175,7 +238,8 @@ npm test -- --run src/lib/google-places.test.ts → 5 passed
 
 - **Client-Facing Summary**: Rasaoi backend development is moving from the client's Lovable-managed Supabase to an independent developer Supabase instance, while keeping GitHub two-way sync so client UI/data edits in Lovable continue to flow into the codebase safely.
 - **Date Started**: 2026-05-27
-- **Status**: IN PROGRESS (workspace configured; personal `supabase link` pending)
+- **Date Completed (personal)**: 2026-06-17
+- **Status**: RESOLVED for personal dev (`kiugplotjcnmpwjlxajc`). Client Lovable Supabase remains separate.
 
 ### 1. Technical Context
 
@@ -223,18 +287,19 @@ npm test -- --run src/lib/google-places.test.ts → 5 passed
 | `.env.example` | Frontend env template |
 | `package.json` | Deploy/sync npm scripts |
 
-#### Remaining operator steps
+#### Remaining operator steps (client prod only)
+
+Client Lovable production continues on `uefxsoxcsyhsrwlphokq`. Personal dev bootstrap:
 
 ```powershell
 npx supabase login
-npx supabase link --project-ref <YOUR_PERSONAL_REF>
+npx supabase link --project-ref kiugplotjcnmpwjlxajc
 npx supabase db push
 npx supabase secrets set GEMINI_API_KEY=...
-npx supabase secrets set GOOGLE_PLACES_API_KEY=...
-npm run supabase:deploy:all
+npx supabase functions deploy ingest-menu commit-dishes --no-verify-jwt
 ```
 
-Copy `.env.example` → `.env` with personal anon URL/key.
+Copy `.env.example` → `.env` with personal anon URL/key. See also `scripts/personal/README.md` for Indian data seed.
 
 ---
 

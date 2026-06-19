@@ -74,12 +74,28 @@ This file is designed as a portable summary so the system can be reasoned about 
 - [x] Replace Lovable AI Gateway with native Gemini (`_shared/ai-client.ts`) in parse-intent, estimate-glycemic, ingest-menu
 - [x] Create `MIGRATE_SYNC_README.md` + `scripts/sync-from-lovable.ps1` / `.sh`
 - [x] Add `npm run supabase:deploy:all`, `sync:lovable`, `.env.example`
-- [ ] **You:** `npx supabase login` + `npx supabase link --project-ref <YOUR_PERSONAL_REF>`
-- [ ] **You:** `npx supabase db push` (bootstrap personal DB from migrations)
-- [ ] **You:** `npx supabase secrets set GEMINI_API_KEY=...` (+ Places, Firecrawl)
-- [ ] **You:** `npm run supabase:deploy:all`
-- [ ] **You:** Update `.env` to personal `VITE_SUPABASE_URL` + anon key
+- [x] **You:** `npx supabase login` + `npx supabase link --project-ref kiugplotjcnmpwjlxajc` (rasaoi-project)
+- [x] **You:** `npx supabase db push` (bootstrap personal DB from migrations)
+- [x] **You:** `npx supabase secrets set GEMINI_API_KEY=...` (+ FIRECRAWL on personal project)
+- [x] **You:** Deploy edge functions to personal project (`ingest-menu`, `commit-dishes`, etc.)
+- [x] **You:** Update `.env` to personal `VITE_SUPABASE_URL` + anon key (`kiugplotjcnmpwjlxajc`)
 - [x] Log in `CONFLICT_RESOLUTION_REPORTS.md` (MIG-001) + `handover-report.html`
+
+---
+
+## DATA-001: Personal Supabase Indian lighthouse coverage (Folsom / EDH)
+
+- [x] Research real Folsom + El Dorado Hills Indian venues (Taj Grill, Sanskrit, Mantra, Ruchi, Mylapore, India Oven, Bawarchi + Mythaai)
+- [x] Add personal-only scripts under `scripts/personal/` (not `supabase/migrations/` — Lovable client DB untouched)
+- [x] `seed-indian-folsom-edh.sql` — idempotent restaurant rows with `location_neighborhood`
+- [x] `dish-data/*.json` — curated menus from public venue research (15–21 dishes each)
+- [x] `seed-dishes.mjs` — commits via `commit-dishes` edge function (no Gemini required)
+- [x] `bulk-ingest.mjs` — optional Gemini live menu refresh when quota available
+- [x] `verify-reading.mjs` — smoke test Reading page gate (`menu_items.length > 0`)
+- [x] Loaded **8 Indian restaurants**, **144 dishes** on `kiugplotjcnmpwjlxajc` (6 Folsom, 2 EDH)
+- [x] Log in `CONFLICT_RESOLUTION_REPORTS.md` (DATA-001) + `handover-report.html` + `Rasaoi-Technical-Writeup.html`
+- [ ] **Optional:** Re-run `bulk-ingest.mjs` when Gemini daily quota resets for live menu sync
+- [ ] **Optional:** Expand to cloud-kitchen / delivery-only brands on DoorDash/UberEats
 
 ---
 

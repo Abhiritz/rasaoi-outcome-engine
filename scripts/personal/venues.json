@@ -1,0 +1,43 @@
+[
+  {
+    "name": "Mythaai",
+    "neighborhood": "Folsom",
+    "menu_url": "https://www.sanskritindian.com/menu",
+    "note": "Demo sovereign brand — menu ingested from public Indian reference until dedicated menu exists"
+  },
+  {
+    "name": "Taj Grill Indian Cuisine",
+    "neighborhood": "Folsom",
+    "menu_url": "https://www.doordash.com/store/taj-grill-indian-cuisine-folsom-279388/"
+  },
+  {
+    "name": "Sanskrit",
+    "neighborhood": "Folsom",
+    "menu_url": "https://www.sanskritindian.com/menu"
+  },
+  {
+    "name": "Mantra",
+    "neighborhood": "Folsom",
+    "menu_url": "https://www.toasttab.com/local/order/mantra"
+  },
+  {
+    "name": "Ruchi Indian Cuisine",
+    "neighborhood": "Folsom",
+    "menu_url": "http://www.ruchiindiancuisinefolsom.com/menu"
+  },
+  {
+    "name": "Mylapore",
+    "neighborhood": "Folsom",
+    "menu_url": "https://www.mylapore.us/menu.html"
+  },
+  {
+    "name": "India Oven",
+    "neighborhood": "El Dorado Hills",
+    "menu_url": "https://www.indiaoven.com/el-dorado-hills/"
+  },
+  {
+    "name": "Bawarchi Indian Cuisine",
+    "neighborhood": "El Dorado Hills",
+    "menu_url": "https://order.toasttab.com/online/bawarchi-edh"
+  }
+]

@@ -444,6 +444,12 @@
         An internal Lab for menu ingestion and dish scoring that uses Firecrawl + Gemini 2.5‑flash to
         build the proprietary menu attribute graph in Supabase.
       </li>
+      <li>
+        <strong>Personal dev data layer (DATA-001, June 2026):</strong> eight real Indian restaurants across
+        Folsom and El Dorado Hills loaded on developer Supabase (<code>scripts/personal/</code>) —
+        144 dishes with synced <code>menu_items</code>, unlocking the Reading page for local Indian intents.
+        Client Lovable production database is intentionally unchanged.
+      </li>
     </ul>
 
     <p>
@@ -718,6 +724,14 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <h3>4. Data Model & Memory</h3>
 
     <h3>4.1 Supabase schema (as implemented)</h3>
+
+    <div class="callout">
+      <small>June 2026 — Lighthouse data (personal dev)</small>
+      <strong>Indian coverage loaded:</strong> 8 venues (6 Folsom, 2 El Dorado Hills), 144 dishes.
+      Operators run <code>scripts/personal/seed-indian-folsom-edh.sql</code> + <code>seed-dishes.mjs</code>
+      against personal Supabase only — not shared migrations — so Lovable client prod stays isolated.
+      See <code>CONFLICT_RESOLUTION_REPORTS.md</code> (DATA-001).
+    </div>
 
     <ul>
       <li><strong>restaurants</strong> — purity tier, oil/grain profile, cuisine, signature dish, dish outcome, <code>menu_items</code>, context &amp; energy tags, Sovereign Seal flags.</li>
@@ -1040,7 +1054,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <li><strong>Intent &amp; memory</strong> — <code>src/lib/intent.ts</code>, <code>src/lib/memory.ts</code></li>
       <li><strong>Scoring engines</strong> — <code>src/lib/veda.ts</code>, <code>src/lib/vedaDishes.ts</code>, <code>src/lib/pairings.ts</code></li>
       <li><strong>Glycemic lens</strong> — <code>src/lib/glycemic.ts</code>, <code>supabase/functions/estimate-glycemic/index.ts</code></li>
-      <li><strong>Menu ingest</strong> — <code>src/pages/Lab.tsx</code>, <code>supabase/functions/ingest-menu/index.ts</code>, <code>supabase/functions/commit-dishes/index.ts</code></li>
+      <li><strong>Menu ingest &amp; personal seed</strong> — <code>src/pages/Lab.tsx</code>, <code>supabase/functions/ingest-menu/index.ts</code>, <code>commit-dishes/index.ts</code>, <code>scripts/personal/</code> (DATA-001)</li>
       <li><strong>Live restaurants</strong> — <code>supabase/functions/places-search/index.ts</code></li>
       <li><strong>Outcome capture</strong> — <code>src/lib/outcomes.ts</code>, <code>src/components/FulfillmentSheet.tsx</code>, <code>src/components/CheckinBanner.tsx</code></li>
       <li><strong>Trust &amp; consent</strong> — <code>src/components/MitraPact.tsx</code>, <code>src/components/BioConsentModal.tsx</code>, <code>src/components/VitalityPanel.tsx</code></li>
