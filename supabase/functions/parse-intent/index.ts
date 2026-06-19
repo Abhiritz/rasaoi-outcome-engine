@@ -2,6 +2,7 @@
 // Uses native Google Gemini API with tool-calling for reliable structured output.
 
 import { DEFAULT_GEMINI_MODEL, geminiToolCall } from "../_shared/ai-client.ts";
+import { DIETARY_INTENT_SLUGS, isDietaryIntent } from "../_shared/dietary.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -54,7 +55,8 @@ CULTURAL MODIFIERS (isolate from wellness — CRITICAL):
 - NEVER let a cultural tag alone imply a default heavy dish (Tandoori, Korma, Biryani). Omit filters.dish unless a specific dish was named.
 
 STRICT DIETARY RULES (HIGHEST PRIORITY — zero tolerance):
-- Extract religious/lifestyle dietary requirements into filters.dietary using ONLY: "jain", "vegan", "halal", "kosher".
+- Extract religious/lifestyle dietary requirements into filters.dietary using ONLY: "jain", "vegan", "vegetarian", "eggetarian", "halal", "jhatka", "kosher", "non_veg".
+- "pure veg" / "vegetarian only" / "no meat" → vegetarian. "eggs ok" / "eggetarian" → eggetarian. "non veg" / "meat only" → non_veg.
 - If the user mentions a strict restriction (e.g. "my friend is a Jain", "Jain food", "vegan only", "halal", "kosher"), you MUST set filters.dietary.
 - Event/social keywords ("birthday", "celebration", "anniversary", "party") affect dials.context ONLY — they must NEVER override or erase filters.dietary.
 - When filters.dietary is set, omit filters.dish if it would violate that diet (e.g. never set dish="Tandoori Chicken" when dietary="jain").
@@ -136,9 +138,9 @@ const TOOL_SCHEMA = {
             },
             dietary: {
               type: "string",
-              enum: ["jain", "vegan", "halal", "kosher"],
+              enum: [...DIETARY_INTENT_SLUGS],
               description:
-                "Strict religious/lifestyle diet. REQUIRED when user mentions Jain, vegan, halal, or kosher. Never drop for birthday/event context.",
+                "Strict religious/lifestyle diet. REQUIRED when user mentions Jain, vegan, vegetarian, eggetarian, halal, jhatka, kosher, or non-veg. Never drop for birthday/event context.",
             },
           },
           additionalProperties: false,
@@ -181,11 +183,11 @@ function isWellnessTag(v: unknown): v is WellnessTag {
   return typeof v === "string" && (WELLNESS_TAG_SLUGS as readonly string[]).includes(v);
 }
 
-const DIETARY_SLUGS = ["jain", "vegan", "halal", "kosher"] as const;
+const DIETARY_SLUGS = DIETARY_INTENT_SLUGS;
 type StrictDietary = (typeof DIETARY_SLUGS)[number];
 
 function isStrictDietary(v: unknown): v is StrictDietary {
-  return typeof v === "string" && (DIETARY_SLUGS as readonly string[]).includes(v);
+  return isDietaryIntent(v);
 }
 
 interface FilterPayload {
@@ -246,8 +248,12 @@ const DEFAULT_HEAVY_DISH_INVENTIONS =
 const TRANSCRIPT_DIETARY_PATTERNS: { dietary: StrictDietary; pattern: RegExp }[] = [
   { dietary: "jain", pattern: /\bjain\b|jain diet|jain food|jain vegetarian|ahimsa\b/i },
   { dietary: "vegan", pattern: /\bvegan\b|plant[- ]only|no dairy\b/i },
+  { dietary: "vegetarian", pattern: /\bvegetarian\b|pure veg\b|eggless\b|no meat\b|no eggs?\b/i },
+  { dietary: "eggetarian", pattern: /\beggetarian\b|eggs? (are )?ok\b|ovo[- ]vegetarian\b/i },
   { dietary: "halal", pattern: /\bhalal\b/i },
+  { dietary: "jhatka", pattern: /\bjhatka\b|jatka\b/i },
   { dietary: "kosher", pattern: /\bkosher\b/i },
+  { dietary: "non_veg", pattern: /\bnon[- ]?veg\b|meat only\b|chicken only\b/i },
 ];
 
 const MEAT_OR_NON_JAIN_DISH =

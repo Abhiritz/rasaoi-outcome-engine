@@ -50,80 +50,38 @@ export function normalizeWellnessTags(tags: unknown): WellnessTag[] {
   return WELLNESS_TAG_SLUGS.filter((t) => seen.has(t));
 }
 
-/** Strict religious/lifestyle diets — must stay in sync with parse-intent edge function. */
-export const STRICT_DIETARY_SLUGS = ["jain", "vegan", "halal", "kosher"] as const;
-export type StrictDietaryTag = (typeof STRICT_DIETARY_SLUGS)[number];
+import type { DishDietFields, DietaryIntent } from "./dietary";
+import {
+  dishTextBlob,
+  normalizeDietaryIntent,
+  passesDietaryGate,
+  passesStrictDietaryGate,
+} from "./dietary";
 
-export function isStrictDietaryTag(v: unknown): v is StrictDietaryTag {
-  return typeof v === "string" && (STRICT_DIETARY_SLUGS as readonly string[]).includes(v);
-}
+export {
+  DIET_CLASSES,
+  DIETARY_INTENT_SLUGS,
+  DIETARY_MODIFIERS,
+  STRICT_DIETARY_SLUGS,
+  dietBadgeLabel,
+  inferDietClass,
+  isDietaryIntent,
+  isDietClass,
+  isStrictDietaryTag,
+  mergeMenuItemFromDish,
+  normalizeDietaryIntent,
+  normalizeDishDiet,
+  normalizeStrictDietary,
+  passesDietaryGate,
+  passesStrictDietaryGate,
+  type DietClass,
+  type DietaryIntent,
+  type DietaryModifier,
+  type DishDietFields,
+  type StrictDietaryTag,
+} from "./dietary";
 
-export function normalizeStrictDietary(v: unknown): StrictDietaryTag | undefined {
-  return isStrictDietaryTag(v) ? v : undefined;
-}
-
-const ANIMAL_PRODUCT_MARKERS =
-  /\b(chicken|mutton|lamb|beef|pork|bacon|ham|sausage|turkey|duck|fish|seafood|shrimp|prawn|crab|lobster|eggs?|tandoori|biryani|butter chicken|navratan korma|salmon|tuna|anchovy|gelatin|lard|tikka masala|chicken tikka|mutton kebab|chicken kebab)\b/i;
-
-const DAIRY_MARKERS = /\b(milk|cheese|butter|ghee|cream|paneer|yogurt|curd|lassi|whey|honey)\b/i;
-
-const JAIN_ROOT_MARKERS =
-  /\b(onion|onions|garlic|potato|potatoes|carrot|carrots|beet|beetroot|turnip|radish|ginger root)\b/i;
-
-const PORK_MARKERS = /\b(pork|bacon|ham|lard|pepperoni|prosciutto)\b/i;
-
-const ALCOHOL_MARKERS = /\b(wine|beer|alcohol|vodka|whiskey|rum|champagne|cocktail)\b/i;
-
-const SHELLFISH_MARKERS = /\b(shrimp|prawn|crab|lobster|shellfish|oyster|clam|mussel|scallop)\b/i;
-
-const JAIN_SAFE_MARKERS = /\b(jain|no onion|no garlic|onion[- ]and[- ]garlic[- ]free|shuddha|ahimsa)\b/i;
-
-/** Standard Indian dishes that require an explicit Jain variant — otherwise blocked under Jain gate. */
-const JAIN_REQUIRES_EXPLICIT_VARIANT =
-  /\b(dal tadka|tadka dal|dal fry|paneer tikka|paneer butter|butter paneer|saag paneer|chana masala|aloo gobi|rajma|kadhi|sambar)\b/i;
-
-/** Remove negated root-veg phrases before Jain root scan (e.g. "no onion" must not trigger exclusion). */
-function scrubNegatedJainRoots(t: string): string {
-  return t
-    .replace(/\bno\s+onions?\b/gi, "")
-    .replace(/\bno\s+garlic\b/gi, "")
-    .replace(/\bonion[- ]and[- ]garlic[- ]free\b/gi, "");
-}
-
-/**
- * Gatekeeper: returns false if dish/restaurant blob violates the active strict diet.
- * Zero-tolerance — no scoring path may bypass this when dietary is set.
- */
-export function passesStrictDietaryGate(blob: string, dietary: StrictDietaryTag): boolean {
-  const t = blob.toLowerCase();
-  const jainSafe = JAIN_SAFE_MARKERS.test(t);
-
-  switch (dietary) {
-    case "jain":
-      if (ANIMAL_PRODUCT_MARKERS.test(t)) return false;
-      const rootScan = scrubNegatedJainRoots(t);
-      if (JAIN_ROOT_MARKERS.test(rootScan) && !jainSafe) return false;
-      if (JAIN_REQUIRES_EXPLICIT_VARIANT.test(t) && !jainSafe) return false;
-      return true;
-    case "vegan":
-      if (ANIMAL_PRODUCT_MARKERS.test(t)) return false;
-      if (DAIRY_MARKERS.test(t)) return false;
-      return true;
-    case "halal":
-      if (PORK_MARKERS.test(t)) return false;
-      if (ALCOHOL_MARKERS.test(t)) return false;
-      return true;
-    case "kosher":
-      if (PORK_MARKERS.test(t)) return false;
-      if (SHELLFISH_MARKERS.test(t)) return false;
-      if (ALCOHOL_MARKERS.test(t)) return false;
-      return true;
-    default:
-      return true;
-  }
-}
-
-/** Heavy cooked / cream-forward dishes that conflict with fresh/gut/light intent. */
+export type MenuItemLike = DishDietFields;
 const HEAVY_DISH_MARKERS =
   /\b(tandoori|korma|biryani|tikka masala|butter chicken|navratan|malai|rogan josh|fried|cream|heavy|dosa.*tikka|tikka.*dosa)\b/i;
 
@@ -136,14 +94,9 @@ const GUT_FRIENDLY_DISH_MARKERS =
 
 const RAW_FRESH_DISH_MARKERS = /\b(raw|fresh|salad|kachumber|cucumber|sprout|crisp)\b/i;
 
-export interface MenuItemLike {
-  name?: string;
-  description?: string;
-}
-
 /** Single dish blob for gate checks (name + description). */
 export function dishItemBlob(item: MenuItemLike): string {
-  return `${item.name ?? ""} ${item.description ?? ""}`.toLowerCase().trim();
+  return dishTextBlob(item);
 }
 
 export function getRestaurantMenuItems(r: Restaurant): MenuItemLike[] {
@@ -159,12 +112,22 @@ function restaurantDishBlob(r: Restaurant): string {
   return `${r.signature_dish ?? ""} ${menuText}`.toLowerCase();
 }
 
+function restaurantPassesDietary(r: Restaurant, dietary: DietaryIntent): boolean {
+  if (r.signature_dish && !passesDietaryGate({ name: r.signature_dish }, dietary)) {
+    return false;
+  }
+  const menu = getRestaurantMenuItems(r);
+  if (menu.some((m) => passesDietaryGate(m, dietary))) return true;
+  if (r.signature_dish && passesDietaryGate({ name: r.signature_dish }, dietary)) return true;
+  return passesDietaryGate({ name: restaurantDishBlob(r) }, dietary);
+}
+
 /** Filter menu items through the strict dietary gate — used by pairings and UI layers. */
 export function filterMenuItemsByDietary(
   items: MenuItemLike[],
-  dietary: StrictDietaryTag,
+  dietary: DietaryIntent,
 ): MenuItemLike[] {
-  return items.filter((m) => passesStrictDietaryGate(dishItemBlob(m), dietary));
+  return items.filter((m) => passesDietaryGate(m, dietary));
 }
 
 /**
@@ -173,12 +136,12 @@ export function filterMenuItemsByDietary(
  */
 export function sanitizeRestaurantForDietary(
   r: Restaurant,
-  dietary?: StrictDietaryTag,
+  dietary?: DietaryIntent,
 ): Restaurant {
   if (!dietary) return r;
   const menu = filterMenuItemsByDietary(getRestaurantMenuItems(r), dietary);
   let signature = r.signature_dish ?? undefined;
-  if (signature && !passesStrictDietaryGate(signature.toLowerCase(), dietary)) {
+  if (signature && !passesDietaryGate({ name: signature }, dietary)) {
     signature = menu[0]?.name ?? undefined;
   }
   const dish_outcome =
@@ -372,11 +335,11 @@ export function scoreRestaurants(
   const dTokens = dishTokens(intentDish);
   const cuisineIntent = intentCuisine?.trim();
   const wellnessTags = normalizeWellnessTags(intentWellnessTags);
-  const strictDietary = normalizeStrictDietary(intentDietary);
+  const strictDietary = normalizeDietaryIntent(intentDietary);
 
   // --- Hard-exclusion gatekeeper: non-compliant venues never enter ranking ---
   const eligible = strictDietary
-    ? restaurants.filter((r) => passesStrictDietaryGate(restaurantDishBlob(r), strictDietary))
+    ? restaurants.filter((r) => restaurantPassesDietary(r, strictDietary))
     : restaurants;
 
   return eligible

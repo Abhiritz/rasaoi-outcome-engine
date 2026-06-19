@@ -17,6 +17,7 @@ Update this file **every time an issue is resolved**. Mirror a client-safe summa
 | ID | Title | Date | Status |
 |----|-------|------|--------|
 | [DATA-001](#data-001-personal-supabase-indian-lighthouse-coverage-folsom--edh) | Personal Supabase Indian lighthouse coverage (Folsom / EDH) | 2026-06-17 | RESOLVED |
+| [DIET-001](#diet-001-dish-dietary-taxonomy-full-stack) | Dish dietary taxonomy — primary class, modifiers, menu sync, gates | 2026-06-18 | RESOLVED |
 | [DIE-001](#die-001-hard-exclusion-gate-for-strict-dietary-restrictions) | Hard-exclusion gate for strict dietary restrictions | 2026-05-27 | RESOLVED |
 | [DEV-003](#dev-003-zero-billing-google-places-api-mocking-layer) | Zero-billing Google Places API mocking layer | 2026-05-27 | RESOLVED |
 | [MIG-001](#mig-001-independent-supabase-migration-with-upstream-lovable-sync) | Independent Supabase migration with upstream Lovable sync | 2026-05-27 | RESOLVED (personal) |
@@ -83,6 +84,54 @@ Gemini free-tier daily quota blocked live `ingest-menu` during bootstrap (429). 
 ```text
 node scripts/personal/verify-reading.mjs → PASS (8 visible, 5 with Jain-friendly items)
 npm test → 15 passed
+```
+
+---
+
+## DIET-001: Dish dietary taxonomy (full stack)
+
+- **Client-Facing Summary**: Dishes stored incomplete `dietary_tags` that never reached the Reading page — `menu_items` held only name/description, and gates used regex on text instead of structured data. Rasaoi now assigns every dish a **primary diet class** (`vegan`, `vegetarian`, `eggetarian`, `non_veg`) plus optional **religious modifiers** (`jain`, `halal`, `jhatka`, `kosher`). These fields sync through ingest → dishes → `menu_items`, power intent parsing for all eight diet filters, and gate recommendations tags-first with regex fallback.
+- **Date Resolved**: 2026-06-18
+- **Status**: RESOLVED
+
+### 1. Technical Root Cause
+
+| Gap | Impact |
+|-----|--------|
+| No `non_veg`, `eggetarian`, `halal`, `jhatka` at dish level | Could not classify meat/egg/religious boundaries |
+| `commit-dishes` synced `{name, description}` only | Reading page never saw structured diet data |
+| `passesStrictDietaryGate` regex-only | Ignored `dishes.dietary_tags` entirely |
+| Intent enum limited to 4 diets | No `vegetarian`, `eggetarian`, `jhatka`, `non_veg` |
+
+### 2. Taxonomy
+
+**Primary `diet_class` (exactly one):** `vegan | vegetarian | eggetarian | non_veg | unknown`
+
+**Modifiers `dietary_modifiers`:** `jain | halal | jhatka | kosher` (halal ↔ jhatka mutually exclusive)
+
+**Ingredient flags:** `contains_dairy`, `contains_eggs`, `contains_nuts`, `gluten_free`
+
+**Restaurant:** `dietary_certifications text[]` for venue-wide claims (`halal_certified`, `pure_veg`, `jain_kitchen`)
+
+### 3. Implementation
+
+| Layer | Change |
+|-------|--------|
+| Schema | `supabase/migrations/20260618120000_diet_class.sql` |
+| Shared logic | `src/lib/dietary.ts`, `_shared/dietary.ts` |
+| Ingest | `ingest-menu` Gemini schema + `normalizeDishDiet` validation |
+| Commit | `commit-dishes` persists fields; `mergeMenuItemFromDish` rebuilds `menu_items` |
+| Intent | `parse-intent` + `intent.ts` full dietary enum + transcript patterns |
+| Gates | `passesDietaryGate` tags-first; `restaurantPassesDietary` fails on violative signature |
+| UI | `DietBadge`, Lab filter, `scoreDishes` dietary filter |
+| Personal DB | Re-tagged `dish-data/*.json`; `migrate-diet-fields.mjs` on 144 dishes |
+
+#### Validation
+
+```text
+npm test → 27 passed (dietary.test.ts + veda + pairings)
+node scripts/personal/migrate-diet-fields.mjs → 144 dishes, 8 restaurants
+npx supabase db push → 20260618120000_diet_class.sql applied
 ```
 
 ---

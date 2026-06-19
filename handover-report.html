@@ -78,6 +78,51 @@
       <article class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
         <div class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <div>
+            <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">DIET-001</p>
+            <h2 class="font-serif text-2xl text-rasaoi mt-1">Dish Dietary Taxonomy — Full Stack</h2>
+          </div>
+          <span class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">
+            Resolved
+          </span>
+        </div>
+
+        <div class="px-6 py-5 space-y-5">
+          <div class="bg-amber-50 border-l-4 border-rasaoi-gold px-4 py-3 rounded-r-lg">
+            <p class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-1">Client summary</p>
+            <p class="text-stone-700 leading-relaxed">
+              Every dish now has a clear <strong>primary diet class</strong> (vegan, vegetarian, eggetarian, non-veg) plus optional <strong>religious modifiers</strong> (Jain, Halal, Jhatka, Kosher). These fields flow from menu ingest through the database into Reading-page recommendations — tags-first gating with regex fallback — so a vegetarian intent never surfaces Tandoori Chicken, and eggetarian correctly allows eggs but blocks meat.
+            </p>
+          </div>
+
+          <div class="grid sm:grid-cols-3 gap-4 text-sm">
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Date resolved</p>
+              <p class="font-semibold text-rasaoi">18 June 2026</p>
+            </div>
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Coverage</p>
+              <p class="font-semibold text-emerald-700">144 dishes re-tagged · 8 venues</p>
+            </div>
+            <div class="border border-stone-200 rounded-lg p-4">
+              <p class="text-xs text-stone-500 uppercase tracking-wider mb-1">Impact area</p>
+              <p class="font-semibold text-rasaoi">Ingest, gates, Reading UI, Lab</p>
+            </div>
+          </div>
+
+          <section>
+            <h3 class="font-serif text-lg text-rasaoi mb-2">Taxonomy boundaries</h3>
+            <ul class="list-disc pl-5 space-y-1 text-sm text-stone-700">
+              <li><strong>Primary class</strong> — exactly one: vegan ⊂ vegetarian; eggetarian allows eggs; non_veg for meat/fish</li>
+              <li><strong>Modifiers</strong> — jain, halal, jhatka, kosher (halal and jhatka never on same dish)</li>
+              <li><strong>menu_items</strong> — now carries diet fields end-to-end (no tag loss at commit)</li>
+            </ul>
+          </section>
+        </div>
+      </article>
+
+      <article class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden opacity-90">
+        <div class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
             <p class="text-xs text-stone-500 uppercase tracking-widest font-semibold">DATA-001</p>
             <h2 class="font-serif text-2xl text-rasaoi mt-1">Indian Lighthouse Data — Folsom &amp; El Dorado Hills</h2>
           </div>
@@ -178,7 +223,7 @@
             <p class="text-stone-700">Same query → Tandoori and Dal Tadka excluded at every layer; all three outcome slots show Jain-compliant dishes only (Jain Paneer Tikka, Jain Dal Makhani, Fresh Fruit Salad).</p>
           </div>
         </div>
-        <code class="block mt-4 bg-white border border-rose-200 rounded px-3 py-2 text-xs text-stone-700">npm test -- --run → 15 passed (veda + pairings nested leak tests)</code>
+        <code class="block mt-4 bg-white border border-rose-200 rounded px-3 py-2 text-xs text-stone-700">npm test -- --run → 27 passed (dietary + veda + pairings)</code>
       </section>
     </div>
 
@@ -201,6 +246,15 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-stone-100" id="history-body">
+              <tr class="hover:bg-stone-50">
+                <td class="px-4 py-3 font-mono text-xs text-stone-500">DIET-001</td>
+                <td class="px-4 py-3 font-medium text-rasaoi">Dish dietary taxonomy — primary class, modifiers, menu sync</td>
+                <td class="px-4 py-3 whitespace-nowrap">2026-06-18</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-300">Resolved</span>
+                </td>
+                <td class="px-4 py-3 text-stone-600">Structured diet tags on every dish; vegetarian/eggetarian/halal gates on Reading</td>
+              </tr>
               <tr class="hover:bg-stone-50">
                 <td class="px-4 py-3 font-mono text-xs text-stone-500">DATA-001</td>
                 <td class="px-4 py-3 font-medium text-rasaoi">Indian lighthouse data — Folsom / EDH (personal dev)</td>

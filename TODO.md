@@ -99,6 +99,20 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## DIET-001: Dish dietary taxonomy (full stack)
+
+- [x] Migration `20260618120000_diet_class.sql` — `dishes.diet_class`, `dietary_modifiers`, ingredient flags; `restaurants.dietary_certifications`
+- [x] Shared module `src/lib/dietary.ts` + `supabase/functions/_shared/dietary.ts` — taxonomy, `normalizeDishDiet`, `passesDietaryGate`, `mergeMenuItemFromDish`
+- [x] `ingest-menu` + `commit-dishes` — persist diet fields; `menu_items` carries `diet_class` + modifiers end-to-end
+- [x] `parse-intent` + `intent.ts` — full enum: `jain | vegan | vegetarian | eggetarian | halal | jhatka | kosher | non_veg`
+- [x] `veda.ts` / `pairings.ts` — tags-first gate; signature-dish fail-fast for venue filter
+- [x] UI: `DietBadge` on `TripleOutcome` (Hero/Mini cards); Lab dietary filter + dish badges; `scoreDishes` dietary filter
+- [x] Re-tagged `scripts/personal/dish-data/*.json`; `migrate-diet-fields.mjs` on `kiugplotjcnmpwjlxajc` (144 dishes, 8 venues)
+- [x] `src/lib/dietary.test.ts` matrix + extended gates
+- [x] Log in `CONFLICT_RESOLUTION_REPORTS.md` (DIET-001) + `handover-report.html` + `Rasaoi-Technical-Writeup.html`
+
+---
+
 ## 0b. Conflict resolution documentation (ongoing)
 
 - [x] Create `CONFLICT_RESOLUTION_REPORTS.md` — internal engineering log

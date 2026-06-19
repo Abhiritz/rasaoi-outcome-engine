@@ -1,6 +1,7 @@
 // Ingest a restaurant menu: Firecrawl scrape → Gemini parse → return proposed dishes.
 
 import { DEFAULT_GEMINI_MODEL, geminiJsonObject } from "../_shared/ai-client.ts";
+import { normalizeDishDiet } from "../_shared/dietary.ts";
 // The /lab harness reviews + commits via service role.
 //
 // Request body: { restaurant_id: string, restaurant_name: string, source_url: string }
@@ -24,7 +25,13 @@ For each dish on the menu, output a JSON object matching this schema:
   "price": number | null,
   "category": string | null,                       // "Appetizer" | "Main" | "Biryani" | "Dosa" | "Bread" | "Dessert" | "Drink" | "Snack"
   "cuisine_region": "South Indian" | "North Indian" | "Indo-Chinese" | "Street" | "Other",
-  "dietary_tags": string[],                        // subset of: ["veg","vegan","jain","gluten-free","contains-dairy","contains-nuts"]
+  "diet_class": "vegan" | "vegetarian" | "eggetarian" | "non_veg" | "unknown",
+  "dietary_modifiers": string[],                  // subset of: ["jain","halal","jhatka","kosher"] — never both halal and jhatka
+  "contains_dairy": boolean,
+  "contains_eggs": boolean,
+  "contains_nuts": boolean,
+  "gluten_free": boolean,
+  "dietary_tags": string[],                        // legacy compat — derived from diet_class + modifiers
   "oil_profile": "seed-oil-free" | "cold-pressed" | "standard",   // default "standard" unless the restaurant explicitly advertises clean oils
   "grain_class": "ancient" | "standard" | "grain-free",
   "cooking_method": "tandoor" | "steamed" | "fried" | "sauteed" | "simmered" | "baked" | "raw" | null,
@@ -43,7 +50,10 @@ Rules:
 - A typical Indian restaurant dish should be "Satellite" or "Conscious"; reserve "Sovereign" for dishes explicitly made with cold-pressed oils, ancient grains, and minimal processing.
 - Steamed/fermented South Indian items (idli, dosa with minimal oil) are anti-inflammatory.
 - Deep-fried items, heavy cream curries, and refined grains skew pro-inflammatory.
-- Be honest with confidence — most attributes will be "inferred" from dish name + typical preparation.
+- diet_class is REQUIRED — exactly one primary class per dish. vegan < vegetarian < eggetarian < non_veg hierarchy.
+- Chicken/lamb/fish/mutton → non_veg. Egg dishes → eggetarian. Paneer/dal/dosa with dairy → vegetarian unless vegan stated.
+- Jain modifier only on vegetarian/vegan dishes without onion/garlic/root veg.
+- halal and jhatka are mutually exclusive on meat dishes.
 
 CRITICAL — non-food items (drinks, bottled water, sodas, packaged snacks):
 - These flags (oil_profile, grain_class) are meant for COOKED FOOD. For any drink, soda, juice, bottled water, or packaged item: ALWAYS set oil_profile="standard" AND grain_class="standard". DO NOT tag sodas as "grain-free" or "seed-oil-free" just because they technically contain no grain/oil.
@@ -64,6 +74,12 @@ interface ProposedDish {
   category: string | null;
   cuisine_region: string;
   dietary_tags: string[];
+  diet_class?: string;
+  dietary_modifiers?: string[];
+  contains_dairy?: boolean;
+  contains_eggs?: boolean;
+  contains_nuts?: boolean;
+  gluten_free?: boolean;
   oil_profile: string;
   grain_class: string;
   cooking_method: string | null;
@@ -125,7 +141,20 @@ async function parseWithLLM(rawContent: string, restaurantName: string, model?: 
   if (!parsed.dishes || !Array.isArray(parsed.dishes)) {
     throw new Error("LLM response missing 'dishes' array");
   }
-  return parsed.dishes;
+  return parsed.dishes.map((d) => {
+    const norm = normalizeDishDiet({
+      name: d.name,
+      description: d.description ?? undefined,
+      diet_class: d.diet_class,
+      dietary_modifiers: d.dietary_modifiers,
+      dietary_tags: d.dietary_tags,
+      contains_dairy: d.contains_dairy,
+      contains_eggs: d.contains_eggs,
+      contains_nuts: d.contains_nuts,
+      gluten_free: d.gluten_free,
+    });
+    return { ...d, ...norm };
+  });
 }
 
 Deno.serve(async (req) => {

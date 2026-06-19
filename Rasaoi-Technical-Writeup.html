@@ -450,6 +450,14 @@
         144 dishes with synced <code>menu_items</code>, unlocking the Reading page for local Indian intents.
         Client Lovable production database is intentionally unchanged.
       </li>
+      <li>
+        <strong>Dish dietary taxonomy (DIET-001, June 2026):</strong> canonical <code>diet_class</code>
+        (vegan / vegetarian / eggetarian / non_veg) plus <code>dietary_modifiers</code> (jain, halal,
+        jhatka, kosher) on every dish and <code>menu_items</code> row. Shared module
+        <code>src/lib/dietary.ts</code> powers tags-first <code>passesDietaryGate</code> across ingest,
+        intent parsing (8 diet filters), Veda venue filtering, triple-outcome pairings, Lab scoring, and
+        Reading-page diet badges.
+      </li>
     </ul>
 
     <p>
@@ -733,9 +741,17 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       See <code>CONFLICT_RESOLUTION_REPORTS.md</code> (DATA-001).
     </div>
 
+    <div class="callout">
+      <small>June 2026 — Dietary taxonomy (DIET-001)</small>
+      <strong>Structured diet on every dish:</strong> <code>diet_class</code> (vegan / vegetarian / eggetarian / non_veg),
+      <code>dietary_modifiers</code> (jain, halal, jhatka, kosher), ingredient flags synced into <code>menu_items</code>.
+      Shared gate in <code>src/lib/dietary.ts</code>; personal DB migrated via <code>migrate-diet-fields.mjs</code>.
+      See <code>CONFLICT_RESOLUTION_REPORTS.md</code> (DIET-001).
+    </div>
+
     <ul>
-      <li><strong>restaurants</strong> — purity tier, oil/grain profile, cuisine, signature dish, dish outcome, <code>menu_items</code>, context &amp; energy tags, Sovereign Seal flags.</li>
-      <li><strong>dishes</strong> — per‑dish attributes: purity tier, grain class, oil profile, category, glycemic load, inflammation score, dosha fit, energy/context tags, price, confidence.</li>
+      <li><strong>restaurants</strong> — purity tier, oil/grain profile, cuisine, signature dish, dish outcome, <code>menu_items</code> (with diet fields), <code>dietary_certifications</code>, context &amp; energy tags, Sovereign Seal flags.</li>
+      <li><strong>dishes</strong> — per‑dish attributes: <code>diet_class</code>, <code>dietary_modifiers</code>, ingredient flags, purity tier, grain class, oil profile, category, glycemic load, inflammation score, dosha fit, energy/context tags, price, confidence.</li>
       <li><strong>active_promos</strong> — merchant flash promos tied to restaurants.</li>
       <li><strong>outcome_selections</strong> — every selected outcome including dials snapshot and an optional vitality score at the moment of selection.</li>
       <li><strong>dishes_feedback</strong> — thumb‑up/down feedback for Lab QA, by persona and dials snapshot.</li>
@@ -1054,7 +1070,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <li><strong>Intent &amp; memory</strong> — <code>src/lib/intent.ts</code>, <code>src/lib/memory.ts</code></li>
       <li><strong>Scoring engines</strong> — <code>src/lib/veda.ts</code>, <code>src/lib/vedaDishes.ts</code>, <code>src/lib/pairings.ts</code></li>
       <li><strong>Glycemic lens</strong> — <code>src/lib/glycemic.ts</code>, <code>supabase/functions/estimate-glycemic/index.ts</code></li>
-      <li><strong>Menu ingest &amp; personal seed</strong> — <code>src/pages/Lab.tsx</code>, <code>supabase/functions/ingest-menu/index.ts</code>, <code>commit-dishes/index.ts</code>, <code>scripts/personal/</code> (DATA-001)</li>
+      <li><strong>Dietary taxonomy</strong> — <code>src/lib/dietary.ts</code>, <code>supabase/functions/_shared/dietary.ts</code>, <code>src/components/DietBadge.tsx</code> (DIET-001)</li>
+      <li><strong>Menu ingest &amp; personal seed</strong> — <code>src/pages/Lab.tsx</code>, <code>supabase/functions/ingest-menu/index.ts</code>, <code>commit-dishes/index.ts</code>, <code>scripts/personal/</code> (DATA-001, DIET-001)</li>
       <li><strong>Live restaurants</strong> — <code>supabase/functions/places-search/index.ts</code></li>
       <li><strong>Outcome capture</strong> — <code>src/lib/outcomes.ts</code>, <code>src/components/FulfillmentSheet.tsx</code>, <code>src/components/CheckinBanner.tsx</code></li>
       <li><strong>Trust &amp; consent</strong> — <code>src/components/MitraPact.tsx</code>, <code>src/components/BioConsentModal.tsx</code>, <code>src/components/VitalityPanel.tsx</code></li>

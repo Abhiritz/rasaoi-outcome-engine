@@ -31,7 +31,21 @@ If Gemini rate limits block ingest, use curated dish seed (no LLM):
 node scripts/personal/seed-dishes.mjs
 ```
 
-Curated data lives in [`dish-data/`](dish-data/) — sourced from public menus for real Folsom/EDH venues.
+Curated data lives in [`dish-data/`](dish-data/) — sourced from public menus for real Folsom/EDH venues. Each dish includes `diet_class`, `dietary_modifiers`, and ingredient flags (DIET-001).
+
+## 3. Diet field migration (existing rows)
+
+After `npx supabase db push` applies `20260618120000_diet_class.sql`:
+
+```powershell
+node scripts/personal/migrate-diet-fields.mjs
+```
+
+Re-tag curated JSON from taxonomy module:
+
+```powershell
+$env:RETAG="1"; npm test -- scripts/personal/retag-dish-data.test.ts
+```
 
 ## Venues covered
 

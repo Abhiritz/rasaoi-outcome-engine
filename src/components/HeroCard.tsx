@@ -60,6 +60,12 @@ function buildShortInsight(
   if (dietary === "vegan") {
     return `Chosen because ${dish} is fully plant-based with no animal products or dairy — aligned to your ${energyNote}.`;
   }
+  if (dietary === "vegetarian") {
+    return `Chosen because ${dish} is vegetarian with no meat, fish, or eggs — suited to your ${energyNote}.`;
+  }
+  if (dietary === "eggetarian") {
+    return `Chosen because ${dish} fits an eggetarian diet (no meat; eggs allowed) for your ${energyNote}.`;
+  }
   const fat = r.oil_profile === "seed-oil-free"
     ? "seed-oil-free preparation"
     : r.oil_profile === "cold-pressed"

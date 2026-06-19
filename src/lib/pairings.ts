@@ -13,7 +13,7 @@
 import type { Restaurant, DialState, StrictDietaryTag } from "./veda";
 import {
   dishItemBlob,
-  passesStrictDietaryGate,
+  passesDietaryGate,
   sanitizeRestaurantForDietary,
 } from "./veda";
 
@@ -41,6 +41,12 @@ export interface MealPlate {
 interface MenuItem {
   name: string;
   description?: string;
+  diet_class?: string;
+  dietary_modifiers?: string[];
+  contains_dairy?: boolean;
+  contains_eggs?: boolean;
+  contains_nuts?: boolean;
+  gluten_free?: boolean;
 }
 
 function getMenu(r: Restaurant, dietary?: StrictDietaryTag): MenuItem[] {
@@ -48,12 +54,13 @@ function getMenu(r: Restaurant, dietary?: StrictDietaryTag): MenuItem[] {
   if (!Array.isArray(raw)) return [];
   const items = (raw as unknown as MenuItem[]).filter((m) => m && typeof m.name === "string");
   if (!dietary) return items;
-  return items.filter((m) => passesStrictDietaryGate(dishItemBlob(m), dietary));
+  return items.filter((m) => passesDietaryGate(m, dietary));
 }
 
-function dishPassesGate(name: string, desc: string, dietary?: StrictDietaryTag): boolean {
+function dishPassesGate(name: string, desc: string, dietary?: StrictDietaryTag, item?: MenuItem): boolean {
   if (!dietary) return true;
-  return passesStrictDietaryGate(dishItemBlob({ name, description: desc }), dietary);
+  if (item) return passesDietaryGate(item, dietary);
+  return passesDietaryGate({ name, description: desc }, dietary);
 }
 
 function inferSovereign(r: Restaurant): boolean {
@@ -442,6 +449,8 @@ export interface OutcomePick {
   purityTag: string;
   why: string;
   verified: boolean;
+  diet_class?: string;
+  dietary_modifiers?: string[];
 }
 
 function energyStateLabel(energy: number): string {
@@ -592,6 +601,14 @@ function dietaryWhyPrefix(dietary?: StrictDietaryTag): string {
       return "Halal-certified preparation — no pork or alcohol. ";
     case "kosher":
       return "Kosher-aligned — no pork, shellfish, or alcohol. ";
+    case "vegetarian":
+      return "Vegetarian — no meat, fish, or eggs. ";
+    case "eggetarian":
+      return "Eggetarian — no meat or fish; eggs permitted. ";
+    case "jhatka":
+      return "Jhatka preparation — no halal slaughter. ";
+    case "non_veg":
+      return "Non-vegetarian — includes meat or seafood. ";
     default:
       return "";
   }
@@ -758,11 +775,21 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const userCarrier = intentCarrierName(intent?.dish);
 
   // Helper: try menu first, then cuisine bank fallback (treated as "inferred")
-  type Pick = { name: string; verified: boolean; description?: string };
+  type Pick = {
+    name: string;
+    verified: boolean;
+    description?: string;
+    diet_class?: string;
+    dietary_modifiers?: string[];
+  };
+  const menuDiet = (m: MenuItem) => ({
+    diet_class: m.diet_class,
+    dietary_modifiers: m.dietary_modifiers,
+  });
   const tryMenu = (m?: MenuItem): Pick | null => {
     if (!m) return null;
-    if (!dishPassesGate(m.name, m.description ?? "", dietary)) return null;
-    return { name: m.name, verified: true, description: m.description };
+    if (!dishPassesGate(m.name, m.description ?? "", dietary, m)) return null;
+    return { name: m.name, verified: true, description: m.description, ...menuDiet(m) };
   };
   const tryBank = (list: string[] | undefined): Pick | null => {
     if (!list) return null;
@@ -779,7 +806,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   if (dishTokens.length) {
     const hit = pickByIntent(menu, dishTokens, used);
     if (hit) {
-      best = { name: hit.name, verified: true };
+      best = { name: hit.name, verified: true, ...menuDiet(hit) };
     } else if (bank) {
       const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
         .filter((d) => !used.has(d.toLowerCase()))
@@ -830,10 +857,17 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       const n = pickFromBank(pool, used, dietary);
       if (n) { used.add(n.toLowerCase()); return { name: n, verified: false }; }
     }
-    const menuFallback = menu.find((m) => !used.has(m.name.toLowerCase()) && dishPassesGate(m.name, m.description ?? "", dietary));
+    const menuFallback = menu.find(
+      (m) => !used.has(m.name.toLowerCase()) && dishPassesGate(m.name, m.description ?? "", dietary, m),
+    );
     if (menuFallback) {
       used.add(menuFallback.name.toLowerCase());
-      return { name: menuFallback.name, verified: true, description: menuFallback.description };
+      return {
+        name: menuFallback.name,
+        verified: true,
+        description: menuFallback.description,
+        ...menuDiet(menuFallback),
+      };
     }
     if (sigName && dishPassesGate(sigName, "", dietary) && !used.has(sigName.toLowerCase())) {
       return { name: sigName, verified: true };
@@ -874,6 +908,8 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       purityTag,
       why: whyFor(key, pick.name, dials, safe, carrierSpec, carrierName, dietary),
       verified: pick.verified,
+      diet_class: pick.diet_class,
+      dietary_modifiers: pick.dietary_modifiers,
     };
   });
 }

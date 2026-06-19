@@ -68,6 +68,12 @@ export type Database = {
           cuisine_region: string | null
           description: string | null
           dietary_tags: string[]
+          diet_class: string
+          dietary_modifiers: string[]
+          contains_dairy: boolean
+          contains_eggs: boolean
+          contains_nuts: boolean
+          gluten_free: boolean
           dosha_fit: string | null
           energy_tags: string[]
           glycemic_load: string | null
@@ -91,6 +97,12 @@ export type Database = {
           cuisine_region?: string | null
           description?: string | null
           dietary_tags?: string[]
+          diet_class?: string
+          dietary_modifiers?: string[]
+          contains_dairy?: boolean
+          contains_eggs?: boolean
+          contains_nuts?: boolean
+          gluten_free?: boolean
           dosha_fit?: string | null
           energy_tags?: string[]
           glycemic_load?: string | null
@@ -114,6 +126,12 @@ export type Database = {
           cuisine_region?: string | null
           description?: string | null
           dietary_tags?: string[]
+          diet_class?: string
+          dietary_modifiers?: string[]
+          contains_dairy?: boolean
+          contains_eggs?: boolean
+          contains_nuts?: boolean
+          gluten_free?: boolean
           dosha_fit?: string | null
           energy_tags?: string[]
           glycemic_load?: string | null
@@ -281,6 +299,7 @@ export type Database = {
           grain_profile: string
           id: string
           location_neighborhood: string | null
+          dietary_certifications: string[]
           menu_items: Json
           name: string
           oil_profile: string
@@ -303,6 +322,7 @@ export type Database = {
           grain_profile?: string
           id?: string
           location_neighborhood?: string | null
+          dietary_certifications?: string[]
           menu_items?: Json
           name: string
           oil_profile?: string
@@ -325,6 +345,7 @@ export type Database = {
           grain_profile?: string
           id?: string
           location_neighborhood?: string | null
+          dietary_certifications?: string[]
           menu_items?: Json
           name?: string
           oil_profile?: string

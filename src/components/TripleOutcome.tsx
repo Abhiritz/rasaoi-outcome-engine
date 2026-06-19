@@ -1,4 +1,5 @@
 import type { OutcomePick } from "@/lib/pairings";
+import { DietBadge } from "./DietBadge";
 import { Sparkles, Leaf, Flame, Check } from "lucide-react";
 
 const ICONS = {
@@ -77,6 +78,7 @@ export const TripleOutcome = ({
               </div>
             )}
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <DietBadge diet_class={p.diet_class} dietary_modifiers={p.dietary_modifiers} />
               <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-gold-soft/60 text-primary border border-gold/30 font-semibold">
                 {p.purityTag}
               </span>

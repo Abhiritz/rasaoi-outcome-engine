@@ -1,20 +1,345 @@
 [
-  {"name": "Classic Butter Chicken", "description": "Tandoori chicken in tomato butter sauce", "price": 18, "category": "Main", "cuisine_region": "North Indian", "dietary_tags": ["contains-dairy"], "purity_tier": "Satellite", "confidence": "verified"},
-  {"name": "Chicken Tikka Masala", "description": "Grilled chicken in spiced cream gravy", "price": 18, "category": "Main", "cuisine_region": "North Indian", "dietary_tags": ["contains-dairy"], "purity_tier": "Satellite", "confidence": "verified"},
-  {"name": "Paneer Saagwala", "description": "Paneer in spinach gravy", "price": 17, "category": "Main", "cuisine_region": "North Indian", "dietary_tags": ["veg", "contains-dairy"], "purity_tier": "Conscious", "confidence": "verified"},
-  {"name": "Shahi Paneer", "description": "Royal paneer in cashew cream", "price": 17, "category": "Main", "cuisine_region": "North Indian", "dietary_tags": ["veg", "contains-dairy", "contains-nuts"], "purity_tier": "Satellite", "confidence": "verified"},
-  {"name": "Vegetable Samosa", "description": "Crispy pastry with spiced potatoes", "price": 10, "category": "Appetizer", "cuisine_region": "North Indian", "dietary_tags": ["veg"], "cooking_method": "fried", "purity_tier": "Satellite", "confidence": "verified"},
-  {"name": "Paneer Tikka", "description": "Tandoor-grilled cottage cheese", "price": 16, "category": "Tandoori", "cuisine_region": "North Indian", "dietary_tags": ["veg", "contains-dairy"], "cooking_method": "tandoor", "purity_tier": "Conscious", "confidence": "verified"},
-  {"name": "Boti Kebab", "description": "Lamb cubes from tandoor", "price": 22, "category": "Tandoori", "cuisine_region": "North Indian", "dietary_tags": [], "cooking_method": "tandoor", "purity_tier": "Satellite", "confidence": "verified"},
-  {"name": "Lamb Dum Biryani", "description": "Slow-cooked lamb biryani", "price": 20, "category": "Biryani", "cuisine_region": "North Indian", "dietary_tags": [], "purity_tier": "Satellite", "confidence": "verified"},
-  {"name": "Seasonal Vegetable Biryani", "description": "Fragrant rice with vegetables", "price": 18, "category": "Biryani", "cuisine_region": "North Indian", "dietary_tags": ["veg"], "purity_tier": "Conscious", "confidence": "verified"},
-  {"name": "Aloo Gobi", "description": "Potato and cauliflower curry", "price": 18, "category": "Main", "cuisine_region": "North Indian", "dietary_tags": ["veg", "vegan", "gluten-free"], "purity_tier": "Conscious", "confidence": "verified"},
-  {"name": "Chilean Sea Bass", "description": "Pan-seared fish with Indian spices", "price": 28, "category": "Main", "cuisine_region": "Other", "dietary_tags": [], "purity_tier": "Conscious", "confidence": "verified"},
-  {"name": "Tulsi Soup", "description": "Holy basil tomato broth", "price": 7, "category": "Appetizer", "cuisine_region": "North Indian", "dietary_tags": ["veg", "vegan"], "purity_tier": "Conscious", "confidence": "verified"},
-  {"name": "Garlic Naan", "description": "Tandoor bread with garlic", "price": 4, "category": "Bread", "cuisine_region": "North Indian", "dietary_tags": ["veg"], "cooking_method": "baked", "purity_tier": "Satellite", "confidence": "verified"},
-  {"name": "Basmati Rice", "description": "Steamed aged basmati", "price": 4, "category": "Side", "cuisine_region": "North Indian", "dietary_tags": ["veg", "vegan", "gluten-free"], "purity_tier": "Conscious", "confidence": "verified"},
-  {"name": "Raita", "description": "Yogurt with cucumber", "price": 4, "category": "Side", "cuisine_region": "North Indian", "dietary_tags": ["veg", "contains-dairy"], "purity_tier": "Conscious", "confidence": "verified"},
-  {"name": "Mango Lassi", "description": "Mango yogurt smoothie", "price": 5, "category": "Drink", "cuisine_region": "North Indian", "dietary_tags": ["veg", "contains-dairy"], "purity_tier": "Satellite", "confidence": "verified"},
-  {"name": "Gulab Jamun", "description": "Sweet milk dumplings", "price": 6, "category": "Dessert", "cuisine_region": "North Indian", "dietary_tags": ["veg", "contains-dairy"], "purity_tier": "Satellite", "confidence": "verified"},
-  {"name": "Fresh Fruit Salad", "description": "Seasonal fruit plate", "price": 7, "category": "Dessert", "cuisine_region": "Other", "dietary_tags": ["veg", "vegan", "jain", "gluten-free"], "purity_tier": "Sovereign", "confidence": "verified"}
+  {
+    "name": "Classic Butter Chicken",
+    "description": "Tandoori chicken in tomato butter sauce",
+    "price": 18,
+    "category": "Main",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "non_veg",
+      "contains-dairy"
+    ],
+    "purity_tier": "Satellite",
+    "confidence": "verified",
+    "diet_class": "non_veg",
+    "dietary_modifiers": [],
+    "contains_dairy": true,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Chicken Tikka Masala",
+    "description": "Grilled chicken in spiced cream gravy",
+    "price": 18,
+    "category": "Main",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "non_veg",
+      "contains-dairy"
+    ],
+    "purity_tier": "Satellite",
+    "confidence": "verified",
+    "diet_class": "non_veg",
+    "dietary_modifiers": [],
+    "contains_dairy": true,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Paneer Saagwala",
+    "description": "Paneer in spinach gravy",
+    "price": 17,
+    "category": "Main",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "veg",
+      "contains-dairy"
+    ],
+    "purity_tier": "Conscious",
+    "confidence": "verified",
+    "diet_class": "vegetarian",
+    "dietary_modifiers": [],
+    "contains_dairy": true,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Shahi Paneer",
+    "description": "Royal paneer in cashew cream",
+    "price": 17,
+    "category": "Main",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "veg",
+      "contains-dairy",
+      "contains-nuts"
+    ],
+    "purity_tier": "Satellite",
+    "confidence": "verified",
+    "diet_class": "vegetarian",
+    "dietary_modifiers": [],
+    "contains_dairy": true,
+    "contains_eggs": false,
+    "contains_nuts": true,
+    "gluten_free": false
+  },
+  {
+    "name": "Vegetable Samosa",
+    "description": "Crispy pastry with spiced potatoes",
+    "price": 10,
+    "category": "Appetizer",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "veg"
+    ],
+    "cooking_method": "fried",
+    "purity_tier": "Satellite",
+    "confidence": "verified",
+    "diet_class": "vegetarian",
+    "dietary_modifiers": [],
+    "contains_dairy": false,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Paneer Tikka",
+    "description": "Tandoor-grilled cottage cheese",
+    "price": 16,
+    "category": "Tandoori",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "veg",
+      "contains-dairy"
+    ],
+    "cooking_method": "tandoor",
+    "purity_tier": "Conscious",
+    "confidence": "verified",
+    "diet_class": "vegetarian",
+    "dietary_modifiers": [],
+    "contains_dairy": true,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Boti Kebab",
+    "description": "Lamb cubes from tandoor",
+    "price": 22,
+    "category": "Tandoori",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "non_veg"
+    ],
+    "cooking_method": "tandoor",
+    "purity_tier": "Satellite",
+    "confidence": "verified",
+    "diet_class": "non_veg",
+    "dietary_modifiers": [],
+    "contains_dairy": false,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Lamb Dum Biryani",
+    "description": "Slow-cooked lamb biryani",
+    "price": 20,
+    "category": "Biryani",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "non_veg"
+    ],
+    "purity_tier": "Satellite",
+    "confidence": "verified",
+    "diet_class": "non_veg",
+    "dietary_modifiers": [],
+    "contains_dairy": false,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Seasonal Vegetable Biryani",
+    "description": "Fragrant rice with vegetables",
+    "price": 18,
+    "category": "Biryani",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "veg"
+    ],
+    "purity_tier": "Conscious",
+    "confidence": "verified",
+    "diet_class": "vegetarian",
+    "dietary_modifiers": [],
+    "contains_dairy": false,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Aloo Gobi",
+    "description": "Potato and cauliflower curry",
+    "price": 18,
+    "category": "Main",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "vegan",
+      "gluten-free"
+    ],
+    "purity_tier": "Conscious",
+    "confidence": "verified",
+    "diet_class": "vegan",
+    "dietary_modifiers": [],
+    "contains_dairy": false,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": true
+  },
+  {
+    "name": "Chilean Sea Bass",
+    "description": "Pan-seared fish with Indian spices",
+    "price": 28,
+    "category": "Main",
+    "cuisine_region": "Other",
+    "dietary_tags": [
+      "non_veg"
+    ],
+    "purity_tier": "Conscious",
+    "confidence": "verified",
+    "diet_class": "non_veg",
+    "dietary_modifiers": [],
+    "contains_dairy": false,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Tulsi Soup",
+    "description": "Holy basil tomato broth",
+    "price": 7,
+    "category": "Appetizer",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "vegan"
+    ],
+    "purity_tier": "Conscious",
+    "confidence": "verified",
+    "diet_class": "vegan",
+    "dietary_modifiers": [],
+    "contains_dairy": false,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Garlic Naan",
+    "description": "Tandoor bread with garlic",
+    "price": 4,
+    "category": "Bread",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "veg"
+    ],
+    "cooking_method": "baked",
+    "purity_tier": "Satellite",
+    "confidence": "verified",
+    "diet_class": "vegetarian",
+    "dietary_modifiers": [],
+    "contains_dairy": false,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Basmati Rice",
+    "description": "Steamed aged basmati",
+    "price": 4,
+    "category": "Side",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "vegan",
+      "gluten-free"
+    ],
+    "purity_tier": "Conscious",
+    "confidence": "verified",
+    "diet_class": "vegan",
+    "dietary_modifiers": [],
+    "contains_dairy": false,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": true
+  },
+  {
+    "name": "Raita",
+    "description": "Yogurt with cucumber",
+    "price": 4,
+    "category": "Side",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "veg",
+      "contains-dairy"
+    ],
+    "purity_tier": "Conscious",
+    "confidence": "verified",
+    "diet_class": "vegetarian",
+    "dietary_modifiers": [],
+    "contains_dairy": true,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Mango Lassi",
+    "description": "Mango yogurt smoothie",
+    "price": 5,
+    "category": "Drink",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "veg",
+      "contains-dairy"
+    ],
+    "purity_tier": "Satellite",
+    "confidence": "verified",
+    "diet_class": "vegetarian",
+    "dietary_modifiers": [],
+    "contains_dairy": true,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Gulab Jamun",
+    "description": "Sweet milk dumplings",
+    "price": 6,
+    "category": "Dessert",
+    "cuisine_region": "North Indian",
+    "dietary_tags": [
+      "veg",
+      "contains-dairy"
+    ],
+    "purity_tier": "Satellite",
+    "confidence": "verified",
+    "diet_class": "vegetarian",
+    "dietary_modifiers": [],
+    "contains_dairy": true,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": false
+  },
+  {
+    "name": "Fresh Fruit Salad",
+    "description": "Seasonal fruit plate",
+    "price": 7,
+    "category": "Dessert",
+    "cuisine_region": "Other",
+    "dietary_tags": [
+      "vegan",
+      "jain",
+      "gluten-free"
+    ],
+    "purity_tier": "Sovereign",
+    "confidence": "verified",
+    "diet_class": "vegan",
+    "dietary_modifiers": [
+      "jain"
+    ],
+    "contains_dairy": false,
+    "contains_eggs": false,
+    "contains_nuts": false,
+    "gluten_free": true
+  }
 ]

@@ -20,7 +20,7 @@ export interface ParsedIntent {
       | "probiotic"
     )[];
     culture_tag?: string;
-    dietary?: "jain" | "vegan" | "halal" | "kosher";
+    dietary?: "jain" | "vegan" | "vegetarian" | "eggetarian" | "halal" | "jhatka" | "kosher" | "non_veg";
   };
   confidence: "high" | "medium" | "low";
   lens?: "blood_sugar";

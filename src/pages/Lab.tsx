@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
 import { PERSONA_PRESETS, scoreDishes, type ScoredDish, type Dish } from "@/lib/vedaDishes";
+import { DIETARY_INTENT_SLUGS, type DietaryIntent } from "@/lib/dietary";
+import { DietBadge } from "@/components/DietBadge";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Restaurant = Tables<"restaurants">;
@@ -23,6 +25,7 @@ const Lab = () => {
   const [restaurantFilter, setRestaurantFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [includeNonFood, setIncludeNonFood] = useState(false);
+  const [dietaryFilter, setDietaryFilter] = useState<DietaryIntent | "all">("all");
   const [loading, setLoading] = useState(true);
 
   // Ingest pane
@@ -67,9 +70,13 @@ const Lab = () => {
         {
           includeNonFood,
           categoryFilter: categoryFilter === "all" ? undefined : categoryFilter,
+          dietaryFilter:
+            dietaryFilter !== "all"
+              ? dietaryFilter
+              : persona.dietary,
         },
       ).slice(0, 8),
-    [filteredDishes, persona, includeNonFood, categoryFilter],
+    [filteredDishes, persona, includeNonFood, categoryFilter, dietaryFilter],
   );
 
   const restMap = useMemo(
@@ -206,6 +213,21 @@ const Lab = () => {
               />
               Include drinks & desserts
             </label>
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+              Dietary gate
+              <select
+                className="border rounded px-2 py-1 text-foreground bg-background"
+                value={dietaryFilter}
+                onChange={(e) => setDietaryFilter(e.target.value as DietaryIntent | "all")}
+              >
+                <option value="all">Persona default</option>
+                {DIETARY_INTENT_SLUGS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </section>
 
@@ -229,6 +251,10 @@ const Lab = () => {
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-mono text-muted-foreground">#{i + 1}</span>
                           <h3 className="serif text-lg text-primary">{s.dish.name}</h3>
+                          <DietBadge
+                            diet_class={s.dish.diet_class}
+                            dietary_modifiers={s.dish.dietary_modifiers ?? undefined}
+                          />
                           <Badge variant="outline" className="text-xs">
                             {rest?.name}
                           </Badge>

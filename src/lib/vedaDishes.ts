@@ -1,5 +1,6 @@
 import type { Tables } from "@/integrations/supabase/types";
 import type { DialState, VitalityTwin } from "./veda";
+import { passesDietaryGate, type DietaryIntent } from "./dietary";
 
 export type Dish = Tables<"dishes">;
 
@@ -41,6 +42,8 @@ export interface ScoreOptions {
   includeNonFood?: boolean;
   /** Restrict to a specific category. */
   categoryFilter?: string;
+  /** Strict dietary filter (DIET-001). */
+  dietaryFilter?: DietaryIntent;
 }
 
 export function scoreDishes(
@@ -57,6 +60,7 @@ export function scoreDishes(
 
   return dishes
     .filter((d) => {
+      if (opts.dietaryFilter && !passesDietaryGate(d, opts.dietaryFilter)) return false;
       if (opts.categoryFilter && d.category !== opts.categoryFilter) return false;
       // Hide drinks & desserts from main recommendations by default
       if (!opts.includeNonFood) {
@@ -166,7 +170,13 @@ export function scoreDishes(
     .sort((a, b) => b.score - a.score);
 }
 
-export const PERSONA_PRESETS: { id: string; label: string; dials: DialState; vitality?: number }[] = [
+export const PERSONA_PRESETS: {
+  id: string;
+  label: string;
+  dials: DialState;
+  vitality?: number;
+  dietary?: DietaryIntent;
+}[] = [
   {
     id: "post-workout-exec",
     label: "Post-workout exec",
@@ -190,5 +200,6 @@ export const PERSONA_PRESETS: { id: string; label: string; dials: DialState; vit
     label: "Low-recovery + clean",
     dials: { energy: 20, context: 15, budget: 55, purity: 85 },
     vitality: 28,
+    dietary: "vegetarian",
   },
 ];
