@@ -1,0 +1,31 @@
+---
+description: Backend conventions for supabase/ — edge functions, migrations, RLS
+globs: supabase/**
+alwaysApply: false
+---
+
+# Rasaoi Backend Rules
+
+Read `supabase/CURSOR.md` and `.cursor/CONTEXT_PLAN.md` before editing.
+
+## Conventions
+
+- Edge functions use Deno + `_shared/ai-client.ts` for Gemini
+- All 5 functions deployed with `--no-verify-jwt`
+- File-level `//` purpose comments on every edge function
+
+## Migrations
+
+- **Add-only** — never edit applied migration files
+- New schema changes → new file in `supabase/migrations/`
+- After migration → regenerate `src/integrations/supabase/types.ts`
+
+## Required Sync on Change
+
+- `_shared/dietary.ts` → also update `src/lib/dietary.ts`
+- `parse-intent` prompt changes → verify client scoring alignment in `veda.ts`, `pairings.ts`
+- Mock fixtures → sync `src/testing/mock-places.json`
+
+## Deploy
+
+`npm run supabase:deploy:all` — secrets set via `npx supabase secrets set`, never committed

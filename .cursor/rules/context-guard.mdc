@@ -1,0 +1,34 @@
+---
+description: Read context plan before any code change; update when architecture shifts
+alwaysApply: true
+---
+
+# Rasaoi Context Guard
+
+## Before Any Code Change
+
+1. Read `.cursor/CONTEXT_PLAN.md`
+2. If touching `src/**` — also read `src/CURSOR.md`
+3. If touching `supabase/**` — also read `supabase/CURSOR.md`
+
+## Verify Before Inventing
+
+If a file, API endpoint, table, or module is not listed in CONTEXT_PLAN, **search the repo first**. Do not assume it exists.
+
+## Sync Pairs (Must Update Together)
+
+- `src/lib/dietary.ts` ↔ `supabase/functions/_shared/dietary.ts`
+- `src/testing/mock-places.json` ↔ `supabase/functions/places-search/fixtures/mock-places.json`
+- `WELLNESS_TAG_SLUGS` in `src/lib/veda.ts` ↔ `parse-intent` output slugs
+
+## After Architectural Changes
+
+Update CONTEXT_PLAN header (`last_verified_commit`, affected sections) and the relevant CURSOR.md in the same commit.
+
+## Regression
+
+Run `npm test` when changing `src/lib/` scoring, dietary, or pairings logic.
+
+## Does Not Exist
+
+No Next.js, Redux, Zustand, axios layer, REST server, or `useQuery`/`useMutation` usage. See CONTEXT_PLAN §L.
