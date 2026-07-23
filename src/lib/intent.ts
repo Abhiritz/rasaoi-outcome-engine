@@ -1,5 +1,10 @@
 import { searchPlaces } from "@/lib/google-places";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  celebratoryMoodDials,
+  celebratoryRestatedIntent,
+  isCelebratoryMoodIntent,
+} from "@/lib/dishIntent";
 import type { DialState, Restaurant } from "./veda";
 
 export interface ParsedIntent {
@@ -165,6 +170,19 @@ async function invokeParseOnce(transcript: string): Promise<ParsedIntent> {
   return intent;
 }
 
+function celebratoryOfflineIntent(transcript: string): ParsedIntent {
+  const dials = celebratoryMoodDials() as DialState;
+  const intent: ParsedIntent = {
+    restated_intent: celebratoryRestatedIntent(transcript),
+    dials,
+    filters: {},
+    confidence: "low",
+    transcript,
+    ts: Date.now(),
+  };
+  return intent;
+}
+
 export async function parseIntent(transcript: string): Promise<ParsedIntent> {
   const trimmed = transcript.trim();
   if (!trimmed) throw new Error("transcript required");
@@ -188,9 +206,18 @@ export async function parseIntent(transcript: string): Promise<ParsedIntent> {
         await sleep(e.retryAfterMs * Math.pow(1.5, attempt));
         continue;
       }
-      if (e instanceof RateLimitError) throw e;
+      if (e instanceof RateLimitError) {
+        // ROE-003: mood-only celebration can proceed offline without inventing a dish
+        if (isCelebratoryMoodIntent(trimmed)) {
+          const offline = celebratoryOfflineIntent(trimmed);
+          putCachedParse(offline);
+          saveIntent(offline);
+          return offline;
+        }
+        throw e;
+      }
       // Non-rate-limit: one quick retry for empty/transient
-      if (attempt < 1 && !(e instanceof RateLimitError)) {
+      if (attempt < 1) {
         await sleep(600);
         continue;
       }

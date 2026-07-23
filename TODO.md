@@ -59,7 +59,19 @@ Partial fix already shipped (`86f2437`): stopped inventing the same synthetic di
 - [x] Ask toast for rate limits; glycemic soft-fail on 429
 - [x] Edge structured `{ code: "rate_limit", retry_after_ms }`
 - [x] Unit tests `intent.test.ts`
-- [ ] **After merge:** redeploy `parse-intent` + `estimate-glycemic`
+- [x] **After merge:** redeploy `parse-intent` + `estimate-glycemic`
+
+---
+
+## ROE-003: Feeling / mood plates (celebration ≠ roti)
+
+- [x] Impact analysis `docs/ROE-003-mood-feeling-plates-impact-analysis.md`
+- [x] `isCarrierOnlyDish` + celebratory mood helpers in `dishIntent.ts`
+- [x] Triple Outcome hard-skip carrier-only; shareable boost under high context
+- [x] `parse-intent` sanitize + prompt (mood ≠ dish; strip roti/naan)
+- [x] Offline celebratory dials on exhausted Gemini 429
+- [x] Unit tests (`dishIntent`, `pairings`, `intent`)
+- [ ] **After merge:** redeploy `parse-intent`
 
 ---
 

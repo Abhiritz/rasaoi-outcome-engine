@@ -1,16 +1,17 @@
-## Active
+## Next up (awaiting approval)
 
 | Priority | Ticket | Status |
 |----------|--------|--------|
-| P0 | **ROE-002** Gemini rate-limit resilience | Implementing → PR |
-| P0 | **ROE-003** Feeling/mood plates | Queued |
-| P1 | **ROE-004** Mylapore South Indian | Queued |
+| P1 | **ROE-004** Mylapore South Indian | Queued — impact next |
 | P1 | **ROE-005** Mythaai catalog | Queued |
 | P2 | **ROE-006** GL lens UX | Queued |
 
-Triage: `docs/ROE-backlog-triage-2026-07-24.md`  
-ROE-002 impact: `docs/ROE-002-gemini-rate-limit-impact-analysis.md`
+Triage: `docs/ROE-backlog-triage-2026-07-24.md`
+
+### In progress / shipping
+- **ROE-003** Feeling/mood plates — `feature/ROE-003-mood-feeling-plates` (carrier-only ban + celebratory dials + offline 429 fallback)
 
 ### Done
+- ROE-002 Gemini rate-limit (PR #3, merged `6028bb6`) — redeploy done
 - ROE-001 sweet/dessert (PR #2)
 - CRS-003 oceany (PR #1)

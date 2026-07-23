@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: 1c7f2d7
+last_verified_commit: (pending ROE-003 commit)
 last_verified_date: 2026-07-24
-branch: feature/ROE-002-gemini-rate-limit
+branch: feature/ROE-003-mood-feeling-plates
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-002 Gemini rate-limit resilience (parse cache, RateLimitError, glycemic soft-fail);
-  backlog triage ROE-003…006 in docs/; ROE-001 + CRS-003 on develop.
+  ROE-003 mood/feeling plates (carrier-only ban on Triple Outcome; celebratory dials;
+  offline 429 mood fallback); ROE-002 rate-limit on develop; backlog ROE-004…006.
 ```
 
 ---

@@ -1,13 +1,14 @@
-import { describe, expect, it } from "vitest";
 import {
   expandDishTokens,
+  isCarrierOnlyDish,
+  isCelebratoryMoodIntent,
   isCoastalDishIntent,
   isDessertDish,
   isSweetDishIntent,
   needsPlateCarrier,
 } from "./dishIntent";
 
-describe("dishIntent (CRS-003a + ROE-001)", () => {
+describe("dishIntent (CRS-003a + ROE-001 + ROE-003)", () => {
   it("expands oceany into seafood/fish tokens", () => {
     const tokens = expandDishTokens("I want something Oceany");
     expect(tokens.some((t) => /seafood|fish|shrimp|oceany/.test(t))).toBe(true);
@@ -31,5 +32,18 @@ describe("dishIntent (CRS-003a + ROE-001)", () => {
     expect(isDessertDish("Gulab Jamun")).toBe(true);
     expect(needsPlateCarrier("Gulab Jamun")).toBe(false);
     expect(needsPlateCarrier("Kheer")).toBe(false);
+  });
+
+  it("flags roti/naan alone as carrier-only (ROE-003)", () => {
+    expect(isCarrierOnlyDish("Tandoor Roti")).toBe(true);
+    expect(isCarrierOnlyDish("Garlic Naan")).toBe(true);
+    expect(isCarrierOnlyDish("Butter Chicken")).toBe(false);
+    expect(isCarrierOnlyDish("Chicken Naan Wrap")).toBe(false);
+  });
+
+  it("detects celebratory mood phrases (ROE-003)", () => {
+    expect(isCelebratoryMoodIntent("Celebrating mood with friends")).toBe(true);
+    expect(isCelebratoryMoodIntent("date night")).toBe(true);
+    expect(isCelebratoryMoodIntent("something sweet")).toBe(false);
   });
 });
