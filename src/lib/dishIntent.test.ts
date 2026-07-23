@@ -34,6 +34,11 @@ describe("dishIntent (CRS-003a + ROE-001 + ROE-003)", () => {
     expect(needsPlateCarrier("Kheer")).toBe(false);
   });
 
+  it("does not treat samosa as dessert via pastry description", () => {
+    expect(isDessertDish("Vegetable Samosa", "fried pastry")).toBe(false);
+    expect(isDessertDish("Chocolate Pastry", "house pastry")).toBe(true);
+  });
+
   it("flags roti/naan alone as carrier-only (ROE-003)", () => {
     expect(isCarrierOnlyDish("Tandoor Roti")).toBe(true);
     expect(isCarrierOnlyDish("Garlic Naan")).toBe(true);

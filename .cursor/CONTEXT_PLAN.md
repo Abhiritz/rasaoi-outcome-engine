@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: bec3d1f
+last_verified_commit: (pending ROE-004 commit)
 last_verified_date: 2026-07-24
-branch: feature/ROE-003-mood-feeling-plates
+branch: feature/ROE-004-south-indian-plates
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-003 mood/feeling plates (carrier-only ban on Triple Outcome; celebratory dials;
-  offline 429 mood fallback); ROE-002 rate-limit on develop; backlog ROE-004…006.
+  ROE-004 South Indian / Mylapore plates (Indian-South bank, North invention ban);
+  ROE-003 mood plates on develop; backlog ROE-005…006.
 ```
 
 ---

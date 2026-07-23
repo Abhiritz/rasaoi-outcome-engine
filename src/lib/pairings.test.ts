@@ -248,3 +248,60 @@ describe("ROE-003 celebratory mood — never bread as Best", () => {
     }
   });
 });
+
+describe("ROE-004 South Indian / Mylapore plate integrity", () => {
+  const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 80 };
+  const NORTH_BAN = /\b(dal tadka|butter chicken|tandoori chicken|rogan josh|saag paneer)\b/i;
+
+  it("sparse Mylapore never surfaces North Indian bank inventions", () => {
+    const mylapore = mockRestaurant({
+      id: "myl-sparse",
+      name: "Mylapore",
+      cuisine: "Indian",
+      signature_dish: "Masala Dosa",
+      menu_items: [{ name: "Masala Dosa", description: "crispy rice-lentil crepe" }],
+      purity_tier: "sovereign",
+    });
+    const picks = buildTripleOutcome(mylapore, dials);
+    expect(picks).toHaveLength(3);
+    for (const p of picks) {
+      expect(NORTH_BAN.test(p.dish)).toBe(false);
+    }
+    expect(picks.some((p) => /dosa|idli|sambar|rasam|salad/i.test(p.dish))).toBe(true);
+  });
+
+  it("does not demote menu idli/dosa Clean into Dal Tadka", () => {
+    const mylapore = mockRestaurant({
+      id: "myl-full",
+      name: "Mylapore",
+      cuisine: "Indian",
+      signature_dish: "Masala Dosa",
+      menu_items: [
+        { name: "Masala Dosa", description: "crispy dosa with potato" },
+        { name: "Steamed Idli (3)", description: "soft rice cakes with sambar" },
+        { name: "Cucumber Salad", description: "fresh salad" },
+        { name: "Dal Tadka", description: "should never win on South kitchen" },
+      ],
+    });
+    const picks = buildTripleOutcome(mylapore, dials);
+    const names = picks.map((p) => p.dish);
+    expect(names).not.toContain("Dal Tadka");
+    expect(names.some((n) => /idli|dosa|salad|sambar/i.test(n))).toBe(true);
+  });
+
+  it("generic North Indian kitchen may still use Dal Tadka from bank", () => {
+    const north = mockRestaurant({
+      id: "north1",
+      name: "Ruchi Indian Cuisine",
+      cuisine: "Indian",
+      signature_dish: "Chicken Tikka Masala",
+      menu_items: [{ name: "Chicken Tikka Masala", description: "creamy tomato curry" }],
+    });
+    const picks = buildTripleOutcome(north, dials);
+    // At least one slot may be bank-filled with North dishes; Dal Tadka is allowed here
+    const joined = picks.map((p) => p.dish).join(" | ");
+    expect(joined.length).toBeGreaterThan(0);
+    // Sanity: not forced into dosa-only South bank
+    expect(picks.every((p) => /dosa|idli/i.test(p.dish))).toBe(false);
+  });
+});
