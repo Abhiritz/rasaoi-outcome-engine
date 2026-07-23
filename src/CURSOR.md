@@ -21,7 +21,8 @@
 | `src/pages/` | Route-level screens (4 pages) |
 | `src/components/` | Domain UI (17 components) |
 | `src/components/ui/` | shadcn primitives (~45) — extend, don't replace |
-| `src/lib/` | Business logic (scoring, intent, places, memory) |
+| `src/lib/` | Business logic (scoring, intent, places, memory, culinary index) |
+| `src/data/` | Compiled `culinary-index.json` (rebuild via personal script — do not hand-edit) |
 | `src/hooks/` | `use-toast`, `use-mobile` |
 | `src/integrations/supabase/` | Typed client + generated DB types |
 | `src/testing/` | Mock fixtures (`mock-places.json`) |
@@ -143,6 +144,8 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - [ ] New component → domain logic in `components/`, primitives in `components/ui/`
 - [ ] Set `document.title` in page `useEffect`
 - [ ] Toast errors via `@/hooks/use-toast` on failure paths
+- [ ] Culinary matrix change → rebuild `src/data/culinary-index.json` via personal script
+- [ ] Triple-outcome / carrier change → `pairings.test.ts` + check CRS-003 constraints in `TODO.md`
 - [ ] Run `npm test` before committing scoring/dietary/pairings changes
 
 ---
@@ -153,16 +156,26 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 |------|----------------|
 | `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters |
 | `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script) |
+| `dishIntent.ts` | Oceany/coastal synonym expansion + starch/carrier helpers (CRS-003) |
 | `vedaDishes.ts` | Dish-level scoring against dials + dietary gates |
 | `dietary.ts` | DIET-001 taxonomy (sync with `_shared/dietary.ts`) |
-| `pairings.ts` | Triple outcome / carrier pairing (blood-sugar lens) |
-| `intent.ts` | Intent parsing client API + sessionStorage cache |
+| `pairings.ts` | Triple outcome / carrier pairing. **Never** invent a dish from intent text. Prefer menu → matrix → signature → cuisine bank. Carriers are **per dish** (matrix starch only when the plate needs one). Coastal intent skips fried “Clean” and prefers ocean Heritage when present. |
+| `intent.ts` | Intent parsing client API + sessionStorage cache; maps empty Gemini bodies to a clear user error |
 | `google-places.ts` | Places search with mock interceptor |
-| `glycemic.ts` | Glycemic estimates + localStorage cache |
-| `memory.ts` | Vitality Twin, consent, Mitra Pact |
+| `glycemic.ts` | Glycemic estimates + localStorage cache (matrix heuristics before edge, N≤8) |
+| `memory.ts` | Vitality Twin, consent, Mitra Pact — Twin counter is **twin syncs**, not restaurant outcomes |
 | `outcomes.ts` | Outcome selection telemetry |
 | `socialProof.ts` | Social proof helpers |
 | `device.ts` | Anonymous device ID |
+
+---
+
+## Reading / Triple Outcomes (agent notes)
+
+- `HeroCard` / `MiniCard` call `buildTripleOutcome(r, dials, intent)`.
+- Hero shows **Your pick** + CTA for `selectedIdx`; selected row is ring-highlighted.
+- `CuisineFilter` subtitle: “Catalog · Indian nearby” when only one cuisine chip exists.
+- Impact analysis: `Docs/CRS-003-oceany-impact-analysis.md`. Always keep `.cursor/CONTEXT_PLAN.md` updated on pushes.
 
 ---
 
@@ -176,6 +189,7 @@ npm run test:watch  # watch mode
 Test files live beside lib modules: `src/lib/*.test.ts`, `src/test/example.test.ts`.
 
 **Fixtures:** `src/testing/mock-places.json` (must stay synced with edge fixture).
+Scoring / dietary / pairings changes require `npm test` before commit.
 
 ---
 

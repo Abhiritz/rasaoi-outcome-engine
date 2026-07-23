@@ -118,3 +118,63 @@ describe("buildTripleOutcome venue-specific picks (no synthetic copy)", () => {
     expect(new Set([a[0].dish, b[0].dish, c[0].dish]).size).toBeGreaterThan(1);
   });
 });
+
+describe("CRS-003 oceany / coastal coherence", () => {
+  const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 75 };
+
+  it("Best Match prefers seafood when menu has it (oceany intent)", () => {
+    const taj = mockRestaurant({
+      id: "taj",
+      name: "Taj Grill Indian Cuisine",
+      cuisine: "Indian",
+      signature_dish: "Tandoori Chicken",
+      menu_items: [
+        { name: "Tandoori Seafood Platter", description: "mixed seafood from the tandoor" },
+        { name: "Vegetable Samosa", description: "fried pastry" },
+        { name: "Tandoori Chicken", description: "clay oven chicken" },
+        { name: "Dal Tadka", description: "yellow lentils" },
+      ],
+    });
+    const picks = buildTripleOutcome(taj, dials, { dish: "oceany seafood" });
+    expect(picks[0].dish.toLowerCase()).toMatch(/seafood|fish|shrimp|prawn/);
+    expect(picks[1].dish.toLowerCase()).not.toMatch(/samosa/);
+  });
+
+  it("does not force rice+naan carrier onto idli or salad", () => {
+    const south = mockRestaurant({
+      id: "myl",
+      name: "Mylapore",
+      cuisine: "Indian",
+      signature_dish: "Masala Dosa",
+      menu_items: [
+        { name: "Steamed Idli (3)", description: "soft rice cakes" },
+        { name: "Spicy Indian Cucumber Salad", description: "fresh salad" },
+        { name: "Masala Dosa", description: "crispy dosa" },
+      ],
+    });
+    const picks = buildTripleOutcome(south, dials, { dish: "something light" });
+    const idli = picks.find((p) => /idli/i.test(p.dish));
+    const salad = picks.find((p) => /salad/i.test(p.dish));
+    if (idli) {
+      expect(idli.carrier ?? "").not.toMatch(/basmati rice & naan/i);
+    }
+    if (salad) {
+      expect(salad.carrier ?? "").toBeFalsy();
+    }
+  });
+
+  it("why text names the actual carrier when present", () => {
+    const r = mockRestaurant({
+      id: "tg2",
+      name: "Taj Grill B",
+      cuisine: "Indian",
+      signature_dish: "Fish Curry",
+      menu_items: [{ name: "Fish Curry", description: "coastal curry" }, { name: "Garlic Naan" }],
+    });
+    const picks = buildTripleOutcome(r, dials, { dish: "seafood" });
+    const best = picks[0];
+    if (best.carrier) {
+      expect(best.why).toContain(best.carrier);
+    }
+  });
+});
