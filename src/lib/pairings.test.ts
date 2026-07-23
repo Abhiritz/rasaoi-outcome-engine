@@ -79,3 +79,42 @@ describe("buildTripleOutcome strict dietary (DIE-001 nested leak)", () => {
     expect(names.some((n) => /jain|fruit/i.test(n))).toBe(true);
   });
 });
+
+describe("buildTripleOutcome venue-specific picks (no synthetic copy)", () => {
+  it("does not invent the same intent dish on every restaurant", () => {
+    const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 70 };
+    const mythaai = mockRestaurant({
+      id: "m1",
+      name: "Mythaai",
+      cuisine: "Indian",
+      signature_dish: "Ghee-Tempered Dal with Basmati",
+      menu_items: [{ name: "Ghee-Tempered Dal with Basmati" }, { name: "Tandoori Chicken" }],
+      purity_tier: "sovereign",
+    });
+    const mantra = mockRestaurant({
+      id: "m2",
+      name: "Mantra",
+      cuisine: "Indian",
+      signature_dish: "Spicy Indian Cucumber Salad",
+      menu_items: [{ name: "Spicy Indian Cucumber Salad" }, { name: "Chicken Tikka" }],
+    });
+    const pizza = mockRestaurant({
+      id: "p1",
+      name: "Chicago's Pizza With A Twist Folsom",
+      cuisine: "American",
+      signature_dish: "Butter Chicken Pizza",
+      menu_items: [{ name: "Butter Chicken Pizza" }, { name: "Garlic Naan Pizza" }],
+    });
+
+    const intent = { dish: "seafood" };
+    const a = buildTripleOutcome(mythaai, dials, intent);
+    const b = buildTripleOutcome(mantra, dials, intent);
+    const c = buildTripleOutcome(pizza, dials, intent);
+
+    expect(a[0].dish.toLowerCase()).not.toBe("seafood");
+    expect(b[0].dish.toLowerCase()).not.toBe("seafood");
+    expect(c[0].dish.toLowerCase()).not.toBe("seafood");
+    // Different kitchens should not all share the same invented headline
+    expect(new Set([a[0].dish, b[0].dish, c[0].dish]).size).toBeGreaterThan(1);
+  });
+});

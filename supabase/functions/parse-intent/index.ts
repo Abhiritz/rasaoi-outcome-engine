@@ -8,6 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 const SYSTEM_PROMPT = `You are Veda, the reasoning engine for Rasaoi — a premium "System of Outcome" for dining.
@@ -485,10 +486,25 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
 
   try {
-    const { transcript } = await req.json();
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const transcript =
+      body && typeof body === "object" && "transcript" in body
+        ? (body as { transcript?: unknown }).transcript
+        : undefined;
     if (typeof transcript !== "string" || !transcript.trim()) {
       return new Response(JSON.stringify({ error: "transcript required" }), {
         status: 400,
@@ -500,7 +516,7 @@ Deno.serve(async (req) => {
 
     let parsed: unknown;
     try {
-      const argsJson = await geminiToolCall(
+      parsed = await geminiToolCall(
         DEFAULT_GEMINI_MODEL,
         SYSTEM_PROMPT,
         trimmedTranscript,
@@ -510,7 +526,6 @@ Deno.serve(async (req) => {
           parameters: TOOL_SCHEMA.function.parameters as Record<string, unknown>,
         },
       );
-      parsed = JSON.parse(argsJson);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (/429|rate limit|quota/i.test(msg)) {
@@ -528,6 +543,7 @@ Deno.serve(async (req) => {
 
     const sanitized = validateAndSanitize(parsed, trimmedTranscript);
     return new Response(JSON.stringify(sanitized), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

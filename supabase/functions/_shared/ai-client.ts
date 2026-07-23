@@ -8,7 +8,8 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export const DEFAULT_GEMINI_MODEL = "gemini-2.0-flash";
+/** Stable Flash alias — tracks current GA Flash for tool calling. */
+export const DEFAULT_GEMINI_MODEL = "gemini-flash-latest";
 
 export function getGeminiApiKey(): string {
   const key =
@@ -29,14 +30,43 @@ export interface GeminiToolDef {
   parameters: Record<string, unknown>;
 }
 
-/** Tool-calling path (parse-intent, estimate-glycemic). Returns JSON argument string. */
+/** Gemini functionDeclarations reject JSON Schema fields like additionalProperties. */
+function sanitizeGeminiParameters(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(sanitizeGeminiParameters);
+  if (!node || typeof node !== "object") return node;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+    if (k === "additionalProperties") continue;
+    out[k] = sanitizeGeminiParameters(v);
+  }
+  return out;
+}
+
+function parseToolArgs(args: unknown): Record<string, unknown> {
+  if (args && typeof args === "object" && !Array.isArray(args)) {
+    return args as Record<string, unknown>;
+  }
+  if (typeof args === "string") {
+    const trimmed = args.trim();
+    if (!trimmed) throw new Error("Empty tool args string from Gemini.");
+    const parsed = JSON.parse(trimmed) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Tool args from Gemini were not a JSON object.");
+    }
+    return parsed as Record<string, unknown>;
+  }
+  throw new Error("No structured tool response from Gemini.");
+}
+
+/** Tool-calling path (parse-intent, estimate-glycemic). Returns parsed args object. */
 export async function geminiToolCall(
   model: string,
   systemPrompt: string,
   userPrompt: string,
   tool: GeminiToolDef,
-): Promise<string> {
+): Promise<Record<string, unknown>> {
   const genAI = new GoogleGenerativeAI(getGeminiApiKey());
+  const parameters = sanitizeGeminiParameters(tool.parameters) as Record<string, unknown>;
   const generativeModel = genAI.getGenerativeModel({
     model,
     systemInstruction: systemPrompt,
@@ -46,7 +76,7 @@ export async function geminiToolCall(
           {
             name: tool.name,
             description: tool.description,
-            parameters: tool.parameters,
+            parameters,
           },
         ],
       },
@@ -65,10 +95,22 @@ export async function geminiToolCall(
 
   const calls = result.response.functionCalls();
   const first = calls?.[0];
-  if (!first?.args) {
+  if (!first) {
+    // Fallback: some Flash builds return text JSON instead of a tool call.
+    try {
+      const text = result.response.text()?.trim();
+      if (text) {
+        const parsed = JSON.parse(text) as unknown;
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          return parsed as Record<string, unknown>;
+        }
+      }
+    } catch {
+      /* fall through */
+    }
     throw new Error("No structured tool response from Gemini.");
   }
-  return typeof first.args === "string" ? first.args : JSON.stringify(first.args);
+  return parseToolArgs(first.args);
 }
 
 /** JSON-object path (ingest-menu). Returns raw JSON text. */

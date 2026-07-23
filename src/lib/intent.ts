@@ -34,9 +34,33 @@ export async function parseIntent(transcript: string): Promise<ParsedIntent> {
   const { data, error } = await supabase.functions.invoke("parse-intent", {
     body: { transcript },
   });
-  if (error) throw error;
-  if (data?.error) throw new Error(data.error);
-  const intent: ParsedIntent = { ...data, transcript, ts: Date.now() };
+
+  if (error) {
+    let msg = error.message || "parse-intent failed";
+    // Prefer structured error body when the function returned JSON.
+    try {
+      const ctx = (error as { context?: Response }).context;
+      if (ctx && typeof ctx.json === "function") {
+        const body = await ctx.json();
+        if (body?.error && typeof body.error === "string") msg = body.error;
+      }
+    } catch {
+      /* empty / non-JSON error body — keep message */
+    }
+    if (/Unexpected end of JSON input/i.test(msg)) {
+      msg = "Veda returned an empty response. Please try again.";
+    }
+    throw new Error(msg);
+  }
+
+  if (!data || typeof data !== "object") {
+    throw new Error("Veda returned an empty response. Please try again.");
+  }
+  if ((data as { error?: string }).error) {
+    throw new Error((data as { error: string }).error);
+  }
+
+  const intent: ParsedIntent = { ...(data as Omit<ParsedIntent, "transcript" | "ts">), transcript, ts: Date.now() };
   saveIntent(intent);
   return intent;
 }

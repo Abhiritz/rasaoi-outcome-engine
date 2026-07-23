@@ -16,7 +16,12 @@ import {
   passesDietaryGate,
   sanitizeRestaurantForDietary,
 } from "./veda";
-import { matrixCourseDish, lookupRestaurant } from "./culinaryIndex";
+import {
+  isLightDishType,
+  lookupRestaurant,
+  matrixCourseDish,
+  restaurantDishes,
+} from "./culinaryIndex";
 
 export type DishRole = "Base" | "Booster" | "Carrier";
 
@@ -788,25 +793,6 @@ function pickByIntent(menu: MenuItem[], tokens: string[], exclude: Set<string>):
   return best;
 }
 
-function titleCase(s: string): string {
-  return s.replace(/\b([a-z])([a-z]*)/g, (_m, a, b) => a.toUpperCase() + b);
-}
-
-// Build a synthetic dish name from the user's request when nothing on the
-// menu matches. Marked verified=false so the UI can flag it as inferred.
-function synthDishFromHint(hint: string): string {
-  const cleaned = hint
-    .toLowerCase()
-    .replace(/\b(with|and|please|some|a|the|of|for|i|want|would|like|get|me|to|on|in|or|plus|also)\b/g, " ")
-    .replace(/[^a-z\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  // Strip any trailing carrier word so we don't say "Shrimp Curry Naan"
-  const carrierWord = Object.keys(CARRIER_WORDS).find((w) => new RegExp(`\\b${w}\\b`).test(cleaned));
-  const dishPart = carrierWord ? cleaned.replace(new RegExp(`\\b${carrierWord}\\b`, "g"), "").trim() : cleaned;
-  return titleCase(dishPart || cleaned);
-}
-
 export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: IntentHint): OutcomePick[] {
   const dietary = intent?.dietary;
   const safe = dietary ? sanitizeRestaurantForDietary(r, dietary) : r;
@@ -842,16 +828,65 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     return n ? { name: n, verified: false } : null;
   };
 
-  // 1) BEST MATCH — intent-aware. If the user explicitly asked for a dish,
-  // try to find a verified menu item that contains those food tokens. If the
-  // menu doesn't list it, surface the user's request as an inferred dish so
-  // they see "Spicy Shrimp Curry" instead of an unrelated default.
+  // Culinary matrix — real venue dishes when menu_items is thin
+  const tryMatrix = (
+    prefer: "main_course" | "appetizer" | "starter" | "light" | "any",
+  ): Pick | null => {
+    const mxDishes = restaurantDishes(safe.name).filter(
+      (d) =>
+        d.course !== "registry" &&
+        !used.has(d.name.toLowerCase()) &&
+        dishPassesGate(d.name, "", dietary, { name: d.name }),
+    );
+    if (!mxDishes.length) return null;
+
+    let chosen =
+      prefer === "main_course"
+        ? mxDishes.find((d) => d.course === "main_course")
+        : prefer === "appetizer"
+          ? mxDishes.find((d) => d.course === "appetizer")
+          : prefer === "starter"
+            ? mxDishes.find((d) => d.course === "starter")
+            : prefer === "light"
+              ? mxDishes.find((d) => isLightDishType(d.dish_type) || /salad|dal|raita|chutney|steamed/i.test(d.name))
+              : undefined;
+
+    if (!chosen && prefer === "light") {
+      chosen = mxDishes.find((d) => d.course === "appetizer" || d.course === "starter");
+    }
+    if (!chosen) chosen = mxDishes.find((d) => d.course === "main_course") ?? mxDishes[0];
+    if (!chosen) return null;
+    return {
+      name: chosen.name,
+      verified: true,
+      description: chosen.dish_type ? `Matrix ${chosen.course}` : undefined,
+    };
+  };
+
+  const trySignature = (): Pick | null => {
+    if (!sigName || used.has(sigName.toLowerCase())) return null;
+    if (!dishPassesGate(sigName, "", dietary)) return null;
+    return { name: sigName, verified: true };
+  };
+
+  // 1) BEST MATCH — intent-aware, but NEVER invent the same synthetic dish
+  // on every restaurant. Only surface an intent dish when this kitchen
+  // actually has it (menu / matrix / cuisine bank).
   let best: Pick | null = null;
   if (dishTokens.length) {
     const hit = pickByIntent(menu, dishTokens, used);
     if (hit) {
       best = { name: hit.name, verified: true, ...menuDiet(hit) };
-    } else if (bank) {
+    } else {
+      // Matrix dish names that match intent tokens
+      const mxHit = restaurantDishes(safe.name).find((d) => {
+        if (used.has(d.name.toLowerCase())) return false;
+        if (!dishPassesGate(d.name, "", dietary, { name: d.name })) return false;
+        return intentMatchScore(d.name, "", dishTokens) > 0;
+      });
+      if (mxHit) best = { name: mxHit.name, verified: true };
+    }
+    if (!best && bank) {
       const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
         .filter((d) => !used.has(d.toLowerCase()))
         .map((d) => ({ d, s: intentMatchScore(d, "", dishTokens) }))
@@ -859,13 +894,12 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
         .sort((a, b) => b.s - a.s);
       if (ranked[0]) best = { name: ranked[0].d, verified: false };
     }
-    // Last resort: synthesize from the user's phrase so the headline
-    // reflects the request rather than a generic dial-pick.
-    if (!best && intent?.dish) {
-      best = { name: synthDishFromHint(intent.dish), verified: false };
-    }
+    // Do NOT synthDishFromHint here — inventing "Seafood" on Mythaai/Mantra/Pizza
+    // made every alternate card identical and wrong.
   }
   if (!best) best = tryMenu(pickBest(menu, dials, sigName, used));
+  if (!best) best = tryMatrix("main_course");
+  if (!best) best = trySignature();
   if (!best && bank) {
     const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
       .filter((d) => !used.has(d.toLowerCase()))
@@ -877,6 +911,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
 
   // 2) CLEAN & VITAL — must be different & lighter
   let clean: Pick | null = tryMenu(pickClean(menu, used));
+  if (!clean) clean = tryMatrix("light");
   if (!clean && bank) clean = tryBank(bank.clean);
   // If menu pick exists but happens to NOT be lighter than the best, prefer bank
   if (clean && best && clean.verified && scoreClean(clean.name, "") < 3 && bank) {
@@ -887,12 +922,19 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
 
   // 3) HERITAGE FAVORITE — must be different & traditional
   let heritage: Pick | null = tryMenu(pickHeritage(menu, sigName, used));
+  if (!heritage) heritage = trySignature();
+  if (!heritage) heritage = tryMatrix("main_course");
   if (!heritage && bank) heritage = tryBank(bank.heritage);
   if (heritage) used.add(heritage.name.toLowerCase());
 
   // Final guarantee: if any slot is still empty or duplicates, pull next bank entry
   const ensureUnique = (p: Pick | null, listKey: keyof CuisineBank): Pick => {
     if (p && dishPassesGate(p.name, p.description ?? "", dietary)) return p;
+    const mx = tryMatrix(listKey === "clean" ? "light" : "main_course");
+    if (mx) {
+      used.add(mx.name.toLowerCase());
+      return mx;
+    }
     if (bank) {
       const pool = filterBankList(
         [...bank[listKey], ...bank.best, ...bank.clean, ...bank.heritage],
@@ -929,16 +971,21 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     { key: "heritage",   label: "Heritage Favorite", pick: heritage },
   ];
 
-  // Carrier rule: ALWAYS use the culturally authentic primary carrier
-  // (e.g. dal → Basmati Rice & Roti). Only fall back to the low-carb alt
-  // when the kitchen is explicitly grain-free — otherwise we'd violate the
-  // cultural pairing (dal must never be served with just "greens").
+  // Carrier: prefer matrix accompaniment when available, else cultural staple.
+  const matrixCarrier = matrixCourseDish(safe.name, "accompaniment_base");
+  const matrixCarrierOk =
+    matrixCarrier &&
+    dishPassesGate(matrixCarrier.name, "", dietary, { name: matrixCarrier.name });
+
   const useLowCarb = safe.grain_profile === "grain-free";
   return slots.map(({ key, label, pick }) => {
     const carrierSpec = carrierFor(pick.name, safe.cuisine);
     let carrierName = carrierSpec
       ? (useLowCarb ? carrierSpec.lowCarbAlt : carrierSpec.primary)
       : undefined;
+    if (matrixCarrierOk && !useLowCarb) {
+      carrierName = matrixCarrier!.name;
+    }
     // If the user explicitly requested a carrier (e.g. "with naan"), honor it
     // on the headline best-match dish — even if the cultural default differs.
     if (key === "best-match" && userCarrier) {
