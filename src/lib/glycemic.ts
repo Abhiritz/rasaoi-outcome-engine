@@ -76,12 +76,10 @@ export function glFromCulinary(
   if (!level) {
     if (/fried_appetizer|biryani|pizza|wings|dessert|drink|flatbread/.test(dishType)) {
       level = "high";
-    } else if (/salad|steamed_tiffin|dip_sauce/.test(dishType) || (fiber >= 6 && protein >= 12)) {
+    } else if (/salad|steamed_tiffin|dip_sauce/.test(dishType)) {
       level = "low";
     } else if (/curry_gravy|tandoori|dosa/.test(dishType)) {
       level = paired ? "low" : "med";
-    } else if (dishType) {
-      level = paired ? "med" : "med";
     } else if (fiber >= 6 && protein >= 12) {
       level = "low";
     } else if ((meta.calories_kcal ?? 0) > 650) {

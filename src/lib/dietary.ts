@@ -172,7 +172,7 @@ function passesRegexGate(blob: string, intent: DietaryIntent): boolean {
       if (DAIRY_MARKERS.test(t)) return false;
       if (EGG_MARKERS.test(t)) return false;
       return true;
-    case "jain":
+    case "jain": {
       if (MEAT_MARKERS.test(t)) return false;
       if (EGG_MARKERS.test(t)) return false;
       if (DAIRY_MARKERS.test(t) && !/\b(jain|no onion)\b/i.test(t)) {
@@ -182,6 +182,7 @@ function passesRegexGate(blob: string, intent: DietaryIntent): boolean {
       if (JAIN_ROOT_MARKERS.test(rootScan) && !jainSafe) return false;
       if (JAIN_REQUIRES_EXPLICIT_VARIANT.test(t) && !jainSafe) return false;
       return true;
+    }
     case "halal":
       if (PORK_MARKERS.test(t)) return false;
       if (ALCOHOL_MARKERS.test(t)) return false;

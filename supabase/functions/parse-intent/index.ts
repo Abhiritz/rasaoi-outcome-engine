@@ -353,7 +353,7 @@ function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
   let cuisine =
     typeof raw.cuisine === "string" && raw.cuisine.trim() ? normalizeCuisineLabel(raw.cuisine) : undefined;
   let dish = typeof raw.dish === "string" && raw.dish.trim() ? raw.dish.trim() : undefined;
-  let culture_tag =
+  const culture_tag =
     typeof raw.culture_tag === "string" && raw.culture_tag.trim()
       ? raw.culture_tag.trim().toLowerCase()
       : transcriptCulture.culture_tag;
