@@ -82,3 +82,4 @@ npm run build
 | Build passes in CI but fails on Vercel | Set `VITE_*` vars in Vercel dashboard |
 | Production deploy waiting forever | Remove or approve required reviewers on the `production` environment |
 | Double deploy | Turn off Vercel Git auto-deploy; keep Actions only |
+| CLI outdated / deploy API error | Workflow installs `vercel@latest` (do not pin amondnet/vercel-action@v25) |
