@@ -1,4 +1,5 @@
 import type { Tables } from "@/integrations/supabase/types";
+import { expandDishTokens } from "./dishIntent";
 
 export type Restaurant = Tables<"restaurants">;
 export type Promo = Tables<"active_promos">;
@@ -270,23 +271,9 @@ function contextState(v: number) {
   return "celebratory";
 }
 
-// Stop words & carrier words to ignore when tokenizing the user's dish phrase.
-const DISH_STOP = new Set([
-  "i","want","to","eat","a","an","the","some","please","need","craving",
-  "for","with","and","or","of","my","me","get","have","like","love","tonight",
-  "today","now","food","meal","dish","dishes","something","quick","spicy","mild",
-  "hot","cold","fresh","good","great","really","just","maybe","plate","order",
-  // carriers — match the dish, not the side
-  "rice","naan","roti","bread","tortilla","wrap","noodles","pasta","fries","chips",
-]);
-
 function dishTokens(phrase?: string): string[] {
-  if (!phrase) return [];
-  return phrase
-    .toLowerCase()
-    .replace(/[^a-z\s]/g, " ")
-    .split(/\s+/)
-    .filter((t) => t.length >= 3 && !DISH_STOP.has(t));
+  // CRS-003a: expand oceany/coastal → seafood/fish/… for ranking.
+  return expandDishTokens(phrase);
 }
 
 /** Cuisine families for intent ↔ restaurant matching (substring + alias). */
@@ -409,13 +396,15 @@ export function scoreRestaurants(
           }
         }
         if (nameHit) {
-          score += 35;
+          score += 48;
           tags.push(`Has ${dTokens[0]}`);
         } else if (descHit) {
-          score += 15;
+          score += 22;
           tags.push(`Mentions ${dTokens[0]}`);
         } else {
-          score -= 5;
+          // Strong miss penalty so high-purity non-matches don't bury seafood kitchens (CRS-003a).
+          score -= 28;
+          tags.push("No dish match");
         }
       }
 

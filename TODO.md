@@ -9,6 +9,49 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## CRS-003: “Oceany” reading QA (2026-07-23) — address one-by-one
+
+Evidence: `Source of Knowledge/issue-docs/rasaoi.pdf` (Ask: *“I want something Oceany”* → VEDA HEARD: *Oceany seafood · fresh & coastal*).
+Partial fix already shipped (`86f2437`): stopped inventing the same synthetic dish on every alternate.
+
+### On-screen inconsistencies (inventory)
+
+| # | Area | What’s wrong |
+|---|------|----------------|
+| 1 | Intent vs plates | Heard seafood/coastal, but alternates’ **Best Match** is Idli / Tandoori Chicken / Mini Idli — zero ocean signal |
+| 2 | Hero Clean & Vital | **Vegetable Samosa + Garlic Naan** labeled clean/lighter — fried + refined carb, not coastal |
+| 3 | Hero Heritage | **Tandoori Chicken** under an oceany reading; why/CTA still talk about **Tandoori Seafood Platter** (selected slot ≠ visible heritage title) |
+| 4 | Carrier blanket | Matrix `accompaniment_base` forced on **every** slot (Garlic Naan / Basmati&Naan / Chana+Bhatura) even for idli, salad, samosa |
+| 5 | Why ↔ carrier mismatch | Mantra Best: carrier is “Chana Masala, Puffy Deep-Fried Bread” but why still says “eaten with **naan**…” |
+| 6 | Duplicate why copy | Same why reused across Clean↔Heritage and across Mythai↔Mylapore |
+| 7 | Ranking depth | Taj Grill wins on seafood platter, but #2–#4 are high-purity Indian venues with **no** seafood menu match |
+| 8 | Cuisine chips | “Showing all cuisines” yet only **ALL / INDIAN** — no seafood/coastal chip reflecting intent |
+| 9 | Dial story | Energy/Context/Budget look near-default for a coastal craving; purity↑ alone doesn’t explain ocean theme |
+| 10 | Purity tag UX | **SOVEREIGN** repeated on every dish line (restaurant-tier tag, reads as dish attribute) |
+| 11 | Vitality Twin | “**0 OUTCOMES**” next to LOCKED Health Sync — confusable with restaurant outcome count |
+| 12 | Pairing sense | Idli + Basmati & Naan; Cucumber Salad + Chana/Bhatura; Samosa + Garlic Naan — culturally/nutritionally odd |
+
+### Work queue (do in order)
+
+- [x] **CRS-003a — Intent-aware Best Match on alternates**  
+  When `filters.dish` / coastal tokens exist, prefer menu/matrix ocean matches for slot 1; never promote idli/chicken as Best for oceany. Soft-boost restaurants with seafood hits further down the list (`veda.ts` dish-match weight + empty-match banner).
+- [x] **CRS-003b — Triple-slot coherence with intent**  
+  Clean & Vital / Heritage must stay **compatible** with dish/wellness intent (no fried samosa as “clean”; heritage prefers coastal classic when available, else honest “kitchen signature” without pretending ocean).
+- [x] **CRS-003c — Carrier per dish, not per venue**  
+  Stop applying one matrix `accompaniment_base` to all three slots. Carrier from dish type + cuisine rules; matrix accompaniment only when plate needs a starch and item isn’t already a starch/complete plate.
+- [x] **CRS-003d — Why text grounded in chosen carrier**  
+  `whyFor` must reference the **actual** `carrierName`; unique copy per slot (no Clean≡Heritage paste).
+- [x] **CRS-003e — Hero selection clarity**  
+  Insight + CTA always match the **selected** outcome; if heritage is visible but Best is selected, don’t let titles fight the CTA (sticky selected summary / highlight selected row).
+- [x] **CRS-003f — Cuisine / wellness UI reflection**  
+  Surface intent cuisine + wellness chips (seafood/coastal/fresh) in `CuisineFilter` / IntentPill; don’t imply “all cuisines” when catalog is Indian-heavy.
+- [x] **CRS-003g — Twin copy**  
+  Rename Vitality Twin “0 OUTCOMES” to something like “0 syncs” / “Twin inactive” so it isn’t read as zero restaurant outcomes.
+- [x] **CRS-003h — Tests + handover**  
+  Vitest: oceany/seafood intent → hero+alternates Best Match ocean-capable when menu has it; no venue-wide carrier on idli/salad. Impact analysis in `Docs/CRS-003-oceany-impact-analysis.md` (CRS report append optional follow-up).
+
+---
+
 ## 0. Bugfix — Cuisine / dish intent routing (Thai → Indian mis-route)
 
 - [x] Tighten `parse-intent` SYSTEM_PROMPT: no hallucinated cuisines/dishes; relative phrases must not block food keywords

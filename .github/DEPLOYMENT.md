@@ -43,11 +43,16 @@ Go to **Settings → Environments → `production`**:
 - Enable **Required reviewers** if you want a manual gate before prod deploys
 - Or leave unprotected for fully automatic deploys on every `develop`/`main` push
 
-### 3. Branch protection (recommended)
+### 3. Branch protection (merge checks — required)
 
-For `main` and `develop`:
-- Require status check: **Quality gates**
-- Require PR reviews before merge (especially for `main`)
+For `main` and `develop`, require the status check named **Quality gates** (job name in `ci-cd.yml`) before merge. CI also verifies `.cursor/CONTEXT_PLAN.md` exists.
+
+```bash
+# Example (admin): enable required checks via GitHub UI or API
+# Settings → Branches → Branch protection rule → Require status checks → "Quality gates"
+```
+
+PRs do **not** deploy. Merge → `push` to `develop`/`main` → quality + **Deploy production (Vercel)**.
 
 ## Vercel project configuration
 

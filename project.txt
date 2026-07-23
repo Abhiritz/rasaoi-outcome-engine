@@ -1,18 +1,18 @@
 # Rasaoi Outcome Engine — Project Overview
 
-Agentic AI dining concierge for El Dorado Hills / Folsom, CA. Natural-language intent (voice or text) becomes **ranked restaurant outcomes** with explainable **triple plates** (Base / Booster / Carrier) — not endless menu browsing.
+Agentic AI dining concierge for El Dorado Hills / Folsom, CA. Natural-language intent (voice or text) becomes **ranked restaurant outcomes** with explainable **triple plates** (Best / Clean & Vital / Heritage + carrier) — not endless menu browsing.
 
 ---
 
 ## What It Does
 
 1. User states a craving or goal on `/` (Ask).
-2. Intent is parsed into four **dials** (energy, context, budget, purity) plus cuisine / dietary / wellness filters.
-3. On `/reading`, restaurants are scored and ranked; each top pick shows a triple-plate composition.
+2. Intent is parsed into four **dials** (energy, context, budget, purity) plus cuisine / dietary / wellness / dish filters.
+3. On `/reading`, restaurants are scored and ranked; each top pick shows three outcome slots with carriers.
 4. Optional blood-sugar lens re-ranks and swaps carriers; fulfillment hands off to dine-in / pickup / delivery.
 5. Operators use `/lab` to ingest menus, review dishes, and commit them to the catalog.
 
-**Core terms:** Veda (reasoning persona), dials, Reading (outcome screen), purity tiers (`sovereign` / `standard` / `satellite`), Vitality Twin (local bio memory), dietary gates (DIET-001).
+**Core terms:** Veda (reasoning persona), dials, Reading (outcome screen), purity tiers (`sovereign` / `standard` / `satellite`), Vitality Twin (local bio memory), dietary gates (DIET-001), culinary matrix (offline EDH/Folsom dish index).
 
 ---
 
@@ -22,16 +22,19 @@ Agentic AI dining concierge for El Dorado Hills / Folsom, CA. Natural-language i
 |-------|------|------|
 | Frontend | `src/` | Vite + React 18 SPA — UI, routing, client scoring |
 | Backend | `supabase/` | Postgres migrations + 5 Deno edge functions |
-| Ops | `scripts/personal/` | Personal seeding / sync (not shared migrations) |
-| Deploy | Vercel + Supabase | Frontend: [rasaoi-delta.vercel.app](https://rasaoi-delta.vercel.app) |
+| Offline index | `src/data/culinary-index.json` | Built by `scripts/personal/build-culinary-index.mjs` (no AI at score time) |
+| Ops | `scripts/personal/` | Personal seeding / sync / matrix build (not shared migrations) |
+| Deploy | Vercel + Supabase | Frontend: [rasaoi-delta.vercel.app](https://rasaoi-delta.vercel.app); CI on push to `develop` / `main` |
 
 There is **no** Next.js, Express/REST server, Redux/Zustand, or axios layer. The SPA talks to Supabase (direct queries + `functions.invoke`).
 
 ```
-Ask → parse-intent → sessionStorage → Reading
-                                      ├─ places-search
-                                      ├─ restaurants / active_promos
-                                      └─ veda.scoreRestaurants() → ranked outcomes
+Ask → parse-intent (Gemini) → sessionStorage → Reading
+                                              ├─ places-search
+                                              ├─ restaurants / active_promos
+                                              ├─ culinaryIndex (optional enrich)
+                                              └─ veda.scoreRestaurants() → ranked outcomes
+                                                    └─ pairings.buildTripleOutcome()
 ```
 
 Lab: `Lab.tsx` → `ingest-menu` → review → `commit-dishes`.
@@ -64,16 +67,16 @@ Lab: `Lab.tsx` → `ingest-menu` → review → `commit-dishes`.
 
 | Module | Responsibility |
 |--------|----------------|
-| `veda.ts` / `vedaDishes.ts` | Restaurant + dish ranking against dials |
-| `culinaryIndex.ts` | Offline EDH/Folsom matrix lookup (prices, macros, dish_type) |
+| `veda.ts` / `vedaDishes.ts` | Restaurant + dish ranking against dials (+ dish-token boost) |
+| `culinaryIndex.ts` | Offline matrix lookup (prices, macros, dish_type, course) |
 | `dietary.ts` | DIET-001 taxonomy (synced with edge shared copy) |
-| `pairings.ts` | Triple outcomes + carrier pairing |
-| `intent.ts` | Client for `parse-intent` |
+| `pairings.ts` | Triple outcomes + carriers (menu → matrix → signature → cuisine bank; **no** synthetic dish invent) |
+| `intent.ts` | Client for `parse-intent` (handles empty/non-JSON errors) |
 | `google-places.ts` | Client for `places-search` (+ mock mode) |
-| `glycemic.ts` | Client for `estimate-glycemic` |
+| `glycemic.ts` | Matrix GL first, then `estimate-glycemic` (capped) |
 | `outcomes.ts` | Fulfillment telemetry + check-in RPC |
 
-Pages fetch → `lib/` scores/filters → domain components render (`HeroCard`, `TripleOutcome`, `Dial`, `FulfillmentSheet`, etc.).
+Pages fetch → `lib/` scores/filters → domain components render (`HeroCard`, `MiniCard`, `TripleOutcome`, `Dial`, `FulfillmentSheet`, etc.).
 
 ---
 
@@ -102,7 +105,9 @@ RPC: `record_outcome_checkin()`. Catalog tables are public SELECT; feedback has 
 | `ingest-menu` | Scrape/parse menu → proposed dishes |
 | `commit-dishes` | Persist dishes + rebuild `menu_items` |
 
-Shared: `_shared/ai-client.ts` (Gemini), `_shared/dietary.ts` (must stay in sync with `src/lib/dietary.ts`).
+Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns parsed tool args), `_shared/dietary.ts` (must stay in sync with `src/lib/dietary.ts`).
+
+**Production note:** Vercel Production must point at the personal Supabase project (`kiugplotjcnmpwjlxajc`), not a dead Lovable host.
 
 ---
 
@@ -123,6 +128,14 @@ Shared: `_shared/ai-client.ts` (Gemini), `_shared/dietary.ts` (must stay in sync
 
 ---
 
+## Known open QA (CRS-003)
+
+**Resolved on `fix/crs-003-oceany-reading`:** oceany/coastal synonym ranking, per-dish carriers, Clean/Heritage coherence, Hero “Your pick”, Twin/cuisine copy, tests. See `Docs/CRS-003-oceany-impact-analysis.md`.
+
+Shipped earlier: stop inventing the same dish name on every alternate (`pairings.ts`, commit `86f2437`).
+
+---
+
 ## Environment & Commands
 
 **Frontend (Vite):** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`; optional `VITE_USE_MOCK_PLACES`.
@@ -135,9 +148,10 @@ npm run build
 npm test                    # Vitest (required for scoring/dietary/pairings changes)
 npm run supabase:db:push
 npm run supabase:deploy:all
+node scripts/personal/build-culinary-index.mjs   # rebuild culinary-index.json
 ```
 
-CI: `.github/workflows/ci-cd.yml` (lint → test → build → Vercel).
+CI: `.github/workflows/ci-cd.yml` (lint → test → build → Vercel prod on `develop`/`main`).
 
 ---
 
@@ -157,5 +171,6 @@ CI: `.github/workflows/ci-cd.yml` (lint → test → build → Vercel).
 | `.cursor/CONTEXT_PLAN.md` | Canonical architecture index (agents + contributors) |
 | `src/CURSOR.md` | Frontend conventions |
 | `supabase/CURSOR.md` | Edge functions + migrations |
-| `TODO.md` | Feature roadmap / ticket IDs |
+| `TODO.md` | Feature roadmap / ticket IDs (CRS-003 active) |
+| `.lovable/plan.md` | Next surgical implementation slice |
 | `MIGRATE_SYNC_README.md` | Lovable ↔ personal Supabase sync |
