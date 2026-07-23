@@ -27,6 +27,7 @@ MAPPING RULES:
 - "quick", "alone", "grab something", "in a rush" → context 5-20
 - "healthy", "clean", "good for me", "organic" → purity 75-90
 - "indulgent", "treat", "comfort food" → purity 20-40
+- "sweet", "something sweet", "dessert", "mithai", "gulab jamun", "kheer" → purity 25-45 (treat band); set filters.dish to "dessert" or the named sweet. NEVER invent a savory dish.
 - "diabetic", "diabetes", "low sugar", "low carb", "blood sugar", "no rice", "no bread", "no naan", "keto" → set lens="blood_sugar"
 - Explicit dollar amounts: $25 → budget 0, $35 → budget 25, $50 → budget 50, $75 → budget 70, $100+ → budget 85+
 - No budget mentioned → budget 50 (neutral)
@@ -76,8 +77,9 @@ FILTER EXTRACTION (CRITICAL — read carefully):
 - Example: "Low energy, $35, something healthy" → filters.cuisine omitted, filters.dish omitted.
 
 RESTATED INTENT: A short, warm, human phrase that confirms what you heard.
-Format like: "Low energy · ~$35 · clean & nearby" or "Thai · date night · nearby".
+Format like: "Low energy · ~$35 · clean & nearby" or "Thai · date night · nearby" or "Sweet · dessert / mithai · treat".
 Use middle-dot separators. Max 60 chars. If a cuisine was requested, include it in restated_intent.
+If the user asked for something sweet/dessert/mithai, restated_intent MUST include Sweet or dessert.
 
 CONFIDENCE:
 - "high" if multiple clear signals
@@ -332,6 +334,14 @@ function mergeDietary(modelDietary: unknown, transcript: string): StrictDietary 
 function extractDishFromTranscript(transcript: string): string | undefined {
   const t = transcript.trim();
   if (extractDietaryFromTranscript(t)) return undefined;
+  // ROE-001: sweet / dessert craving (before cuisine-specific dish markers)
+  if (/\b(gulab\s*jamun|rasmalai|rasgulla|kheer|kulfi|falooda|jalebi|halwa|ladoo|laddu|barfi|mithai)\b/i.test(t)) {
+    const m = t.match(/\b(gulab\s*jamun|rasmalai|rasgulla|kheer|kulfi|falooda|jalebi|halwa|ladoo|laddu|barfi|mithai)\b/i);
+    if (m) return m[0];
+  }
+  if (/\b(dessert|desserts|something sweet|sweet tooth|mithai)\b/i.test(t) || /\bsweet\b/i.test(t)) {
+    return "dessert";
+  }
   if (THAI_DISH_MARKERS.test(t)) {
     const m = t.match(THAI_DISH_MARKERS);
     if (m) return m[0];
@@ -341,6 +351,10 @@ function extractDishFromTranscript(transcript: string): string | undefined {
     if (m) return m[0];
   }
   return undefined;
+}
+
+function isSweetCravingTranscript(transcript: string): boolean {
+  return /\b(sweet|sweets|dessert|desserts|mithai|gulab|kheer|kulfi|halwa|jalebi|rasmalai)\b/i.test(transcript);
 }
 
 function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
@@ -445,10 +459,21 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
 
   const filters = sanitizeFilters(obj.filters, transcript);
 
-  // Wellness modifiers imply higher purity intent unless user asked for indulgence.
+  const transcriptLower = transcript.toLowerCase();
+  const sweetCraving = isSweetCravingTranscript(transcript);
+  const indulgent =
+    /\bindulgent\b|comfort food|treat\b|heavy meal/i.test(transcriptLower) || sweetCraving;
+
+  // ROE-001: sweet → treat-band purity (25–45)
+  if (sweetCraving) {
+    if (dials.purity > 45 || dials.purity < 20) {
+      dials.purity = clampDial(35, 35);
+    }
+    if (!filters.dish) filters.dish = "dessert";
+  }
+
+  // Wellness modifiers imply higher purity intent unless user asked for indulgence / sweet.
   if (filters.wellness_tags?.length) {
-    const transcriptLower = transcript.toLowerCase();
-    const indulgent = /\bindulgent\b|comfort food|treat\b|heavy meal/i.test(transcriptLower);
     if (!indulgent && dials.purity < 78) {
       dials.purity = Math.min(92, dials.purity + 12);
     }
@@ -464,6 +489,9 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
       ? obj.restated_intent.trim().slice(0, 60)
       : "Your request";
 
+  if (sweetCraving && !/sweet|dessert|mithai|treat/i.test(restated)) {
+    restated = `Sweet · dessert / mithai · treat`.slice(0, 60);
+  }
   if (filters.culture_tag && !restated.toLowerCase().includes(filters.culture_tag)) {
     restated = `${filters.culture_tag} · ${restated}`.slice(0, 60);
   } else if (filters.cuisine && !restated.toLowerCase().includes(filters.cuisine.toLowerCase())) {

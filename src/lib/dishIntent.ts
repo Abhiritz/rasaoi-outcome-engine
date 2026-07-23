@@ -3,16 +3,25 @@
  * Keep synonyms offline — no Gemini at score/plate time.
  */
 
+/** Stop words — do NOT include craving modes (sweet) or they never expand. */
 const DISH_STOP = new Set([
   "with", "and", "a", "the", "of", "for", "please", "some", "any", "my", "i", "want",
   "would", "like", "get", "me", "to", "on", "in", "or", "plus", "also", "really",
   "very", "extra", "little", "bit", "good", "best", "favorite", "favourite", "one", "two",
-  "spicy", "mild", "hot", "sweet", "fresh", "new", "old", "authentic", "traditional",
+  "spicy", "mild", "hot", "fresh", "new", "old", "authentic", "traditional",
   "dish", "dishes", "meal", "food", "eat", "try", "tonight", "today", "quick", "slow",
   "something", "anything", "kinda", "kind", "sort",
 ]);
 
-/** Conceptual → concrete menu tokens (oceany reading, CRS-003a). */
+const DESSERT_FAMILY = [
+  "dessert", "mithai", "gulab", "jamun", "kheer", "rasmalai", "rasgulla", "kulfi",
+  "falooda", "halwa", "ladoo", "laddu", "jalebi", "barfi", "burfi", "payasam",
+  "ice", "cream", "cake", "pudding", "brownie", "cookie", "pastry", "sorbet",
+  "cheesecake", "tiramisu", "mochi", "gelato", "sundae", "parfait", "custard",
+  "shrikhand", "basundi", "phirni", "modak", "mysore", "pak",
+];
+
+/** Conceptual → concrete menu tokens. */
 const DISH_SYNONYMS: Record<string, string[]> = {
   oceany: ["seafood", "fish", "shrimp", "prawn", "crab", "lobster", "salmon", "coastal", "tandoori seafood"],
   ocean: ["seafood", "fish", "shrimp", "prawn", "crab", "lobster", "salmon", "coastal"],
@@ -24,14 +33,28 @@ const DISH_SYNONYMS: Record<string, string[]> = {
   crab: ["crab", "seafood"],
   lobster: ["lobster", "seafood"],
   salmon: ["salmon", "fish", "seafood"],
+  // ROE-001 — sweet / dessert craving
+  sweet: DESSERT_FAMILY,
+  sweets: DESSERT_FAMILY,
+  dessert: DESSERT_FAMILY,
+  desserts: DESSERT_FAMILY,
+  mithai: ["mithai", "gulab", "jamun", "kheer", "rasmalai", "ladoo", "laddu", "jalebi", "barfi", "halwa"],
+  treat: ["dessert", "mithai", "sweet", ...DESSERT_FAMILY.slice(0, 12)],
 };
 
 const COASTAL_TOKEN = /^(oceany|ocean|coastal|seafood|fish|shrimp|prawn|prawns|crab|lobster|salmon)$/;
+const SWEET_TOKEN = /^(sweet|sweets|dessert|desserts|mithai|treat)$/;
+
+export const DESSERT_NAME =
+  /\b(gulab\s*jamun|rasmalai|rasgulla|kheer|kulfi|falooda|halwa|ladoo|laddu|jalebi|barfi|burfi|payasam|shrikhand|basundi|phirni|modak|mysore\s*pak|ice\s*cream|gelato|sorbet|cheesecake|tiramisu|brownie|pudding|cake|pastry|cookie|sundae|parfait|custard|mithai|dessert|mochi)\b/i;
 
 const HEAVY_FRIED =
   /\b(samosa|pakora|bhaji|bhatura|poori|puri|deep[- ]?fried|fried rice|french fries|onion ring)\b/i;
 
-/** Starch / complete South-Asian plates that should not get a second rice+bread carrier. */
+const LIGHT_SWEET =
+  /\b(fruit|rasmalai|kulfi|sorbet|yogurt|shrikhand|phirni|custard|mochi)\b/i;
+
+/** Starch / complete plates that should not get a second rice+bread carrier. */
 export const STARCH_COMPLETE =
   /(\bidli\b|\bdosa\b|uttapam|appam|puttu|upma|pongal|\bkhichdi\b|\bkhichri\b|biryani|fried rice|pulao|pilaf|pizza|burger|wrap|burrito|salad|samosa|pakora)/i;
 
@@ -47,7 +70,7 @@ export function rawDishTokens(phrase?: string): string[] {
     .filter((t) => t.length >= 3 && !DISH_STOP.has(t));
 }
 
-/** Expand tokens with coastal/seafood synonyms; de-dupe. */
+/** Expand tokens with coastal/seafood/sweet synonyms; de-dupe. */
 export function expandDishTokens(phrase?: string): string[] {
   const base = rawDishTokens(phrase);
   const out = new Set<string>(base);
@@ -65,6 +88,22 @@ export function isCoastalDishIntent(phrase?: string): boolean {
   return expandDishTokens(phrase).some((t) => COASTAL_TOKEN.test(t));
 }
 
+/** ROE-001: sweet / dessert / mithai craving. */
+export function isSweetDishIntent(phrase?: string): boolean {
+  if (!phrase) return false;
+  const lc = phrase.toLowerCase();
+  if (/\b(sweet|sweets|dessert|desserts|mithai|gulab|kheer|kulfi|halwa)\b/.test(lc)) return true;
+  return expandDishTokens(phrase).some((t) => SWEET_TOKEN.test(t) || DESSERT_NAME.test(t));
+}
+
+export function isDessertDish(name: string, desc = ""): boolean {
+  return DESSERT_NAME.test(`${name} ${desc}`);
+}
+
+export function isLightSweetDish(name: string, desc = ""): boolean {
+  return LIGHT_SWEET.test(`${name} ${desc}`);
+}
+
 export function isHeavyFriedDish(name: string, desc = ""): boolean {
   return HEAVY_FRIED.test(`${name} ${desc}`);
 }
@@ -74,6 +113,7 @@ export function isStarchAccompaniment(name: string): boolean {
 }
 
 export function needsPlateCarrier(dishName: string): boolean {
+  if (isDessertDish(dishName)) return false;
   return !STARCH_COMPLETE.test(dishName);
 }
 
@@ -84,5 +124,10 @@ export function intentMatchScore(name: string, desc: string, tokens: string[]): 
   for (const tok of tokens) if (t.includes(tok)) hits += 1;
   if (!hits) return 0;
   const ratio = hits / tokens.length;
-  return 20 * ratio + (ratio === 1 ? 10 : 0);
+  let score = 20 * ratio + (ratio === 1 ? 10 : 0);
+  // Prefer real dessert names when sweet tokens are in play
+  if (tokens.some((x) => SWEET_TOKEN.test(x) || DESSERT_FAMILY.includes(x)) && isDessertDish(name, desc)) {
+    score += 8;
+  }
+  return score;
 }

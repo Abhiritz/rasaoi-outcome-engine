@@ -4,14 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: d54be1f
+last_verified_commit: 582c245
 last_verified_date: 2026-07-23
-branch: fix/crs-003-oceany-reading
+branch: feature/ROE-001-sweet-dessert
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  CRS-003 oceany Reading: dishIntent synonyms + stronger dish-match ranking;
-  per-dish carriers; Clean/Heritage coastal coherence; Hero Your pick; Twin syncs copy;
-  CI requires CONTEXT_PLAN.md; Docs/CRS-003-oceany-impact-analysis.md.
+  ROE-001 sweet/dessert craving mode (dishIntent + parse-intent + pairings);
+  CRS-003 oceany Reading merged on develop; Docs/ROE-001 + CRS-003 impact analyses.
 ```
 
 ---
@@ -87,7 +86,7 @@ sequenceDiagram
 | Intent parsing | `src/lib/intent.ts`, `supabase/functions/parse-intent/index.ts` |
 | Restaurant scoring | `src/lib/veda.ts`, `src/lib/vedaDishes.ts` |
 | Culinary matrix index | `src/lib/culinaryIndex.ts`, `src/data/culinary-index.json` (built by `scripts/personal/build-culinary-index.mjs`) |
-| Dish intent tokens | `src/lib/dishIntent.ts` — oceany/coastal synonym expansion (CRS-003) |
+| Dish intent tokens | `src/lib/dishIntent.ts` — oceany/coastal + **sweet/dessert** synonym expansion (CRS-003, ROE-001) |
 | Dietary gates **(SYNC PAIR)** | `src/lib/dietary.ts` ↔ `supabase/functions/_shared/dietary.ts` |
 | Triple outcomes | `src/lib/pairings.ts`, `src/components/TripleOutcome.tsx` |
 | Glycemic lens | `src/lib/glycemic.ts`, `supabase/functions/estimate-glycemic/index.ts` |
@@ -178,7 +177,7 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 6. **Scoring changes** require regression tests in `src/lib/*.test.ts`.
 7. **`parse-intent` SYSTEM_PROMPT** and client scoring (`veda.ts`, `pairings.ts`) must stay aligned on dietary/wellness/cuisine behavior.
 8. **Gemini edge AI:** `_shared/ai-client.ts` uses `gemini-flash-latest`; strip `additionalProperties` from tool schemas; `geminiToolCall` returns a parsed object (not a JSON string).
-9. **Triple outcomes (CRS-003):** `dishIntent.ts` expands oceany/coastal tokens; carriers are per-dish (no venue-wide matrix stamp on starch-complete plates). See `Docs/CRS-003-oceany-impact-analysis.md`.
+9. **Triple outcomes:** CRS-003 coastal rules + **ROE-001** sweet/dessert mode (`isSweetDishIntent`, no carrier on mithai). See `docs/ROE-001-sweet-dessert-impact-analysis.md`.
 10. **CONTEXT_PLAN.md** must remain in the repo on every push (CI checks existence) — prefer it over deep-dives.
 8. **Culinary index rebuild:** when `el_dorado_folsom_culinary_matrix.json` or EDH/Folsom rows in `dish_registry.json` change, run `node scripts/personal/build-culinary-index.mjs` and commit `src/data/culinary-index.json`. Do not import the raw multi-MB sources into the SPA.
 
@@ -225,9 +224,9 @@ Defer to these for feature status — not model memory:
 
 | Doc | Content |
 |-----|---------|
-| `TODO.md` | Feature roadmap + ticket IDs (CRS-*, DIE-*, MIG-*, DIET-*) — **CRS-003** implemented on `fix/crs-003-oceany-reading` |
+| `TODO.md` | Feature roadmap + ticket IDs (CRS-*, ROE-*, DIE-*, MIG-*, DIET-*) |
 | `.lovable/plan.md` | Current surgical fix plan |
-| `Docs/` | Impact analyses (start with `Docs/CRS-003-oceany-impact-analysis.md`) |
+| `Docs/` | Impact analyses (`CRS-003-…`, `ROE-001-sweet-dessert-impact-analysis.md`) |
 | `MIGRATE_SYNC_README.md` | Lovable ↔ personal Supabase workflow |
 | `CONFLICT_RESOLUTION_REPORTS.md` | Resolved bugfix engineering log |
 | `scripts/personal/README.md` | Personal data seeding runbook |

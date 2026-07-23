@@ -178,3 +178,40 @@ describe("CRS-003 oceany / coastal coherence", () => {
     }
   });
 });
+
+describe("ROE-001 sweet / dessert coherence", () => {
+  const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 35 };
+
+  it("Best Match prefers dessert when menu has it", () => {
+    const r = mockRestaurant({
+      id: "sweet1",
+      name: "Mithai House",
+      cuisine: "Indian",
+      signature_dish: "Tandoori Chicken",
+      menu_items: [
+        { name: "Tandoori Chicken", description: "clay oven" },
+        { name: "Gulab Jamun", description: "warm mithai in syrup" },
+        { name: "Vegetable Samosa", description: "fried pastry" },
+        { name: "Kheer", description: "rice pudding" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, { dish: "something sweet" });
+    expect(picks[0].dish.toLowerCase()).toMatch(/gulab|kheer|jamun|rasmalai|mithai/);
+    expect(picks[0].dish.toLowerCase()).not.toBe("sweet");
+    expect(picks[0].carrier ?? "").toBeFalsy();
+    expect(picks[1].dish.toLowerCase()).not.toMatch(/samosa/);
+  });
+
+  it("does not invent a dish named Sweet on kitchens without dessert", () => {
+    const r = mockRestaurant({
+      id: "savory",
+      name: "Savory Only",
+      cuisine: "Indian",
+      signature_dish: "Dal Tadka",
+      menu_items: [{ name: "Dal Tadka" }, { name: "Tandoori Chicken" }],
+    });
+    const picks = buildTripleOutcome(r, dials, { dish: "dessert" });
+    expect(picks[0].dish.toLowerCase()).not.toBe("sweet");
+    expect(picks[0].dish.toLowerCase()).not.toBe("dessert");
+  });
+});

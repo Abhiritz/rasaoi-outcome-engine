@@ -26,8 +26,11 @@ import {
   expandDishTokens,
   intentMatchScore as sharedIntentMatchScore,
   isCoastalDishIntent,
+  isDessertDish,
   isHeavyFriedDish,
+  isLightSweetDish,
   isStarchAccompaniment,
+  isSweetDishIntent,
   needsPlateCarrier,
   STARCH_COMPLETE,
 } from "./dishIntent";
@@ -611,13 +614,17 @@ function pickBest(menu: MenuItem[], dials: DialState, sigName: string | undefine
   return best;
 }
 
-function scoreClean(name: string, desc: string, coastal = false): number {
+function scoreClean(name: string, desc: string, coastal = false, sweet = false): number {
   const t = (name + " " + (desc ?? "")).toLowerCase();
   let s = 0;
   if (/(salad|sashimi|crudo|poke|grilled|steamed|baked|roasted|dal|saag|tikka|ceviche|soup|broth|kale|quinoa|greens|fish|salmon|seafood|shrimp|prawn|veg)/.test(t)) s += 6;
   if (/(fried|deep|cream|cheese|butter|biryani|risotto|lasagna|pizza|naan|bread|noodle|samosa|pakora|bhatura)/.test(t)) s -= 5;
   if (coastal && /(fish|seafood|shrimp|prawn|salmon|crab|lobster|ceviche|grilled|steamed)/.test(t)) s += 8;
   if (coastal && isHeavyFriedDish(name, desc)) s -= 12;
+  if (sweet && isDessertDish(name, desc)) s += 10;
+  if (sweet && isLightSweetDish(name, desc)) s += 6;
+  if (sweet && isHeavyFriedDish(name, desc) && !isDessertDish(name, desc)) s -= 12;
+  if (sweet && !isDessertDish(name, desc) && /(chicken|tandoori|biryani|curry|dal tadka)/.test(t)) s -= 8;
   return s;
 }
 
@@ -625,19 +632,49 @@ function pickClean(
   menu: MenuItem[],
   exclude: Set<string>,
   coastal = false,
+  sweet = false,
 ): MenuItem | undefined {
   let best: MenuItem | undefined;
   let bestScore = -Infinity;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
     if (coastal && isHeavyFriedDish(m.name, m.description ?? "")) continue;
-    const s = scoreClean(m.name, m.description ?? "", coastal);
+    if (sweet && isHeavyFriedDish(m.name, m.description ?? "") && !isDessertDish(m.name, m.description ?? "")) {
+      continue;
+    }
+    if (sweet && !isDessertDish(m.name, m.description ?? "") && best && isDessertDish(best.name)) {
+      continue;
+    }
+    const s = scoreClean(m.name, m.description ?? "", coastal, sweet);
     if (s > bestScore) { bestScore = s; best = m; }
+  }
+  // Prefer any dessert over savory when sweet craving
+  if (sweet) {
+    const dessert = menu.find(
+      (m) =>
+        !exclude.has(m.name.toLowerCase()) &&
+        isDessertDish(m.name, m.description ?? "") &&
+        (isLightSweetDish(m.name, m.description ?? "") || true),
+    );
+    if (dessert) {
+      const light = menu.find(
+        (m) =>
+          !exclude.has(m.name.toLowerCase()) &&
+          isLightSweetDish(m.name, m.description ?? ""),
+      );
+      return light ?? dessert ?? best;
+    }
   }
   return best;
 }
 
-function scoreHeritage(name: string, desc: string, sigName?: string, coastal = false): number {
+function scoreHeritage(
+  name: string,
+  desc: string,
+  sigName?: string,
+  coastal = false,
+  sweet = false,
+): number {
   const t = (name + " " + (desc ?? "")).toLowerCase();
   let s = 0;
   if (sigName && name.toLowerCase() === sigName.toLowerCase()) s += 8;
@@ -646,6 +683,9 @@ function scoreHeritage(name: string, desc: string, sigName?: string, coastal = f
   if (/(salad|bowl|wrap|soup)/.test(t)) s -= 3;
   if (coastal && /(seafood|fish|shrimp|prawn|salmon|crab|lobster|tandoori seafood)/.test(t)) s += 10;
   if (coastal && /\bchicken\b/.test(t) && !/seafood|fish/.test(t)) s -= 6;
+  if (sweet && isDessertDish(name, desc)) s += 12;
+  if (sweet && /(gulab|rasmalai|kheer|jalebi|halwa|ladoo|mithai)/.test(t)) s += 4;
+  if (sweet && /\bchicken\b/.test(t) && !isDessertDish(name, desc)) s -= 8;
   return s;
 }
 
@@ -654,12 +694,13 @@ function pickHeritage(
   sigName: string | undefined,
   exclude: Set<string>,
   coastal = false,
+  sweet = false,
 ): MenuItem | undefined {
   let best: MenuItem | undefined;
   let bestScore = -Infinity;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
-    const s = scoreHeritage(m.name, m.description ?? "", sigName, coastal);
+    const s = scoreHeritage(m.name, m.description ?? "", sigName, coastal, sweet);
     if (s > bestScore) { bestScore = s; best = m; }
   }
   return best;
@@ -717,7 +758,9 @@ function whyFor(
 
   let core = "";
   if (label === "best-match") {
-    if (/seafood|fish|shrimp|prawn|crab|lobster|salmon|oceany|coastal/.test(d)) {
+    if (/gulab|rasmalai|kheer|kulfi|jalebi|halwa|mithai|dessert|ice cream|sweet/.test(d) || isDessertDish(dish)) {
+      core = `${dish} satisfies a sweet craving — dessert first.`;
+    } else if (/seafood|fish|shrimp|prawn|crab|lobster|salmon|oceany|coastal/.test(d)) {
       core = `${dish} brings coastal protein for your ${energyWord}.`;
     } else if (/curry|masala|tikka masala|butter chicken/.test(d)) core = `Warming spice and gentle fats anchor your ${energyWord}.`;
     else if (/biryani/.test(d)) core = `Slow-cooked rice and spice — sustained release for ${energyWord}; complete on its own.`;
@@ -728,7 +771,11 @@ function whyFor(
     else if (/idli|dosa|khichdi/.test(d)) core = `${dish} is a complete starch plate for your ${energyWord} — no extra rice needed.`;
     else core = `${dish} — tuned to your ${energyWord} without overload.`;
   } else if (label === "clean-vital") {
-    if (/dal|lentil/.test(d)) core = `${dish}: plant-protein, easy on digestion, naturally low-fat.`;
+    if (isDessertDish(dish) && isLightSweetDish(dish)) {
+      core = `${dish}: a lighter sweet — still a treat, easier on the plate.`;
+    } else if (isDessertDish(dish)) {
+      core = `${dish}: dessert from this kitchen, kept as a focused sweet.`;
+    } else if (/dal|lentil/.test(d)) core = `${dish}: plant-protein, easy on digestion, naturally low-fat.`;
     else if (/saag|spinach|greens/.test(d)) core = `${dish}: iron and folate-rich greens with minimal added fats.`;
     else if (/fish|salmon|sashimi|crudo|ceviche|seafood|shrimp/.test(d)) core = `${dish}: omega-3 lean protein — clean and vital.`;
     else if (/salad|kale|quinoa/.test(d)) core = `${dish}: fiber-forward, lower-calorie, micronutrient-dense.`;
@@ -737,7 +784,8 @@ function whyFor(
     else if (/tikka(?! masala)/.test(d)) core = `${dish}: yogurt-marinated, clay-oven cooked — lean and clean.`;
     else core = `${dish}: a lighter pick from this kitchen.`;
   } else {
-    if (/seafood|fish|shrimp|prawn/.test(d)) core = `${dish} — coastal heritage from this kitchen.`;
+    if (isDessertDish(dish)) core = `${dish} — classic sweet from this kitchen's heritage table.`;
+    else if (/seafood|fish|shrimp|prawn/.test(d)) core = `${dish} — coastal heritage from this kitchen.`;
     else if (/rogan josh/.test(d)) core = `Kashmiri slow-braise — the kitchen's heritage benchmark.`;
     else if (/biryani/.test(d)) core = `Layered, aromatic — a centerpiece dish complete in itself.`;
     else if (/butter chicken|tikka masala/.test(d)) core = `The crowd-favorite signature — rich, balanced, time-tested.`;
@@ -837,6 +885,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const dishTokens = dishOnlyTokens(intent?.dish);
   const userCarrier = intentCarrierName(intent?.dish);
   const coastal = isCoastalDishIntent(intent?.dish);
+  const sweet = isSweetDishIntent(intent?.dish);
 
   // Helper: try menu first, then cuisine bank fallback (treated as "inferred")
   type Pick = {
@@ -943,14 +992,16 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   }
   if (best) used.add(best.name.toLowerCase());
 
-  // 2) CLEAN & VITAL — must be different & lighter (no fried “clean” on coastal intent)
-  let clean: Pick | null = tryMenu(pickClean(menu, used, coastal));
+  // 2) CLEAN & VITAL — lighter; coastal skips fried; sweet prefers light dessert
+  let clean: Pick | null = tryMenu(pickClean(menu, used, coastal, sweet));
   if (!clean) clean = tryMatrix("light");
   if (!clean && bank) clean = tryBank(bank.clean);
   // If menu pick exists but happens to NOT be lighter than the best, prefer bank
-  if (clean && best && clean.verified && scoreClean(clean.name, "", coastal) < 3 && bank) {
+  if (clean && best && clean.verified && scoreClean(clean.name, "", coastal, sweet) < 3 && bank) {
     const alt = tryBank(bank.clean);
-    if (alt && !(coastal && isHeavyFriedDish(alt.name))) clean = alt;
+    if (alt && !(coastal && isHeavyFriedDish(alt.name)) && !(sweet && isHeavyFriedDish(alt.name))) {
+      clean = alt;
+    }
   }
   if (clean && coastal && isHeavyFriedDish(clean.name)) {
     clean = tryMatrix("light") ?? (bank ? tryBank(bank.clean) : null) ?? clean;
@@ -967,15 +1018,17 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   }
   if (clean) used.add(clean.name.toLowerCase());
 
-  // 3) HERITAGE FAVORITE — coastal prefers ocean classics when present
+  // 3) HERITAGE — coastal ocean / sweet mithai when present
   let heritage: Pick | null = null;
-  if (coastal && dishTokens.length) {
-    const oceanHit = pickByIntent(menu, dishTokens, used);
-    if (oceanHit && oceanHit.name.toLowerCase() !== best?.name.toLowerCase()) {
-      heritage = { name: oceanHit.name, verified: true, ...menuDiet(oceanHit) };
+  if ((coastal || sweet) && dishTokens.length) {
+    const intentHit = pickByIntent(menu, dishTokens, used);
+    if (intentHit && intentHit.name.toLowerCase() !== best?.name.toLowerCase()) {
+      if (!sweet || isDessertDish(intentHit.name, intentHit.description ?? "")) {
+        heritage = { name: intentHit.name, verified: true, ...menuDiet(intentHit) };
+      }
     }
   }
-  if (!heritage) heritage = tryMenu(pickHeritage(menu, sigName, used, coastal));
+  if (!heritage) heritage = tryMenu(pickHeritage(menu, sigName, used, coastal, sweet));
   if (!heritage) heritage = trySignature();
   if (!heritage) heritage = tryMatrix("main_course");
   if (!heritage && bank) heritage = tryBank(bank.heritage);
