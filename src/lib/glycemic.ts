@@ -146,7 +146,20 @@ export async function estimateGlycemic(
       const { data, error } = await supabase.functions.invoke("estimate-glycemic", {
         body: { dishes: batch },
       });
-      if (error) throw error;
+      if (error) {
+        const status = (error as { context?: Response }).context?.status;
+        const msg = error.message || "";
+        if (status === 429 || /429|rate limit|quota/i.test(msg)) {
+          // ROE-002: keep matrix/heuristic results; do not throw — Reading stays usable.
+          console.warn("estimateGlycemic rate-limited; returning heuristic/partial map");
+          return result;
+        }
+        throw error;
+      }
+      if (data && typeof data === "object" && (data as { code?: string }).code === "rate_limit") {
+        console.warn("estimateGlycemic rate-limited body; returning heuristic/partial map");
+        return result;
+      }
       const estimates = (data?.estimates ?? []) as GLEstimate[];
       batch.forEach((d, i) => {
         const est =
@@ -160,6 +173,7 @@ export async function estimateGlycemic(
       saveCache(cache);
     } catch (e) {
       console.error("estimateGlycemic failed:", e);
+      // Soft-fail: Reading continues with whatever heuristics we already filled.
     }
   }
   return result;

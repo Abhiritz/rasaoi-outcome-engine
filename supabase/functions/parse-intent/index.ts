@@ -557,10 +557,17 @@ Deno.serve(async (req) => {
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (/429|rate limit|quota/i.test(msg)) {
-        return new Response(JSON.stringify({ error: "Rate limit reached. Please wait a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            error: "Veda is busy (AI rate limit). Wait a moment, then try again.",
+            code: "rate_limit",
+            retry_after_ms: 8000,
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
       console.error("parse-intent Gemini error:", msg);
       return new Response(JSON.stringify({ error: "Veda could not interpret that." }), {

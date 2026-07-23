@@ -160,7 +160,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | `vedaDishes.ts` | Dish-level scoring; `cravingSweet` includes/boosts Dessert category |
 | `dietary.ts` | DIET-001 taxonomy (sync with `_shared/dietary.ts`) |
 | `pairings.ts` | Triple outcomes. Never invent dish from intent text. Coastal + **sweet** slot coherence; desserts get no rice/naan carrier. |
-| `intent.ts` | Intent parsing client API + sessionStorage cache; maps empty Gemini bodies to a clear user error |
+| `intent.ts` | Intent parsing client + sessionStorage; **90s parse cache**; `RateLimitError` + backoff retries (ROE-002) |
 | `google-places.ts` | Places search with mock interceptor |
 | `glycemic.ts` | Glycemic estimates + localStorage cache (matrix heuristics before edge, N≤8) |
 | `memory.ts` | Vitality Twin, consent, Mitra Pact — Twin counter is **twin syncs**, not restaurant outcomes |
