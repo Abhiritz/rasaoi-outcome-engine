@@ -152,6 +152,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | File | Responsibility |
 |------|----------------|
 | `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters |
+| `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script) |
 | `vedaDishes.ts` | Dish-level scoring against dials + dietary gates |
 | `dietary.ts` | DIET-001 taxonomy (sync with `_shared/dietary.ts`) |
 | `pairings.ts` | Triple outcome / carrier pairing (blood-sugar lens) |

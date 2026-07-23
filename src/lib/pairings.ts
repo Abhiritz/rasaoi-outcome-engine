@@ -16,6 +16,7 @@ import {
   passesDietaryGate,
   sanitizeRestaurantForDietary,
 } from "./veda";
+import { matrixCourseDish, lookupRestaurant } from "./culinaryIndex";
 
 export type DishRole = "Base" | "Booster" | "Carrier";
 
@@ -280,7 +281,12 @@ export function buildMealPlate(
   const safe = dietary ? sanitizeRestaurantForDietary(r, dietary) : r;
   const menu = getMenu(safe, dietary);
 
-  // --- BASE: dial-aware pick from verified menu_items ---
+  // --- BASE: prefer culinary-matrix main_course when dietary-safe, else dial-aware menu pick ---
+  const matrixMain = matrixCourseDish(safe.name, "main_course");
+  const matrixMainOk =
+    matrixMain &&
+    dishPassesGate(matrixMain.name, "", dietary, { name: matrixMain.name });
+
   const sigName = safe.signature_dish?.trim();
   const sigLower = sigName?.toLowerCase() ?? "";
   const sigCore = sigLower.replace(/\s*\([^)]*\)\s*/g, "").trim();
@@ -307,12 +313,17 @@ export function buildMealPlate(
     }
   }
 
-  const chosenBase = bestPick ?? sigInMenu;
+  const chosenBase = matrixMainOk
+    ? { name: matrixMain!.name, description: `Matrix main (${matrixMain!.dish_type ?? "main"})` }
+    : bestPick ?? sigInMenu;
   const base: PlateItem = chosenBase
     ? {
         name: chosenBase.name,
         role: "Base",
-        outcome: (chosenBase === sigInMenu && safe.dish_outcome) || chosenBase.description || "primary outcome carrier",
+        outcome:
+          (!matrixMainOk && chosenBase === sigInMenu && safe.dish_outcome) ||
+          ("description" in chosenBase ? chosenBase.description : undefined) ||
+          "primary outcome carrier",
         sovereign: inferSovereign(safe),
         verified: true,
       }
@@ -342,9 +353,26 @@ export function buildMealPlate(
     return "other";
   };
 
-  // --- CARRIER: inferred staple when Base is a Dependency Item ---
+  // --- CARRIER: matrix accompaniment_base first, else inferred staple ---
   let carrier: PlateItem | undefined;
-  if (base.verified) {
+  const matrixCarrier = matrixCourseDish(safe.name, "accompaniment_base");
+  const matrixCarrierOk =
+    matrixCarrier &&
+    dishPassesGate(matrixCarrier.name, "", dietary, { name: matrixCarrier.name });
+
+  if (base.verified && matrixCarrierOk) {
+    const onMenu = menu.find(
+      (m) => m.name.toLowerCase() === matrixCarrier!.name.toLowerCase(),
+    );
+    carrier = {
+      name: matrixCarrier!.name,
+      role: "Carrier",
+      outcome: "Matrix accompaniment for a complete plate",
+      sovereign: inferSovereign(safe),
+      verified: !!onMenu || !!lookupRestaurant(safe.name),
+      inferred: !onMenu,
+    };
+  } else if (base.verified) {
     const spec = carrierFor(base.name, safe.cuisine);
     if (spec) {
       // Low-carb alternative when user signals grain-free / very low-recovery /
@@ -372,34 +400,50 @@ export function buildMealPlate(
     }
   }
 
-  // --- BOOSTER: Single-Protein Guardrail ---
-  // Prefer a vegetable/greens side. Never select a second primary protein.
-  // Skip the base and the carrier (avoid redundancy). If only proteins remain,
-  // drop the booster entirely so the plate stays clean.
-  const baseLower = sigInMenu?.name.toLowerCase();
+  // --- BOOSTER: matrix appetizer/starter, else Single-Protein Guardrail ---
+  const baseLower = (chosenBase?.name ?? sigInMenu?.name)?.toLowerCase();
   const carrierLower = carrier?.name.toLowerCase();
-  const candidates = menu.filter((m) => {
-    const ln = m.name.toLowerCase();
-    if (baseLower && ln === baseLower) return false;
-    if (carrierLower && carrierLower.split(/\s*&\s*|\s*\/\s*/).some((p) => p && ln.includes(p))) return false;
-    return true;
-  });
-  const veg = candidates.find((m) => classify(m.name) === "vegetable");
-  const lightOther = candidates.find((m) => classify(m.name) === "other");
-  const boosterPick = veg ?? lightOther ?? null;
 
-  const booster: PlateItem | null = boosterPick
-    ? {
-        name: boosterPick.name,
-        role: "Booster",
-        outcome: boosterPick.description ||
-          (classify(boosterPick.name) === "vegetable"
-            ? "fiber + micronutrient counterbalance to the protein"
-            : "complementary item from this kitchen"),
-        sovereign: inferSovereign(r),
-        verified: true,
-      }
-    : null;
+  const matrixApp =
+    matrixCourseDish(safe.name, "appetizer") ?? matrixCourseDish(safe.name, "starter");
+  const matrixAppOk =
+    matrixApp &&
+    matrixApp.name.toLowerCase() !== baseLower &&
+    dishPassesGate(matrixApp.name, "", dietary, { name: matrixApp.name });
+
+  let booster: PlateItem | null = null;
+  if (matrixAppOk) {
+    booster = {
+      name: matrixApp!.name,
+      role: "Booster",
+      outcome: "Matrix starter / appetizer counterbalance",
+      sovereign: inferSovereign(r),
+      verified: true,
+    };
+  } else {
+    const candidates = menu.filter((m) => {
+      const ln = m.name.toLowerCase();
+      if (baseLower && ln === baseLower) return false;
+      if (carrierLower && carrierLower.split(/\s*&\s*|\s*\/\s*/).some((p) => p && ln.includes(p))) return false;
+      return true;
+    });
+    const veg = candidates.find((m) => classify(m.name) === "vegetable");
+    const lightOther = candidates.find((m) => classify(m.name) === "other");
+    const boosterPick = veg ?? lightOther ?? null;
+
+    booster = boosterPick
+      ? {
+          name: boosterPick.name,
+          role: "Booster",
+          outcome: boosterPick.description ||
+            (classify(boosterPick.name) === "vegetable"
+              ? "fiber + micronutrient counterbalance to the protein"
+              : "complementary item from this kitchen"),
+          sovereign: inferSovereign(r),
+          verified: true,
+        }
+      : null;
+  }
 
   const bothVerified = base.verified && (booster?.verified ?? true);
   const bothSovereign = base.sovereign && (booster?.sovereign ?? true);

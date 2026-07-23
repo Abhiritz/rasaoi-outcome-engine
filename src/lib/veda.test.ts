@@ -197,3 +197,40 @@ describe("scoreRestaurants strict dietary gatekeeper (DIE-001)", () => {
     expect(passesStrictDietaryGate("jain dal makhani no onion no garlic", "jain")).toBe(true);
   });
 });
+
+describe("scoreRestaurants culinary matrix signals", () => {
+  it("tags matrix-covered venue and boosts intent dish via matrix when menu is thin", () => {
+    const bawarchi = mockRestaurant({
+      id: "baw-1",
+      name: "Bawarchi Indian Cuisine",
+      cuisine: "Indian",
+      signature_dish: "House Special",
+      menu_items: [{ name: "House Special" }],
+      price_tier: 2,
+    });
+    const unknown = mockRestaurant({
+      id: "unk-1",
+      name: "Random Cafe XYZ",
+      cuisine: "American",
+      signature_dish: "Burger",
+      menu_items: [{ name: "Burger" }],
+      price_tier: 2,
+    });
+
+    const scored = scoreRestaurants(
+      [bawarchi, unknown],
+      { energy: 20, context: 40, budget: 50, purity: 70 },
+      [],
+      undefined,
+      "dal makhani",
+      "Indian",
+    );
+
+    const b = scored.find((s) => s.restaurant.name === "Bawarchi Indian Cuisine");
+    expect(b).toBeTruthy();
+    expect(b!.inferenceTags.some((t) => t.includes("Has dal") || t.includes("Matrix"))).toBe(true);
+    expect(b!.score).toBeGreaterThan(
+      scored.find((s) => s.restaurant.name === "Random Cafe XYZ")!.score,
+    );
+  });
+});

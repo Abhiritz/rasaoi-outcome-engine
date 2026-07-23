@@ -57,6 +57,14 @@ import {
   passesDietaryGate,
   passesStrictDietaryGate,
 } from "./dietary";
+import {
+  isHeavyDishType,
+  isLightDishType,
+  lookupDish,
+  lookupRestaurant,
+  restaurantMatrixSignals,
+  type CulinaryDishMeta,
+} from "./culinaryIndex";
 
 export {
   DIET_CLASSES,
@@ -386,6 +394,20 @@ export function scoreRestaurants(
           const sig = (r.signature_dish ?? "").toLowerCase();
           if (dTokens.some((t) => sig.includes(t))) nameHit = true;
         }
+        // Culinary matrix: dish listed under this venue even when menu_items is thin.
+        if (!nameHit) {
+          const mxRest = lookupRestaurant(r.name);
+          if (mxRest) {
+            for (const dish of Object.values(mxRest.dishes)) {
+              const n = dish.name.toLowerCase();
+              if (dTokens.some((t) => n.includes(t))) {
+                nameHit = true;
+                tags.push("Matrix dish");
+                break;
+              }
+            }
+          }
+        }
         if (nameHit) {
           score += 35;
           tags.push(`Has ${dTokens[0]}`);
@@ -396,7 +418,6 @@ export function scoreRestaurants(
           score -= 5;
         }
       }
-
 
       // --- Purity alignment (Sovereign Seal weighting) ---
       const userPurity = dials.purity;
@@ -434,6 +455,65 @@ export function scoreRestaurants(
       if (eState === "peak" && r.energy_tags.some((t) => ["light", "peak", "energizing"].includes(t))) {
         score += 16;
         tags.push("Peak-State Fuel");
+      }
+
+      // --- Culinary matrix signals (price / macros / dish_type) — offline, no AI ---
+      const mx = restaurantMatrixSignals(r.name);
+      if (mx.main || mx.avgPriceUsd != null) {
+        if (mx.avgPriceUsd != null) {
+          const targetUsd = 12 + (dials.budget / 100) * 23;
+          const gap = Math.abs(mx.avgPriceUsd - targetUsd);
+          const priceDelta = Math.max(-12, 10 - gap * 0.8);
+          score += priceDelta;
+          if (Math.abs(priceDelta) >= 4) tags.push("Matrix price");
+          if (mx.avgPriceUsd > targetUsd + 8 && dials.budget < 40) {
+            score -= 10;
+            tags.push("Over matrix budget");
+          }
+        }
+
+        const mainType = mx.main?.dish_type;
+        const sigMeta =
+          (r.signature_dish
+            ? (lookupDish(r.signature_dish, r.name) as CulinaryDishMeta | null)
+            : null) ?? mx.main;
+
+        if (lowRecovery) {
+          if (isHeavyDishType(sigMeta?.dish_type ?? mainType) || (sigMeta?.calories_kcal ?? 0) > 700) {
+            score -= 14;
+            tags.push("Matrix heavy");
+          }
+          if (
+            isLightDishType(sigMeta?.dish_type ?? mainType) ||
+            ((sigMeta?.protein_g ?? 0) >= 15 && (sigMeta?.fiber_g ?? 0) >= 5)
+          ) {
+            score += 12;
+            tags.push("Matrix macros");
+          }
+        }
+
+        if (wellnessTags.length) {
+          const wantsLight =
+            wellnessTags.includes("light") ||
+            wellnessTags.includes("fresh") ||
+            wellnessTags.includes("raw") ||
+            wellnessTags.includes("low_oil");
+          if (wantsLight) {
+            if (isHeavyDishType(sigMeta?.dish_type ?? mainType) || mx.heavyCount > mx.lightCount + 2) {
+              score -= 16;
+              tags.push("Matrix vs light");
+            }
+            if (isLightDishType(sigMeta?.dish_type ?? mainType) || mx.lightCount > 0) {
+              score += 14;
+              tags.push("Matrix light");
+            }
+          }
+        }
+
+        if (eState === "peak" && isLightDishType(sigMeta?.dish_type ?? mainType)) {
+          score += 8;
+          tags.push("Matrix peak fuel");
+        }
       }
 
       // --- Context (solo/social/celebratory) ---

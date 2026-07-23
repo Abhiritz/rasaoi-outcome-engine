@@ -81,6 +81,7 @@ sequenceDiagram
 |--------|-----------------|
 | Intent parsing | `src/lib/intent.ts`, `supabase/functions/parse-intent/index.ts` |
 | Restaurant scoring | `src/lib/veda.ts`, `src/lib/vedaDishes.ts` |
+| Culinary matrix index | `src/lib/culinaryIndex.ts`, `src/data/culinary-index.json` (built by `scripts/personal/build-culinary-index.mjs`) |
 | Dietary gates **(SYNC PAIR)** | `src/lib/dietary.ts` ↔ `supabase/functions/_shared/dietary.ts` |
 | Triple outcomes | `src/lib/pairings.ts`, `src/components/TripleOutcome.tsx` |
 | Glycemic lens | `src/lib/glycemic.ts`, `supabase/functions/estimate-glycemic/index.ts` |
@@ -170,6 +171,7 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 5. **TanStack Query** — `QueryClientProvider` in `App.tsx` is unused scaffolding.
 6. **Scoring changes** require regression tests in `src/lib/*.test.ts`.
 7. **`parse-intent` SYSTEM_PROMPT** and client scoring (`veda.ts`, `pairings.ts`) must stay aligned on dietary/wellness/cuisine behavior.
+8. **Culinary index rebuild:** when `el_dorado_folsom_culinary_matrix.json` or EDH/Folsom rows in `dish_registry.json` change, run `node scripts/personal/build-culinary-index.mjs` and commit `src/data/culinary-index.json`. Do not import the raw multi-MB sources into the SPA.
 
 ---
 
