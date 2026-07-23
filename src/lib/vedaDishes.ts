@@ -45,6 +45,8 @@ const FOOD_CATEGORIES = new Set([
 export interface ScoreOptions {
   /** Include drinks & desserts in the ranked list. Default false. */
   includeNonFood?: boolean;
+  /** ROE-001: include desserts and boost sweet category. */
+  cravingSweet?: boolean;
   /** Restrict to a specific category. */
   categoryFilter?: string;
   /** Strict dietary filter (DIET-001). */
@@ -62,14 +64,18 @@ export function scoreDishes(
   const vitality = twin?.last_vitality_score ?? dials.energy;
   const lowRecovery = eState === "low-recovery" || vitality < 40;
   const targetTier = 1 + (dials.budget / 100) * 2;
+  const includeDessert = !!opts.includeNonFood || !!opts.cravingSweet || opts.categoryFilter === "Dessert";
 
   return dishes
     .filter((d) => {
       if (opts.dietaryFilter && !passesDietaryGate(d, opts.dietaryFilter)) return false;
       if (opts.categoryFilter && d.category !== opts.categoryFilter) return false;
       // Hide drinks & desserts from main recommendations by default
-      if (!opts.includeNonFood) {
+      if (!includeDessert) {
         if (d.category === "Drink" || d.category === "Dessert") return false;
+      } else if (opts.cravingSweet && !opts.includeNonFood && opts.categoryFilter !== "Dessert") {
+        // Sweet craving: keep desserts + food; still hide drinks unless includeNonFood
+        if (d.category === "Drink") return false;
       }
       // Sovereign gate: tier-based AND oil-based, so mis-tagged items can't slip through
       if (dials.purity > 80) {
@@ -92,6 +98,12 @@ export function scoreDishes(
         breakdown.push({ label, delta });
         if (tag) tags.push(tag);
       };
+
+      if (opts.cravingSweet && d.category === "Dessert") {
+        add(28, "Sweet craving · dessert", "Dessert");
+      } else if (opts.cravingSweet && d.category && d.category !== "Dessert") {
+        add(-12, "Not a dessert");
+      }
 
       // Purity alignment
       const userPurity = dials.purity;

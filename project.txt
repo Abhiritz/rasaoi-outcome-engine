@@ -128,11 +128,10 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 
 ---
 
-## Known open QA (CRS-003)
+## Known open QA
 
-**Resolved on `fix/crs-003-oceany-reading`:** oceany/coastal synonym ranking, per-dish carriers, Clean/Heritage coherence, Hero “Your pick”, Twin/cuisine copy, tests. See `Docs/CRS-003-oceany-impact-analysis.md`.
-
-Shipped earlier: stop inventing the same dish name on every alternate (`pairings.ts`, commit `86f2437`).
+**CRS-003** — resolved on `develop` (PR #1).  
+**ROE-001** — sweet/dessert craving mode on `feature/ROE-001-sweet-dessert`. See `docs/ROE-001-sweet-dessert-impact-analysis.md`. After merge, redeploy `parse-intent`.
 
 ---
 

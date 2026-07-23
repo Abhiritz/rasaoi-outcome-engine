@@ -156,10 +156,10 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 |------|----------------|
 | `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters |
 | `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script) |
-| `dishIntent.ts` | Oceany/coastal synonym expansion + starch/carrier helpers (CRS-003) |
-| `vedaDishes.ts` | Dish-level scoring against dials + dietary gates |
+| `dishIntent.ts` | Oceany/coastal + **sweet/dessert** synonym expansion; starch/carrier helpers (CRS-003, ROE-001) |
+| `vedaDishes.ts` | Dish-level scoring; `cravingSweet` includes/boosts Dessert category |
 | `dietary.ts` | DIET-001 taxonomy (sync with `_shared/dietary.ts`) |
-| `pairings.ts` | Triple outcome / carrier pairing. **Never** invent a dish from intent text. Prefer menu → matrix → signature → cuisine bank. Carriers are **per dish** (matrix starch only when the plate needs one). Coastal intent skips fried “Clean” and prefers ocean Heritage when present. |
+| `pairings.ts` | Triple outcomes. Never invent dish from intent text. Coastal + **sweet** slot coherence; desserts get no rice/naan carrier. |
 | `intent.ts` | Intent parsing client API + sessionStorage cache; maps empty Gemini bodies to a clear user error |
 | `google-places.ts` | Places search with mock interceptor |
 | `glycemic.ts` | Glycemic estimates + localStorage cache (matrix heuristics before edge, N≤8) |
@@ -175,7 +175,8 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - `HeroCard` / `MiniCard` call `buildTripleOutcome(r, dials, intent)`.
 - Hero shows **Your pick** + CTA for `selectedIdx`; selected row is ring-highlighted.
 - `CuisineFilter` subtitle: “Catalog · Indian nearby” when only one cuisine chip exists.
-- Impact analysis: `Docs/CRS-003-oceany-impact-analysis.md`. Always keep `.cursor/CONTEXT_PLAN.md` updated on pushes.
+- Impact analyses: `docs/CRS-003-oceany-impact-analysis.md`, `docs/ROE-001-sweet-dessert-impact-analysis.md`. Keep `.cursor/CONTEXT_PLAN.md` updated on pushes.
+- Sweet ask (“something sweet”) → `filters.dish` dessert signal; Best Match must be a real mithai/dessert when on menu.
 
 ---
 

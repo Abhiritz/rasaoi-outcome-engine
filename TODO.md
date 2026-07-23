@@ -52,6 +52,18 @@ Partial fix already shipped (`86f2437`): stopped inventing the same synthetic di
 
 ---
 
+## ROE-001: Sweet / dessert craving mode
+
+- [x] Impact analysis `docs/ROE-001-sweet-dessert-impact-analysis.md`
+- [x] parse-intent: sweet → treat purity + `filters.dish=dessert` + restated intent
+- [x] `dishIntent` dessert synonyms; remove `sweet` stop-word
+- [x] `pairings` Best/Clean/Heritage dessert preference; no carrier on mithai
+- [x] `vedaDishes.cravingSweet` option
+- [x] Unit tests (dishIntent + pairings)
+- [ ] **After merge:** redeploy `parse-intent` edge function; verify Ask “I want something sweet” on prod
+
+---
+
 ## 0. Bugfix — Cuisine / dish intent routing (Thai → Indian mis-route)
 
 - [x] Tighten `parse-intent` SYSTEM_PROMPT: no hallucinated cuisines/dishes; relative phrases must not block food keywords
