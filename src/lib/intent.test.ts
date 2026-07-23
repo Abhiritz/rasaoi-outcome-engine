@@ -72,4 +72,28 @@ describe("parseIntent ROE-002 rate limit + cache", () => {
     // initial + 2 retries
     expect(invoke).toHaveBeenCalledTimes(3);
   }, 15000);
+
+  it("uses offline celebratory dials when rate-limited (ROE-003)", async () => {
+    invoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: "Edge Function returned a non-2xx status code",
+        context: {
+          status: 429,
+          json: async () => ({
+            error: "Rate limit",
+            code: "rate_limit",
+            retry_after_ms: 5,
+          }),
+        },
+      },
+    });
+
+    const intent = await parseIntent("Celebrating mood with friends");
+    expect(intent.confidence).toBe("low");
+    expect(intent.restated_intent.toLowerCase()).toMatch(/celebrat/);
+    expect(intent.dials.context).toBeGreaterThanOrEqual(80);
+    expect(intent.filters.dish).toBeUndefined();
+    expect(invoke).toHaveBeenCalledTimes(3);
+  }, 15000);
 });

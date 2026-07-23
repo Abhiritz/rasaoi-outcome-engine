@@ -23,7 +23,7 @@ DIAL SCALE (each 0-100):
 MAPPING RULES:
 - "not feeling good", "tired", "off", "sick", "exhausted", "low energy" → energy 10-25, purity 75-90 (lean clean & restorative)
 - "great", "energized", "peak", "after workout" → energy 75-95
-- "date night", "celebrating", "anniversary", "family dinner" → context 80-95
+- "date night", "celebrating", "anniversary", "family dinner", "with friends", "party mood", "celebrating mood" → context 80-95; energy 55-75; purity 60-75. Omit filters.dish unless a specific food was named. NEVER invent roti, naan, bread, or paratha as the dish for a mood-only ask.
 - "quick", "alone", "grab something", "in a rush" → context 5-20
 - "healthy", "clean", "good for me", "organic" → purity 75-90
 - "indulgent", "treat", "comfort food" → purity 20-40
@@ -70,6 +70,7 @@ STRICT DIETARY RULES (HIGHEST PRIORITY — zero tolerance):
 FILTER EXTRACTION (CRITICAL — read carefully):
 - filters.cuisine: ONLY when the diner explicitly names a cuisine type (e.g. "Thai", "Indian", "Italian"). Use canonical Title Case ("Thai", not "thai food").
 - filters.dish: ONLY when the diner names a specific dish or food item (e.g. "pad thai", "shrimp curry", "tonkotsu ramen"). Do NOT put a cuisine label in filters.dish.
+- Mood / feeling phrases ("celebrating", "mood with friends", "party") are NOT dishes — never set filters.dish to roti/naan/bread from mood alone.
 - If a specific cuisine OR dish is requested, DO NOT populate unrelated cuisines or fallback/example dishes in the filters payload.
 - NEVER default to Indian, Tandoori, Biryani, or any cuisine/dish the user did not say. Empty filters fields are correct when unknown.
 - Relative/social phrases ("for my partner", "for my wife", "something nearby", "date night") affect dials/context — they must NOT block or replace an explicit food/cuisine keyword in the same utterance.
@@ -80,6 +81,7 @@ RESTATED INTENT: A short, warm, human phrase that confirms what you heard.
 Format like: "Low energy · ~$35 · clean & nearby" or "Thai · date night · nearby" or "Sweet · dessert / mithai · treat".
 Use middle-dot separators. Max 60 chars. If a cuisine was requested, include it in restated_intent.
 If the user asked for something sweet/dessert/mithai, restated_intent MUST include Sweet or dessert.
+If the user asked for celebrating / with friends / date night (mood-only), restated_intent MUST include Celebratory (e.g. "Celebratory · with friends").
 
 CONFIDENCE:
 - "high" if multiple clear signals
@@ -357,6 +359,33 @@ function isSweetCravingTranscript(transcript: string): boolean {
   return /\b(sweet|sweets|dessert|desserts|mithai|gulab|kheer|kulfi|halwa|jalebi|rasmalai)\b/i.test(transcript);
 }
 
+/** ROE-003: mood / social celebration phrases (not a food request). */
+function isCelebratoryMoodTranscript(transcript: string): boolean {
+  return /\b(celebrat(e|ing|ion)?|party|with friends|date night|anniversary|family (dinner|gathering)|festive|mood with friends)\b/i.test(
+    transcript,
+  );
+}
+
+/** Bread/roti alone — never a mood-invented dish (mirrors src/lib/dishIntent.ts). */
+function isCarrierOnlyDishName(name: string): boolean {
+  const t = name.toLowerCase();
+  if (
+    /\b(chicken|lamb|goat|mutton|beef|pork|fish|shrimp|prawn|seafood|paneer|tofu|egg|dal|lentil|curry|biryani|tikka|kebab|platter|thali|dosa|idli|samosa|salad|soup|stew|masala|korma|vindaloo|rogan|saag|chana|pizza|burger|pasta|risotto)\b/.test(
+      t,
+    )
+  ) {
+    return false;
+  }
+  return /\b(roti|naan|paratha|chapati|phulka|kulcha|bread|bhatura|poori|puri)\b/.test(t);
+}
+
+function celebratoryRestatedFromTranscript(transcript: string): string {
+  if (/\bdate night\b/i.test(transcript)) return "Celebratory · date night";
+  if (/\bfamily\b/i.test(transcript)) return "Celebratory · family gathering";
+  if (/\bfriends\b/i.test(transcript)) return "Celebratory · with friends";
+  return "Celebratory · festive mood";
+}
+
 function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
   const raw = filters && typeof filters === "object" ? (filters as Record<string, unknown>) : {};
   const transcriptCuisine = extractCuisineFromTranscript(transcript);
@@ -434,6 +463,14 @@ function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
     if (!dishCore) dish = undefined;
   }
 
+  // ROE-003: never keep carrier-only dish from mood / model invention
+  if (dish && isCarrierOnlyDishName(dish)) {
+    const askedForBread = /\b(roti|naan|paratha|chapati|phulka|kulcha|bread|bhatura|poori|puri)\b/i.test(transcript);
+    if (!askedForBread || isCelebratoryMoodTranscript(transcript)) {
+      dish = undefined;
+    }
+  }
+
   const out: FilterPayload = {};
   if (cuisine) out.cuisine = cuisine;
   if (dish) out.dish = dish;
@@ -472,6 +509,18 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
     if (!filters.dish) filters.dish = "dessert";
   }
 
+  // ROE-003: celebratory / social mood → fixed dial band; never invent a dish
+  const celebratoryMood = isCelebratoryMoodTranscript(transcript);
+  if (celebratoryMood) {
+    if (dials.context < 80) dials.context = clampDial(88, 88);
+    if (dials.energy < 55 || dials.energy > 75) dials.energy = clampDial(65, 65);
+    if (dials.purity < 60 || dials.purity > 80) dials.purity = clampDial(68, 68);
+    if (dials.budget < 40 || dials.budget > 75) dials.budget = clampDial(55, 55);
+    if (filters.dish && isCarrierOnlyDishName(filters.dish)) {
+      delete filters.dish;
+    }
+  }
+
   // Wellness modifiers imply higher purity intent unless user asked for indulgence / sweet.
   if (filters.wellness_tags?.length) {
     if (!indulgent && dials.purity < 78) {
@@ -491,6 +540,9 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
 
   if (sweetCraving && !/sweet|dessert|mithai|treat/i.test(restated)) {
     restated = `Sweet · dessert / mithai · treat`.slice(0, 60);
+  }
+  if (celebratoryMood && !/celebrat/i.test(restated)) {
+    restated = celebratoryRestatedFromTranscript(transcript).slice(0, 60);
   }
   if (filters.culture_tag && !restated.toLowerCase().includes(filters.culture_tag)) {
     restated = `${filters.culture_tag} · ${restated}`.slice(0, 60);

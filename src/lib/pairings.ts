@@ -25,6 +25,7 @@ import {
 import {
   expandDishTokens,
   intentMatchScore as sharedIntentMatchScore,
+  isCarrierOnlyDish,
   isCoastalDishIntent,
   isDessertDish,
   isHeavyFriedDish,
@@ -281,9 +282,12 @@ function scoreDishForDials(name: string, desc: string, dials: DialState): number
     if (/(fried|deep|cream|cheese sauce)/.test(t)) s -= 4;
   }
 
-  // Context: high → celebratory / shareable mains; low → quick solo
+  // Context: high → celebratory / shareable mains; low → quick solo (ROE-003)
   if (dials.context > 65) {
-    if (/(osso buco|biryani|short rib|whole|family|platter|risotto|scaloppine)/.test(t)) s += 3;
+    if (/(osso buco|biryani|short rib|whole|family|platter|risotto|scaloppine|thali|share|feast|tikka|kebab|butter chicken|lamb|goat|paneer|korma)/.test(t)) {
+      s += 8;
+    }
+    if (isCarrierOnlyDish(name, desc)) s -= 40;
   } else if (dials.context < 35) {
     if (/(bowl|wrap|taco|soup|noodle|sandwich|salad)/.test(t)) s += 3;
   }
@@ -593,6 +597,7 @@ function bankFor(cuisine: string, dietary?: StrictDietaryTag): CuisineBank | nul
 function pickFromBank(bank: string[], used: Set<string>, dietary?: StrictDietaryTag): string | undefined {
   return bank.find((d) => {
     if (used.has(d.toLowerCase())) return false;
+    if (isCarrierOnlyDish(d)) return false;
     return dishPassesGate(d, "", dietary);
   });
 }
@@ -607,6 +612,7 @@ function pickBest(menu: MenuItem[], dials: DialState, sigName: string | undefine
   let bestScore = -Infinity;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
+    if (isCarrierOnlyDish(m.name, m.description ?? "")) continue; // ROE-003
     const isSig = sigName && m.name.toLowerCase() === sigName.toLowerCase();
     const s = scoreDishForDials(m.name, m.description ?? "", dials) + (isSig ? 2 : 0);
     if (s > bestScore) { bestScore = s; best = m; }
@@ -638,6 +644,7 @@ function pickClean(
   let bestScore = -Infinity;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
+    if (isCarrierOnlyDish(m.name, m.description ?? "")) continue;
     if (coastal && isHeavyFriedDish(m.name, m.description ?? "")) continue;
     if (sweet && isHeavyFriedDish(m.name, m.description ?? "") && !isDessertDish(m.name, m.description ?? "")) {
       continue;
@@ -700,6 +707,7 @@ function pickHeritage(
   let bestScore = -Infinity;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
+    if (isCarrierOnlyDish(m.name, m.description ?? "")) continue;
     const s = scoreHeritage(m.name, m.description ?? "", sigName, coastal, sweet);
     if (s > bestScore) { bestScore = s; best = m; }
   }
@@ -868,6 +876,7 @@ function pickByIntent(menu: MenuItem[], tokens: string[], exclude: Set<string>):
   let bestScore = 0;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
+    if (isCarrierOnlyDish(m.name, m.description ?? "")) continue;
     const s = intentMatchScore(m.name, m.description ?? "", tokens);
     if (s > bestScore) { bestScore = s; best = m; }
   }
@@ -901,12 +910,13 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   });
   const tryMenu = (m?: MenuItem): Pick | null => {
     if (!m) return null;
+    if (isCarrierOnlyDish(m.name, m.description ?? "")) return null;
     if (!dishPassesGate(m.name, m.description ?? "", dietary, m)) return null;
     return { name: m.name, verified: true, description: m.description, ...menuDiet(m) };
   };
   const tryBank = (list: string[] | undefined): Pick | null => {
     if (!list) return null;
-    const filtered = filterBankList(list, dietary);
+    const filtered = filterBankList(list, dietary).filter((d) => !isCarrierOnlyDish(d));
     const n = pickFromBank(filtered, used, dietary);
     return n ? { name: n, verified: false } : null;
   };
@@ -919,6 +929,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       (d) =>
         d.course !== "registry" &&
         !used.has(d.name.toLowerCase()) &&
+        !isCarrierOnlyDish(d.name) &&
         dishPassesGate(d.name, "", dietary, { name: d.name }),
     );
     if (!mxDishes.length) return null;
@@ -948,6 +959,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
 
   const trySignature = (): Pick | null => {
     if (!sigName || used.has(sigName.toLowerCase())) return null;
+    if (isCarrierOnlyDish(sigName)) return null;
     if (!dishPassesGate(sigName, "", dietary)) return null;
     return { name: sigName, verified: true };
   };
@@ -958,12 +970,13 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   let best: Pick | null = null;
   if (dishTokens.length) {
     const hit = pickByIntent(menu, dishTokens, used);
-    if (hit) {
+    if (hit && !isCarrierOnlyDish(hit.name, hit.description ?? "")) {
       best = { name: hit.name, verified: true, ...menuDiet(hit) };
     } else {
       // Matrix dish names that match intent tokens
       const mxHit = restaurantDishes(safe.name).find((d) => {
         if (used.has(d.name.toLowerCase())) return false;
+        if (isCarrierOnlyDish(d.name)) return false;
         if (!dishPassesGate(d.name, "", dietary, { name: d.name })) return false;
         return intentMatchScore(d.name, "", dishTokens) > 0;
       });
@@ -971,7 +984,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     }
     if (!best && bank) {
       const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
-        .filter((d) => !used.has(d.toLowerCase()))
+        .filter((d) => !used.has(d.toLowerCase()) && !isCarrierOnlyDish(d))
         .map((d) => ({ d, s: intentMatchScore(d, "", dishTokens) }))
         .filter((x) => x.s > 0)
         .sort((a, b) => b.s - a.s);
@@ -985,7 +998,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   if (!best) best = trySignature();
   if (!best && bank) {
     const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
-      .filter((d) => !used.has(d.toLowerCase()))
+      .filter((d) => !used.has(d.toLowerCase()) && !isCarrierOnlyDish(d))
       .map((d) => ({ d, s: scoreDishForDials(d, "", dials) }))
       .sort((a, b) => b.s - a.s);
     if (ranked[0]) best = { name: ranked[0].d, verified: false };
@@ -1036,9 +1049,11 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
 
   // Final guarantee: if any slot is still empty or duplicates, pull next bank entry
   const ensureUnique = (p: Pick | null, listKey: keyof CuisineBank): Pick => {
-    if (p && dishPassesGate(p.name, p.description ?? "", dietary)) return p;
+    if (p && !isCarrierOnlyDish(p.name, p.description ?? "") && dishPassesGate(p.name, p.description ?? "", dietary)) {
+      return p;
+    }
     const mx = tryMatrix(listKey === "clean" ? "light" : "main_course");
-    if (mx) {
+    if (mx && !isCarrierOnlyDish(mx.name)) {
       used.add(mx.name.toLowerCase());
       return mx;
     }
@@ -1046,12 +1061,15 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       const pool = filterBankList(
         [...bank[listKey], ...bank.best, ...bank.clean, ...bank.heritage],
         dietary,
-      );
+      ).filter((d) => !isCarrierOnlyDish(d));
       const n = pickFromBank(pool, used, dietary);
       if (n) { used.add(n.toLowerCase()); return { name: n, verified: false }; }
     }
     const menuFallback = menu.find(
-      (m) => !used.has(m.name.toLowerCase()) && dishPassesGate(m.name, m.description ?? "", dietary, m),
+      (m) =>
+        !used.has(m.name.toLowerCase()) &&
+        !isCarrierOnlyDish(m.name, m.description ?? "") &&
+        dishPassesGate(m.name, m.description ?? "", dietary, m),
     );
     if (menuFallback) {
       used.add(menuFallback.name.toLowerCase());
@@ -1062,7 +1080,12 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
         ...menuDiet(menuFallback),
       };
     }
-    if (sigName && dishPassesGate(sigName, "", dietary) && !used.has(sigName.toLowerCase())) {
+    if (
+      sigName &&
+      !isCarrierOnlyDish(sigName) &&
+      dishPassesGate(sigName, "", dietary) &&
+      !used.has(sigName.toLowerCase())
+    ) {
       return { name: sigName, verified: true };
     }
     return { name: dietary === "jain" ? "Jain-compliant selection" : "Chef's selection", verified: false };

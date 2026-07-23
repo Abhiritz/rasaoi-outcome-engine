@@ -215,3 +215,36 @@ describe("ROE-001 sweet / dessert coherence", () => {
     expect(picks[0].dish.toLowerCase()).not.toBe("dessert");
   });
 });
+
+describe("ROE-003 celebratory mood — never bread as Best", () => {
+  const dials: DialState = { energy: 65, context: 88, budget: 55, purity: 68 };
+
+  it("Best Match prefers Butter Chicken over Tandoor Roti", () => {
+    const r = mockRestaurant({
+      id: "party1",
+      name: "Celebration Kitchen",
+      cuisine: "Indian",
+      signature_dish: "Butter Chicken",
+      menu_items: [
+        { name: "Tandoor Roti", description: "clay oven flatbread" },
+        { name: "Garlic Naan", description: "buttered bread" },
+        { name: "Butter Chicken", description: "creamy tomato curry, shareable" },
+        { name: "Dal Tadka", description: "yellow lentils" },
+      ],
+      context_tags: ["celebratory"],
+    });
+    const picks = buildTripleOutcome(r, dials);
+    const names = picks.map((p) => p.dish.toLowerCase());
+    expect(names[0]).toMatch(/butter chicken|dal|paneer|biryani|platter|tikka/);
+    expect(names[0]).not.toMatch(/roti|naan|paratha|bread/);
+    for (const n of names) {
+      expect(n).not.toMatch(/^tandoor roti$/);
+      expect(n).not.toMatch(/^garlic naan$/);
+    }
+    // Carrier may still mention naan on a main
+    const best = picks[0];
+    if (best.carrier) {
+      expect(best.dish.toLowerCase()).not.toMatch(/roti|naan/);
+    }
+  });
+});
