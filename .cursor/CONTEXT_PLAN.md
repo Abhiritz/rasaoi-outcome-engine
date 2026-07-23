@@ -4,7 +4,7 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-crs-003
+last_verified_commit: d54be1f
 last_verified_date: 2026-07-23
 branch: fix/crs-003-oceany-reading
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
