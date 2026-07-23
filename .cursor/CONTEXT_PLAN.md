@@ -4,7 +4,7 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-001
+last_verified_commit: 582c245
 last_verified_date: 2026-07-23
 branch: feature/ROE-001-sweet-dessert
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
