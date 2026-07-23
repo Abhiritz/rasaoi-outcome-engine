@@ -549,6 +549,12 @@ const CUISINE_BANKS: Record<string, CuisineBank> = {
     clean: ["Dal Tadka", "Saag Paneer", "Fish Tikka", "Tandoori Salmon", "Chana Masala"],
     heritage: ["Lamb Rogan Josh", "Hyderabadi Biryani", "Butter Chicken", "Goat Curry"],
   },
+  /** ROE-004 — South Indian / tiffin kitchens (Mylapore etc.) — no North bank inventions */
+  "Indian-South": {
+    best: ["Masala Dosa", "Plain Dosa", "Mini Idli"],
+    clean: ["Steamed Idli", "Sambar", "Rasam", "Cucumber Salad"],
+    heritage: ["Mylapore Special Dosa", "Ghee Roast Dosa", "Masala Dosa"],
+  },
   "Indian-Jain": {
     best: ["Jain Paneer Tikka", "Jain Dal Makhani", "Jain Moong Dal"],
     clean: ["Fresh Fruit Salad", "Jain Papad Platter", "Steamed Jain Vegetables"],
@@ -586,18 +592,64 @@ const CUISINE_BANKS: Record<string, CuisineBank> = {
   },
 };
 
-function bankFor(cuisine: string, dietary?: StrictDietaryTag): CuisineBank | null {
-  if (dietary === "jain" && cuisine.toLowerCase() === "indian") {
+/** Known South Indian venues in catalog (name match, case-insensitive). */
+const SOUTH_INDIAN_VENUE_NAMES = new Set(["mylapore", "mylapore south indian vegetarian"]);
+
+const SOUTH_TIFFIN =
+  /\b(dosa|dosai|dose|idli|idly|vada|vadai|uttapam|oothappam|sambar|rasam|pongal|upma|puttu|appam|podi|filter\s*coffee|tiffin)\b/i;
+
+/** North Indian dishes that must never invent onto South kitchens (ROE-004). */
+const NORTH_INDIAN_INVENTION =
+  /\b(dal tadka|saag paneer|butter chicken|tandoori chicken|chicken tikka|rogan josh|lamb rogan|hyderabadi biryani|goat curry|chana masala|fish tikka|tandoori salmon|navratan|malai kofta|paneer tikka masala)\b/i;
+
+export function isSouthTiffinDish(name: string, desc = ""): boolean {
+  return SOUTH_TIFFIN.test(`${name} ${desc}`);
+}
+
+export function isNorthIndianInvention(name: string): boolean {
+  return NORTH_INDIAN_INVENTION.test(name);
+}
+
+/** Detect South Indian kitchen without a DB cuisine_region column (ROE-004). */
+export function isSouthIndianKitchen(r: Pick<Restaurant, "name" | "signature_dish" | "menu_items" | "cuisine">): boolean {
+  const nameKey = (r.name ?? "").toLowerCase().trim();
+  if (SOUTH_INDIAN_VENUE_NAMES.has(nameKey)) return true;
+  if (/\bsouth\s*indian\b/i.test(r.cuisine ?? "")) return true;
+  if (isSouthTiffinDish(r.signature_dish ?? "")) return true;
+  const menu = r.menu_items ?? [];
+  let hits = 0;
+  for (const m of menu) {
+    if (isSouthTiffinDish(m.name, m.description ?? "")) hits += 1;
+    if (hits >= 2) return true;
+  }
+  return false;
+}
+
+function bankFor(
+  r: Pick<Restaurant, "name" | "signature_dish" | "menu_items" | "cuisine">,
+  dietary?: StrictDietaryTag,
+): CuisineBank | null {
+  const cuisine = r.cuisine ?? "";
+  if (dietary === "jain" && cuisine.toLowerCase().includes("indian")) {
     return CUISINE_BANKS["Indian-Jain"];
+  }
+  if (cuisine.toLowerCase().includes("indian") && isSouthIndianKitchen(r)) {
+    return CUISINE_BANKS["Indian-South"];
   }
   const key = Object.keys(CUISINE_BANKS).find((k) => k.toLowerCase() === cuisine.toLowerCase());
   return key ? CUISINE_BANKS[key] : null;
 }
 
-function pickFromBank(bank: string[], used: Set<string>, dietary?: StrictDietaryTag): string | undefined {
+function pickFromBank(
+  bank: string[],
+  used: Set<string>,
+  dietary?: StrictDietaryTag,
+  southKitchen = false,
+): string | undefined {
   return bank.find((d) => {
     if (used.has(d.toLowerCase())) return false;
     if (isCarrierOnlyDish(d)) return false;
+    if (southKitchen && isNorthIndianInvention(d)) return false;
     return dishPassesGate(d, "", dietary);
   });
 }
@@ -624,7 +676,11 @@ function scoreClean(name: string, desc: string, coastal = false, sweet = false):
   const t = (name + " " + (desc ?? "")).toLowerCase();
   let s = 0;
   if (/(salad|sashimi|crudo|poke|grilled|steamed|baked|roasted|dal|saag|tikka|ceviche|soup|broth|kale|quinoa|greens|fish|salmon|seafood|shrimp|prawn|veg)/.test(t)) s += 6;
+  // ROE-004: South tiffin counts as clean (so bank Dal Tadka cannot demote it)
+  if (isSouthTiffinDish(name, desc)) s += 8;
   if (/(fried|deep|cream|cheese|butter|biryani|risotto|lasagna|pizza|naan|bread|noodle|samosa|pakora|bhatura)/.test(t)) s -= 5;
+  // Don't punish "butter dosa" / "ghee roast" as heavily as creamy North curries
+  if (/\b(butter|ghee)\b/.test(t) && isSouthTiffinDish(name, desc)) s += 4;
   if (coastal && /(fish|seafood|shrimp|prawn|salmon|crab|lobster|ceviche|grilled|steamed)/.test(t)) s += 8;
   if (coastal && isHeavyFriedDish(name, desc)) s -= 12;
   if (sweet && isDessertDish(name, desc)) s += 10;
@@ -661,7 +717,7 @@ function pickClean(
       (m) =>
         !exclude.has(m.name.toLowerCase()) &&
         isDessertDish(m.name, m.description ?? "") &&
-        (isLightSweetDish(m.name, m.description ?? "") || true),
+        !(isHeavyFriedDish(m.name, m.description ?? "") && !isLightSweetDish(m.name, m.description ?? "")),
     );
     if (dessert) {
       const light = menu.find(
@@ -686,6 +742,7 @@ function scoreHeritage(
   let s = 0;
   if (sigName && name.toLowerCase() === sigName.toLowerCase()) s += 8;
   if (/(tandoori|biryani|rogan josh|tikka masala|butter chicken|osso buco|risotto|scaloppine|braised|short rib|lasagna|tom kha|pad thai|panang|massaman|mole|carnitas|pozole|al pastor|paella|chirashi|sashimi|ramen|unagi|kebab|korma)/.test(t)) s += 5;
+  if (isSouthTiffinDish(name, desc)) s += 6;
   if (/(traditional|classic|house|signature|chef|family|heritage)/.test(t)) s += 3;
   if (/(salad|bowl|wrap|soup)/.test(t)) s -= 3;
   if (coastal && /(seafood|fish|shrimp|prawn|salmon|crab|lobster|tandoori seafood)/.test(t)) s += 10;
@@ -890,7 +947,8 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const sigName = safe.signature_dish?.trim();
   const purityTag = purityTagFor(safe);
   const used = new Set<string>();
-  const bank = bankFor(safe.cuisine, dietary);
+  const southKitchen = isSouthIndianKitchen(safe);
+  const bank = bankFor(safe, dietary);
   const dishTokens = dishOnlyTokens(intent?.dish);
   const userCarrier = intentCarrierName(intent?.dish);
   const coastal = isCoastalDishIntent(intent?.dish);
@@ -911,13 +969,16 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const tryMenu = (m?: MenuItem): Pick | null => {
     if (!m) return null;
     if (isCarrierOnlyDish(m.name, m.description ?? "")) return null;
+    if (southKitchen && isNorthIndianInvention(m.name)) return null;
     if (!dishPassesGate(m.name, m.description ?? "", dietary, m)) return null;
     return { name: m.name, verified: true, description: m.description, ...menuDiet(m) };
   };
   const tryBank = (list: string[] | undefined): Pick | null => {
     if (!list) return null;
-    const filtered = filterBankList(list, dietary).filter((d) => !isCarrierOnlyDish(d));
-    const n = pickFromBank(filtered, used, dietary);
+    const filtered = filterBankList(list, dietary)
+      .filter((d) => !isCarrierOnlyDish(d))
+      .filter((d) => !(southKitchen && isNorthIndianInvention(d)));
+    const n = pickFromBank(filtered, used, dietary, southKitchen);
     return n ? { name: n, verified: false } : null;
   };
 
@@ -930,6 +991,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
         d.course !== "registry" &&
         !used.has(d.name.toLowerCase()) &&
         !isCarrierOnlyDish(d.name) &&
+        !(southKitchen && isNorthIndianInvention(d.name)) &&
         dishPassesGate(d.name, "", dietary, { name: d.name }),
     );
     if (!mxDishes.length) return null;
@@ -942,7 +1004,11 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
           : prefer === "starter"
             ? mxDishes.find((d) => d.course === "starter")
             : prefer === "light"
-              ? mxDishes.find((d) => isLightDishType(d.dish_type) || /salad|dal|raita|chutney|steamed/i.test(d.name))
+              ? mxDishes.find(
+                  (d) =>
+                    isLightDishType(d.dish_type) ||
+                    /salad|dal|raita|chutney|steamed|idli|idly|dosa|dosai|sambar|rasam|uttapam|vada/i.test(d.name),
+                )
               : undefined;
 
     if (!chosen && prefer === "light") {
@@ -960,6 +1026,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const trySignature = (): Pick | null => {
     if (!sigName || used.has(sigName.toLowerCase())) return null;
     if (isCarrierOnlyDish(sigName)) return null;
+    if (southKitchen && isNorthIndianInvention(sigName)) return null;
     if (!dishPassesGate(sigName, "", dietary)) return null;
     return { name: sigName, verified: true };
   };
@@ -985,6 +1052,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     if (!best && bank) {
       const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
         .filter((d) => !used.has(d.toLowerCase()) && !isCarrierOnlyDish(d))
+        .filter((d) => !(southKitchen && isNorthIndianInvention(d)))
         .map((d) => ({ d, s: intentMatchScore(d, "", dishTokens) }))
         .filter((x) => x.s > 0)
         .sort((a, b) => b.s - a.s);
@@ -999,6 +1067,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   if (!best && bank) {
     const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
       .filter((d) => !used.has(d.toLowerCase()) && !isCarrierOnlyDish(d))
+      .filter((d) => !(southKitchen && isNorthIndianInvention(d)))
       .map((d) => ({ d, s: scoreDishForDials(d, "", dials) }))
       .sort((a, b) => b.s - a.s);
     if (ranked[0]) best = { name: ranked[0].d, verified: false };
@@ -1010,7 +1079,16 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   if (!clean) clean = tryMatrix("light");
   if (!clean && bank) clean = tryBank(bank.clean);
   // If menu pick exists but happens to NOT be lighter than the best, prefer bank
-  if (clean && best && clean.verified && scoreClean(clean.name, "", coastal, sweet) < 3 && bank) {
+  // ROE-004: never demote South tiffin / South kitchens into North bank (Dal Tadka)
+  if (
+    clean &&
+    best &&
+    clean.verified &&
+    scoreClean(clean.name, clean.description ?? "", coastal, sweet) < 3 &&
+    bank &&
+    !southKitchen &&
+    !isSouthTiffinDish(clean.name, clean.description ?? "")
+  ) {
     const alt = tryBank(bank.clean);
     if (alt && !(coastal && isHeavyFriedDish(alt.name)) && !(sweet && isHeavyFriedDish(alt.name))) {
       clean = alt;
@@ -1049,11 +1127,15 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
 
   // Final guarantee: if any slot is still empty or duplicates, pull next bank entry
   const ensureUnique = (p: Pick | null, listKey: keyof CuisineBank): Pick => {
-    if (p && !isCarrierOnlyDish(p.name, p.description ?? "") && dishPassesGate(p.name, p.description ?? "", dietary)) {
-      return p;
-    }
+    const pickOk = (name: string, desc = "") =>
+      !isCarrierOnlyDish(name, desc) &&
+      !(southKitchen && isNorthIndianInvention(name)) &&
+      dishPassesGate(name, desc, dietary);
+
+    if (p && pickOk(p.name, p.description ?? "")) return p;
+
     const mx = tryMatrix(listKey === "clean" ? "light" : "main_course");
-    if (mx && !isCarrierOnlyDish(mx.name)) {
+    if (mx && pickOk(mx.name)) {
       used.add(mx.name.toLowerCase());
       return mx;
     }
@@ -1061,14 +1143,17 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       const pool = filterBankList(
         [...bank[listKey], ...bank.best, ...bank.clean, ...bank.heritage],
         dietary,
-      ).filter((d) => !isCarrierOnlyDish(d));
-      const n = pickFromBank(pool, used, dietary);
+      )
+        .filter((d) => !isCarrierOnlyDish(d))
+        .filter((d) => !(southKitchen && isNorthIndianInvention(d)));
+      const n = pickFromBank(pool, used, dietary, southKitchen);
       if (n) { used.add(n.toLowerCase()); return { name: n, verified: false }; }
     }
     const menuFallback = menu.find(
       (m) =>
         !used.has(m.name.toLowerCase()) &&
         !isCarrierOnlyDish(m.name, m.description ?? "") &&
+        !(southKitchen && isNorthIndianInvention(m.name)) &&
         dishPassesGate(m.name, m.description ?? "", dietary, m),
     );
     if (menuFallback) {
@@ -1083,6 +1168,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     if (
       sigName &&
       !isCarrierOnlyDish(sigName) &&
+      !(southKitchen && isNorthIndianInvention(sigName)) &&
       dishPassesGate(sigName, "", dietary) &&
       !used.has(sigName.toLowerCase())
     ) {

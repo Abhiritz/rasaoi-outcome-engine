@@ -71,7 +71,19 @@ Partial fix already shipped (`86f2437`): stopped inventing the same synthetic di
 - [x] `parse-intent` sanitize + prompt (mood ≠ dish; strip roti/naan)
 - [x] Offline celebratory dials on exhausted Gemini 429
 - [x] Unit tests (`dishIntent`, `pairings`, `intent`)
-- [ ] **After merge:** redeploy `parse-intent`
+- [x] **After merge:** redeploy `parse-intent`
+
+---
+
+## ROE-004: Mylapore / South Indian plate integrity
+
+- [x] Impact analysis `docs/ROE-004-mylapore-south-indian-impact-analysis.md`
+- [x] `isSouthIndianKitchen` + `Indian-South` cuisine bank
+- [x] Hard-ban North inventions (Dal Tadka, Butter Chicken, …) on South kitchens
+- [x] scoreClean / Clean override: dosa/idli not demoted to bank dal
+- [x] `isDessertDish` savory-name guard (samosa ≠ pastry dessert)
+- [x] Unit tests (`pairings`, `dishIntent`)
+- [ ] **After merge:** frontend auto-deploy (no edge redeploy)
 
 ---
 

@@ -97,6 +97,10 @@ export function isSweetDishIntent(phrase?: string): boolean {
 }
 
 export function isDessertDish(name: string, desc = ""): boolean {
+  // Savory fried / curry names must not count as dessert via description tokens like "pastry"
+  if (/\b(samosa|pakora|bhaji|kebab|tikka|biryani|curry|tandoori|chicken|lamb|goat|fish|shrimp)\b/i.test(name)) {
+    return false;
+  }
   return DESSERT_NAME.test(`${name} ${desc}`);
 }
 
