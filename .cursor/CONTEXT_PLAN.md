@@ -4,7 +4,7 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-002
+last_verified_commit: 1c7f2d7
 last_verified_date: 2026-07-24
 branch: feature/ROE-002-gemini-rate-limit
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
