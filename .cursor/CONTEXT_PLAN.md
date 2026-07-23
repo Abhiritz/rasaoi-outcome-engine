@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: 582c245
-last_verified_date: 2026-07-23
-branch: feature/ROE-001-sweet-dessert
+last_verified_commit: 1c7f2d7
+last_verified_date: 2026-07-24
+branch: feature/ROE-002-gemini-rate-limit
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-001 sweet/dessert craving mode (dishIntent + parse-intent + pairings);
-  CRS-003 oceany Reading merged on develop; Docs/ROE-001 + CRS-003 impact analyses.
+  ROE-002 Gemini rate-limit resilience (parse cache, RateLimitError, glycemic soft-fail);
+  backlog triage ROE-003…006 in docs/; ROE-001 + CRS-003 on develop.
 ```
 
 ---

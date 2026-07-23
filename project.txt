@@ -130,8 +130,9 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 
 ## Known open QA
 
-**CRS-003** — resolved on `develop` (PR #1).  
-**ROE-001** — sweet/dessert craving mode on `feature/ROE-001-sweet-dessert`. See `docs/ROE-001-sweet-dessert-impact-analysis.md`. After merge, redeploy `parse-intent`.
+**CRS-003** / **ROE-001** — on `develop`.  
+**ROE-002** — Gemini rate-limit resilience (`feature/ROE-002-gemini-rate-limit`). Redeploy `parse-intent` + `estimate-glycemic` after merge.  
+**Queued:** ROE-003 mood/feeling, ROE-004 Mylapore, ROE-005 Mythaai, ROE-006 GL UX — see `docs/ROE-backlog-triage-2026-07-24.md`.
 
 ---
 

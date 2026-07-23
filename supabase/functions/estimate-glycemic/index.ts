@@ -106,10 +106,17 @@ Deno.serve(async (req) => {
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (/429|rate limit|quota/i.test(msg)) {
-        return new Response(JSON.stringify({ error: "Rate limit reached. Try again shortly." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            error: "Glycemic estimator rate-limited. Using local estimates where available.",
+            code: "rate_limit",
+            retry_after_ms: 8000,
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
       console.error("estimate-glycemic Gemini error:", msg);
       return new Response(JSON.stringify({ error: "Estimator unavailable." }), {

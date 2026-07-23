@@ -52,6 +52,17 @@ Partial fix already shipped (`86f2437`): stopped inventing the same synthetic di
 
 ---
 
+## ROE-002: Gemini rate-limit resilience
+
+- [x] Impact analysis `docs/ROE-002-gemini-rate-limit-impact-analysis.md`
+- [x] Client parse cache (90s) + RateLimitError + retries
+- [x] Ask toast for rate limits; glycemic soft-fail on 429
+- [x] Edge structured `{ code: "rate_limit", retry_after_ms }`
+- [x] Unit tests `intent.test.ts`
+- [ ] **After merge:** redeploy `parse-intent` + `estimate-glycemic`
+
+---
+
 ## ROE-001: Sweet / dessert craving mode
 
 - [x] Impact analysis `docs/ROE-001-sweet-dessert-impact-analysis.md`

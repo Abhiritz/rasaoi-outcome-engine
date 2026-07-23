@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { MitraPact } from "@/components/MitraPact";
 import { MicCapture } from "@/components/MicCapture";
-import { parseIntent } from "@/lib/intent";
+import { parseIntent, RateLimitError, RATE_LIMIT_USER_MSG } from "@/lib/intent";
 import { setBloodSugarLens } from "@/lib/memory";
 import { toast } from "@/hooks/use-toast";
 
@@ -34,8 +34,17 @@ const Ask = () => {
       }
       navigate("/reading");
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Something went wrong";
-      toast({ variant: "destructive", title: "Veda couldn't hear you", description: msg });
+      const isRate = e instanceof RateLimitError;
+      const msg = isRate
+        ? RATE_LIMIT_USER_MSG
+        : e instanceof Error
+          ? e.message
+          : "Something went wrong";
+      toast({
+        variant: "destructive",
+        title: isRate ? "Veda is busy" : "Veda couldn't hear you",
+        description: msg,
+      });
       setBusy(false);
     }
   };
