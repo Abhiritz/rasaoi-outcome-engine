@@ -19,6 +19,8 @@ function mockRestaurant(overrides: Partial<Restaurant> & Pick<Restaurant, "id" |
     dish_outcome: "balanced meal",
     menu_items: [{ name: "House Special" }],
     doordash_url: null,
+    address: null,
+    phone: null,
     ubereats_url: null,
     location_neighborhood: null,
     created_at: new Date().toISOString(),

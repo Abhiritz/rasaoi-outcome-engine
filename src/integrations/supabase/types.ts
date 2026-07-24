@@ -288,6 +288,7 @@ export type Database = {
       }
       restaurants: {
         Row: {
+          address: string | null
           anti_inflammatory: boolean
           base_purity_tier: string | null
           context_tags: string[]
@@ -303,6 +304,7 @@ export type Database = {
           menu_items: Json
           name: string
           oil_profile: string
+          phone: string | null
           price_tier: number
           purity_tier: string
           signature_dish: string
@@ -311,6 +313,7 @@ export type Database = {
           verified_clean_oils: boolean
         }
         Insert: {
+          address?: string | null
           anti_inflammatory?: boolean
           base_purity_tier?: string | null
           context_tags?: string[]
@@ -326,6 +329,7 @@ export type Database = {
           menu_items?: Json
           name: string
           oil_profile?: string
+          phone?: string | null
           price_tier?: number
           purity_tier: string
           signature_dish: string
@@ -334,6 +338,7 @@ export type Database = {
           verified_clean_oils?: boolean
         }
         Update: {
+          address?: string | null
           anti_inflammatory?: boolean
           base_purity_tier?: string | null
           context_tags?: string[]
@@ -349,6 +354,7 @@ export type Database = {
           menu_items?: Json
           name?: string
           oil_profile?: string
+          phone?: string | null
           price_tier?: number
           purity_tier?: string
           signature_dish?: string

@@ -128,24 +128,37 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 
 ---
 
-## Known open QA
+## Ticket naming + implement flow
 
-### Ticket naming (required)
+### Naming (required)
 
 | Surface | Format | Example |
 |---------|--------|---------|
-| Issue / PR | `[ROE-NNN] Short title (ABC-NNN)` | `[ROE-007] Intent sanitizer false-positives (IP-FIX-001)` |
-| Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-007][IP-FIX-001] tighten parse-intent grounding` |
-| Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-007-intent-sanitize` |
+| Issue / PR | `[ROE-NNN] Short title (ABC-NNN)` | `[ROE-009] Fulfillment venue contacts (FUL-001)` |
+| Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
+| Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free: **ROE-009** (after ROE-008 merges).
-2. **ABC-NNN** — workstream alias when applicable (`IP-FIX-001`, `CRS-003`, …). Omit when none.
+1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-014**.
+2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
-**CRS-003** / **ROE-001**…**ROE-007** — on `develop` (stakeholder QA on board).  
-**[ROE-008] Intent parser hardening (IP-FIX-002)** — client normalize + shared mood helpers + priority restated.  
-**[ROE-007] Intent sanitizer false-positives (IP-FIX-001)** — merged PR #16; `parse-intent` redeployed.  
-Triage: `docs/ROE-backlog-triage-2026-07-24.md`.
+### Standing implement sequence (agents — do not wait for re-prompt)
+
+Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
+
+1. Audit → 2. Impact doc `docs/ROE-NNN-*-impact-analysis.md` → 3. User approval → 4. Branch from `origin/develop` → 5. Implement + Vitest → 6. Update plan/TODO/CONTEXT/CURSOR → 7. Commit / push / PR / board → 8. Ops redeploy if needed → QA Pass → Done
+
+### Queue
+
+| Ticket | Status | Impact |
+|--------|--------|--------|
+| **ROE-009** (FUL-001) contacts | Implementing | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
+| **ROE-010** (FUL-002) delivery URLs | Awaiting approval | `docs/ROE-010-delivery-handoff-urls-impact-analysis.md` |
+| **ROE-013** (ASK-001) Ask chips | Awaiting approval | `docs/ROE-013-ask-intent-chips-impact-analysis.md` |
+| ROE-011 / ROE-012 | Proposed (dish vs carrier / copy) | Dual audit canvas |
+| ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
+
+Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-ask-audit` canvas.
 
 ---
 
