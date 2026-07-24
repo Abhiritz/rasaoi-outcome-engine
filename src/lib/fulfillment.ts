@@ -1,7 +1,8 @@
 /**
- * Fulfillment handoff helpers (ROE-009 contacts, ROE-010 delivery URLs).
+ * Fulfillment handoff helpers (ROE-009 contacts, ROE-010 delivery URLs, ROE-011 order copy).
  * Keep SMS/tel/maps URL construction free of blank phone hrefs.
  * Delivery always resolves to a platform search URL when catalog links are null.
+ * Order identity is the menu dish — never glue food-carrier into SMS/clipboard.
  */
 
 export type DeliveryCarrier = "doordash" | "ubereats";
@@ -77,4 +78,20 @@ export function resolveDeliveryUrl(
   return carrier === "doordash"
     ? buildDoordashSearchUrl(name, address)
     : buildUbereatsSearchUrl(name, address);
+}
+
+/** Pickup SMS/copy template — menu dish only (no food-carrier glue). */
+export function buildPickupMessage(dish: string): string {
+  const d = dish.trim() || "this dish";
+  return `Hi, I'd like to place a pickup order:
+
+• ${d}
+
+Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
+}
+
+/** Delivery clipboard tag — menu dish only. */
+export function buildDeliveryClipboardTag(dish: string, restaurantName: string): string {
+  const d = dish.trim() || "this dish";
+  return `${d} at ${restaurantName.trim() || "the restaurant"}`;
 }

@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: fa95cfe
+last_verified_commit: 012088e
 last_verified_date: 2026-07-24
-branch: feature/ROE-010-delivery-handoff-urls
+branch: feature/ROE-011-fulfillment-order-copy
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-010 (FUL-002): resolveDeliveryUrl — catalog DD/UE null → platform search
-  from name+address; FulfillmentSheet + RestaurantCard. ROE-009 contacts on develop.
+  ROE-011 (FUL-003+004): dish-only into FulfillmentSheet; pickup draft refresh;
+  ROE-012 superseded. ROE-010 delivery URL fallbacks on develop.
 ```
 
 ---

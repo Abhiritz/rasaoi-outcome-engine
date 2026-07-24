@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
+  buildDeliveryClipboardTag,
   buildDirectionsUrl,
   buildDoordashSearchUrl,
   buildPhoneSearchUrl,
+  buildPickupMessage,
   buildSmsHref,
   buildTelHref,
   buildUbereatsSearchUrl,
@@ -93,5 +95,28 @@ describe("resolveDeliveryUrl (ROE-010)", () => {
   it("returns null only when name and address empty", () => {
     expect(resolveDeliveryUrl("doordash", null, "", "")).toBeNull();
     expect(buildUbereatsSearchUrl("", "")).toBeNull();
+  });
+});
+
+describe("buildPickupMessage / buildDeliveryClipboardTag (ROE-011)", () => {
+  it("builds pickup template with dish only", () => {
+    const msg = buildPickupMessage("Butter Chicken");
+    expect(msg).toContain("• Butter Chicken");
+    expect(msg).not.toContain(" + ");
+    expect(msg).toContain("sent via Rasaoi");
+  });
+
+  it("does not invent carrier glue from dish string", () => {
+    // Even if a caller wrongly passes glued text, helper does not add more —
+    // HeroCard must pass dish-only; this asserts template shape.
+    expect(buildPickupMessage("Dal Tadka")).toBe(`Hi, I'd like to place a pickup order:
+
+• Dal Tadka
+
+Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`);
+  });
+
+  it("builds delivery clipboard without carrier", () => {
+    expect(buildDeliveryClipboardTag("Paneer Tikka", "Mantra")).toBe("Paneer Tikka at Mantra");
   });
 });
