@@ -3,24 +3,41 @@
 | Field | Value |
 |-------|--------|
 | Ticket | **ROE-006** |
-| Question | How to change the GL select? |
-| Status | Queued (P2) |
-| Branch (later) | `feature/ROE-006-gl-lens-ux` |
+| Parent | `develop` @ `356eae8` |
+| Branch | `feature/ROE-006-gl-lens-ux` |
+| Status | **Implemented** (a–d; perf **e** deferred) |
+| Scope shipped | Copy + Turn off + chrome chip/hint + Refine stays open when lens on |
 
-## Current behavior (no code change required to “use” it)
-1. Open `/reading` after an Ask.  
-2. Scroll to **Refine this reading**.  
-3. Find **Blood-sugar-friendly lens**.  
-4. Tap **Turn on** / **On** — re-ranks by estimated GL and may suggest carrier swaps.  
-5. Preference persists in `localStorage` via `memory.ts`.  
-6. If Ask implies diabetes/low sugar, parse-intent may set `lens: "blood_sugar"` and auto-enable.
+---
 
-There is **no separate GL dropdown** — On/Off lens only.
+## 1–3. Summary
 
-## Possible polish
-- Clearer label (“Blood sugar · On/Off”)
-- Hint near hero when lens off
-- Don’t call Gemini GL when all top dishes resolve from culinary index
+No GL dropdown. Lens is On/Off. Shipped discoverability so “GL select” maps to this control.
 
-## Full analysis
-Expand when scheduling P2 work.
+---
+
+## 5. Test plan
+
+- [x] Copy mentions glycemic load (GL); button **Turn off** when on  
+- [x] Chip **Blood sugar · On** with Turn off in Reading chrome  
+- [x] Hint when off → scrolls/opens Refine  
+- [x] Turning lens on opens Refine  
+- [ ] Manual on prod after merge  
+- [ ] `npm test` / CI  
+
+---
+
+## 6. Deploy
+
+Frontend only — no edge redeploy.
+
+---
+
+## 8. Implementation notes
+
+| Change | Detail |
+|--------|--------|
+| `Index.tsx` | `toggleLens`; chrome chip when on; GL hint when off; Refine label **Blood sugar · glycemic load (GL)**; **Turn on/off** |
+| Perf **e** | Not in this PR — matrix-first Gemini skip still optional follow-up |
+
+Backlog triage item “How to change GL select” is answered in product UI + this doc.

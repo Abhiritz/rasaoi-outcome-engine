@@ -98,6 +98,17 @@ Partial fix already shipped (`86f2437`): stopped inventing the same synthetic di
 
 ---
 
+## ROE-006: Blood-sugar / GL lens discoverability
+
+- [x] Impact analysis `docs/ROE-006-gl-lens-ux-impact-analysis.md`
+- [x] Reading chrome: **Blood sugar · On** chip + Turn off; hint when off → Refine
+- [x] Refine copy names glycemic load (GL); **Turn on** / **Turn off**
+- [x] Turning lens on keeps Refine open
+- [ ] Optional later: matrix-first skip of `estimate-glycemic` (+perf)
+- [ ] **After merge:** frontend auto-deploy; manual smoke on `/reading`
+
+---
+
 ## ROE-001: Sweet / dessert craving mode
 
 - [x] Impact analysis `docs/ROE-001-sweet-dessert-impact-analysis.md`
