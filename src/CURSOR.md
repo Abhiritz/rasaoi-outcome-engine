@@ -37,7 +37,7 @@
 | Path | File | Purpose |
 |------|------|---------|
 | `/` | `pages/Ask.tsx` | Intent input — textarea + mic, calls `parseIntent()` |
-| `/reading` | `pages/Index.tsx` | Core product — dials, ranking, hero/alternates, glycemic lens |
+| `/reading` | `pages/Index.tsx` | Core product — dials, ranking, hero/alternates, **blood-sugar / GL lens** (On/Off in Refine + chrome chip; no GL dropdown) |
 | `/lab` | `pages/Lab.tsx` | Operator QA — dish scoring, menu ingest/commit |
 | `*` | `pages/NotFound.tsx` | 404 |
 
@@ -180,6 +180,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - Feeling ask (“Celebrating mood with friends”) → high context, **no** dish chip; Best Match is a shareable main — never roti/naan alone.
 - South Indian venues (e.g. Mylapore) → dosa/idli/sambar plates; never pan-Indian bank Dal Tadka / Butter Chicken.
 - **Mythaai** demo venue removed from catalog (ROE-005 A) — do not re-seed as a Folsom restaurant.
+- Blood-sugar / GL: Refine → **Blood sugar · glycemic load (GL)** Turn on/off; when on, chrome chip **Blood sugar · On** (ROE-006). Not a Low/Med/High dropdown.
 
 ---
 

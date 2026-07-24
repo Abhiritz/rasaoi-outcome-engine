@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: 05c6054
+last_verified_commit: b48bd8b
 last_verified_date: 2026-07-24
-branch: feature/ROE-005-mythaai-catalog
+branch: feature/ROE-006-gl-lens-ux
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-005 A removes demo venue Mythaai from catalog (migration + Index filter);
-  ROE-004 South Indian on develop; backlog ROE-006.
+  ROE-006 GL lens discoverability (chip, Turn off, GL copy); ROE-005 Mythaai removed;
+  backlog ROE-002…006 implement queue complete pending merge.
 ```
 
 ---
