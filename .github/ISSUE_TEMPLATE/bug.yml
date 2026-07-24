@@ -1,0 +1,65 @@
+name: Bug report
+description: Something is broken or incorrect in Ask, Reading, Lab, or catalog
+title: "[bug] "
+labels: ["type:bug", "needs-repro"]
+body:
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - P0 — blocker
+        - P1 — high
+        - P2 — medium
+        - P3 — low / polish
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Ask
+        - Reading
+        - Lab
+        - Catalog
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Where you saw it
+      placeholder: "https://rasaoi-delta.vercel.app (prod) or local"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact Ask text / taps help a lot
+      placeholder: |
+        1. Go to Ask
+        2. Enter: "Celebrating mood with friends"
+        3. Open Reading…
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots / notes
+      description: Optional but preferred for Reading plate bugs
