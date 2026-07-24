@@ -12,6 +12,12 @@ const EXAMPLES = [
   "Date night, splurge, somewhere celebratory",
   "Quick lunch alone, clean and nearby",
   "Diabetic-friendly, low sugar, under $30",
+  "I want something sweet",
+  "Celebrating mood with friends",
+  "My friend is Jain — birthday dinner",
+  "Thai food for my partner nearby",
+  "Raw and fresh, gut friendly, desi",
+  "Family gathering, under $50, vegetarian",
 ];
 
 const Ask = () => {
@@ -82,7 +88,7 @@ const Ask = () => {
                   onKeyDown={onKeyDown}
                   disabled={busy}
                   rows={3}
-                  placeholder="I'm low energy, $35, something healthy…"
+                  placeholder="Mood, craving, diet, budget — tell Veda what you need…"
                   className="w-full resize-none rounded-sm border border-border bg-card px-4 py-3 text-base focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/40 disabled:opacity-60"
                   aria-label="Tell Veda what you need"
                 />
@@ -112,13 +118,14 @@ const Ask = () => {
             <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
               Or try
             </p>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-2 max-h-[40vh] overflow-y-auto sm:max-h-none">
               {EXAMPLES.map((ex) => (
                 <button
                   key={ex}
+                  type="button"
                   onClick={() => setText(ex)}
                   disabled={busy}
-                  className="text-[12px] italic text-muted-foreground border border-border/70 px-3 py-1.5 rounded-sm hover:border-gold/50 hover:text-primary transition-elegant disabled:opacity-40"
+                  className="text-[12px] italic text-muted-foreground border border-border/70 px-3 py-1.5 rounded-sm hover:border-gold/50 hover:text-primary transition-elegant disabled:opacity-40 text-left max-w-full"
                 >
                   "{ex}"
                 </button>

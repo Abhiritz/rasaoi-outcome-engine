@@ -36,7 +36,7 @@
 
 | Path | File | Purpose |
 |------|------|---------|
-| `/` | `pages/Ask.tsx` | Intent input — textarea + mic, calls `parseIntent()` |
+| `/` | `pages/Ask.tsx` | Intent input — textarea + mic, `parseIntent()`; ~10 situational “Or try” chips (ROE-013) |
 | `/reading` | `pages/Index.tsx` | Core product — dials, ranking, hero/alternates, **blood-sugar / GL lens** (On/Off in Refine + chrome chip; no GL dropdown) |
 | `/lab` | `pages/Lab.tsx` | Operator QA — dish scoring, menu ingest/commit |
 | `*` | `pages/NotFound.tsx` | 404 |

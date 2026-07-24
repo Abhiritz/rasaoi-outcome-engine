@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: 012088e
+last_verified_commit: 0fad25e
 last_verified_date: 2026-07-24
-branch: feature/ROE-011-fulfillment-order-copy
+branch: feature/ROE-013-ask-intent-chips
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-011 (FUL-003+004): dish-only into FulfillmentSheet; pickup draft refresh;
-  ROE-012 superseded. ROE-010 delivery URL fallbacks on develop.
+  ROE-013 (ASK-001): Ask EXAMPLES expanded to 10 situational chips + neutral
+  placeholder. ROE-011 order copy on develop; ROE-012 superseded.
 ```
 
 ---
