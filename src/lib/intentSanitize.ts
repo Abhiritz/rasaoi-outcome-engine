@@ -1,5 +1,5 @@
 /**
- * IP-FIX: Transcript-grounded intent sanitizer helpers.
+ * [ROE-007] (IP-FIX-001): Transcript-grounded intent sanitizer helpers.
  * Keep in sync with supabase/functions/_shared/intent-sanitize.ts
  *
  * Pure functions — unit-tested here; edge parse-intent imports the Deno twin.

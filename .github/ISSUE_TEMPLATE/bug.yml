@@ -1,6 +1,6 @@
 name: Bug report
 description: Something is broken or incorrect in Ask, Reading, Lab, or catalog
-title: "[bug] "
+title: "[ROE-NNN] "
 labels: ["type:bug", "needs-repro"]
 body:
   - type: dropdown

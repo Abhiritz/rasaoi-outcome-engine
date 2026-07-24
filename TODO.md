@@ -9,7 +9,7 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
-## IP-FIX: Intent sanitizer false-positives
+## [ROE-007] Intent sanitizer false-positives (IP-FIX-001)
 
 - [x] Impact notes in agent audit canvas (`intent-parser-audit`)
 - [x] Sync pair `src/lib/intentSanitize.ts` ↔ `_shared/intent-sanitize.ts`
@@ -18,7 +18,7 @@ This file is designed as a portable summary so the system can be reasoned about 
 - [x] Negation-aware dietary extract; eggetarian before vegetarian
 - [x] Tighten sweet craving (not sweet potato); allow dish extract with dietary present
 - [x] Unit tests `intentSanitize.test.ts`
-- [ ] **After merge:** redeploy `parse-intent`
+- [x] Merged PR #16 (`feature/IP-FIX-intent-sanitize` → prefer `feature/ROE-007-*` going forward); `parse-intent` redeployed
 
 ---
 

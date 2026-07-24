@@ -130,9 +130,21 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 
 ## Known open QA
 
-**CRS-003** / **ROE-001**…**ROE-005** — on `develop`.  
-**ROE-006** — GL / blood-sugar lens discoverability (`feature/ROE-006-gl-lens-ux`). Frontend only.  
-Triage: `docs/ROE-backlog-triage-2026-07-24.md` (queue complete pending merge).
+### Ticket naming (required)
+
+| Surface | Format | Example |
+|---------|--------|---------|
+| Issue / PR | `[ROE-NNN] Short title (ABC-NNN)` | `[ROE-007] Intent sanitizer false-positives (IP-FIX-001)` |
+| Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-007][IP-FIX-001] tighten parse-intent grounding` |
+| Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-007-intent-sanitize` |
+
+1. **ROE-NNN** — global serial (never skip). Next free: **ROE-008**.
+2. **ABC-NNN** — workstream alias when applicable (`IP-FIX-001`, `CRS-003`, …). Omit when none.
+3. Issue and PR titles match exactly so the board and GitHub stay consistent.
+
+**CRS-003** / **ROE-001**…**ROE-006** — on `develop` (stakeholder QA on board).  
+**[ROE-007] Intent sanitizer false-positives (IP-FIX-001)** — merged PR #16; `parse-intent` redeployed.  
+Triage: `docs/ROE-backlog-triage-2026-07-24.md`.
 
 ---
 
@@ -172,6 +184,6 @@ CI: `.github/workflows/ci-cd.yml` (lint → test → build → Vercel prod on `d
 | `.cursor/CONTEXT_PLAN.md` | Canonical architecture index (agents + contributors) |
 | `src/CURSOR.md` | Frontend conventions |
 | `supabase/CURSOR.md` | Edge functions + migrations |
-| `TODO.md` | Feature roadmap / ticket IDs (CRS-003 active) |
+| `TODO.md` | Feature roadmap / ticket IDs (`[ROE-NNN]` + optional `(ABC-NNN)`) |
 | `.lovable/plan.md` | Next surgical implementation slice |
 | `MIGRATE_SYNC_README.md` | Lovable ↔ personal Supabase sync |

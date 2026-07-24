@@ -1,5 +1,5 @@
 /**
- * IP-FIX: Transcript-grounded intent sanitizer helpers.
+ * [ROE-007] (IP-FIX-001): Transcript-grounded intent sanitizer helpers.
  * Keep in sync with src/lib/intentSanitize.ts
  */
 

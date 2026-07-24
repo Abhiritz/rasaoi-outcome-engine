@@ -7,8 +7,8 @@ body:
     id: ticket
     attributes:
       label: Ticket ID
-      description: e.g. ROE-004 or linked issue number
-      placeholder: "ROE-00N"
+      description: e.g. ROE-007 (IP-FIX-001) or linked issue number
+      placeholder: "ROE-00N (ABC-NNN) e.g. ROE-007 (IP-FIX-001)"
     validations:
       required: true
   - type: input
