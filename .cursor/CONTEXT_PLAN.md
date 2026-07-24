@@ -4,7 +4,7 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending
+last_verified_commit: 9e17980
 last_verified_date: 2026-07-24
 branch: feature/ROE-008-intent-hardening
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
