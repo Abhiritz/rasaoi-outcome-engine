@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Backlog triage notes
+    url: https://github.com/Abhiritz/rasaoi-outcome-engine/blob/develop/docs/ROE-backlog-triage-2026-07-24.md
+    about: Context for ROE-001…006 priorities and known product decisions

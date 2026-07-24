@@ -1,0 +1,133 @@
+name: Project board sync
+
+# Keeps Issues/PRs on Rasaoi QA Board (https://github.com/users/Abhiritz/projects/1).
+# Requires repo secret PROJECT_TOKEN = PAT with Project + Issues access (user-owned
+# projects cannot use GITHUB_TOKEN). Prefer a fine-grained PAT for this repo.
+
+on:
+  issues:
+    types: [opened, reopened, closed, labeled]
+  pull_request:
+    types: [opened, reopened, ready_for_review, closed, labeled]
+
+concurrency:
+  group: project-board-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Sync to QA board
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check PROJECT_TOKEN
+        id: gate
+        env:
+          PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          if [ -z "$PROJECT_TOKEN" ]; then
+            echo "::warning::PROJECT_TOKEN secret is not set — board sync skipped. See .github/PROJECT_BOARD.md"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Add to project
+        id: add
+        if: steps.gate.outputs.ok == 'true'
+        uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/users/Abhiritz/projects/1
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+
+      - name: Set Status + Priority
+        if: steps.gate.outputs.ok == 'true' && steps.add.outputs.itemId != ''
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          PROJECT_ID: PVT_kwHOAUMP7s4BeSf9
+          STATUS_FIELD: PVTSSF_lAHOAUMP7s4BeSf9zhYt2iY
+          PRIORITY_FIELD: PVTSSF_lAHOAUMP7s4BeSf9zhYt3Gk
+          ITEM_ID: ${{ steps.add.outputs.itemId }}
+          EVENT_NAME: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          MERGED: ${{ github.event.pull_request.merged || false }}
+          ISSUE_LABELS: ${{ join(github.event.issue.labels.*.name, ',') }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -euo pipefail
+
+          INBOX="c1614b80"
+          IN_PROGRESS="f5348563"
+          QA="34286010"
+          DONE="72d3724b"
+
+          P0="7328ba07"
+          P1="384b8851"
+          P2="2dbdbcc8"
+          P3="80765378"
+
+          if [[ "$EVENT_NAME" == "issues" ]]; then
+            LABELS="$ISSUE_LABELS"
+          else
+            LABELS="$PR_LABELS"
+          fi
+
+          STATUS=""
+          if [[ "$EVENT_NAME" == "issues" ]]; then
+            case "$ACTION" in
+              opened|reopened) STATUS="$INBOX" ;;
+              closed) STATUS="$DONE" ;;
+            esac
+            if [[ ",$LABELS," == *",type:qa,"* ]]; then
+              STATUS="$QA"
+            fi
+          else
+            case "$ACTION" in
+              opened|reopened|ready_for_review) STATUS="$IN_PROGRESS" ;;
+              closed)
+                if [[ "$MERGED" == "true" ]]; then
+                  STATUS="$QA"
+                else
+                  STATUS="$DONE"
+                fi
+                ;;
+            esac
+            if [[ ",$LABELS," == *",type:qa,"* ]]; then
+              STATUS="$QA"
+            fi
+          fi
+
+          set_select() {
+            local field_id="$1"
+            local option_id="$2"
+            gh api graphql -f query='
+              mutation($project:ID!, $item:ID!, $field:ID!, $option:String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $project
+                  itemId: $item
+                  fieldId: $field
+                  value: { singleSelectOptionId: $option }
+                }) { projectV2Item { id } }
+              }' \
+              -f project="$PROJECT_ID" \
+              -f item="$ITEM_ID" \
+              -f field="$field_id" \
+              -f option="$option_id" >/dev/null
+          }
+
+          if [[ -n "$STATUS" ]]; then
+            echo "Setting Status → $STATUS"
+            set_select "$STATUS_FIELD" "$STATUS"
+          fi
+
+          PRIORITY=""
+          if [[ ",$LABELS," == *",priority:P0,"* ]]; then PRIORITY="$P0"
+          elif [[ ",$LABELS," == *",priority:P1,"* ]]; then PRIORITY="$P1"
+          elif [[ ",$LABELS," == *",priority:P2,"* ]]; then PRIORITY="$P2"
+          elif [[ ",$LABELS," == *",priority:P3,"* ]]; then PRIORITY="$P3"
+          fi
+
+          if [[ -n "$PRIORITY" ]]; then
+            echo "Setting Priority → $PRIORITY"
+            set_select "$PRIORITY_FIELD" "$PRIORITY"
+          fi
