@@ -130,9 +130,9 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 
 ## Known open QA
 
-**CRS-003** / **ROE-001** / **ROE-002** / **ROE-003** — on `develop`.  
-**ROE-004** — Mylapore / South Indian plates (`feature/ROE-004-south-indian-plates`). Frontend only.  
-**Queued:** ROE-005 Mythaai, ROE-006 GL UX — see `docs/ROE-backlog-triage-2026-07-24.md`.
+**CRS-003** / **ROE-001**…**ROE-004** — on `develop`.  
+**ROE-005 A** — Mythaai demo removed (`feature/ROE-005-mythaai-catalog`). Apply migration after merge.  
+**Queued:** ROE-006 GL UX — see `docs/ROE-backlog-triage-2026-07-24.md`.
 
 ---
 

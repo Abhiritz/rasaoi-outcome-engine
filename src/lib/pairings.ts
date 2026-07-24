@@ -1058,7 +1058,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
         .sort((a, b) => b.s - a.s);
       if (ranked[0]) best = { name: ranked[0].d, verified: false };
     }
-    // Do NOT synthDishFromHint here — inventing "Seafood" on Mythaai/Mantra/Pizza
+    // Do NOT synthDishFromHint here — inventing "Seafood" on sparse kitchens / Mantra / Pizza
     // made every alternate card identical and wrong.
   }
   if (!best) best = tryMenu(pickBest(menu, dials, sigName, used));

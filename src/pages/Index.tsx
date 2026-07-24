@@ -100,8 +100,12 @@ const Index = () => {
       ]);
       // Only surface restaurants whose menus we've actually parsed
       // (menu_items is populated by the ingest pipeline from the dishes table).
+      // ROE-005: never show retired demo venue Mythaai (even if DB not yet migrated).
       const parsedOnly = (rRes.data ?? []).filter(
-        (r) => Array.isArray(r.menu_items) && r.menu_items.length > 0,
+        (r) =>
+          r.name !== "Mythaai" &&
+          Array.isArray(r.menu_items) &&
+          r.menu_items.length > 0,
       );
       setRestaurants(parsedOnly);
       setPromos(pRes.data ?? []);

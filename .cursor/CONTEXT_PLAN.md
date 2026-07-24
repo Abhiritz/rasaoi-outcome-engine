@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: 9f8d7a6
+last_verified_commit: 05c6054
 last_verified_date: 2026-07-24
-branch: feature/ROE-004-south-indian-plates
+branch: feature/ROE-005-mythaai-catalog
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-004 South Indian / Mylapore plates (Indian-South bank, North invention ban);
-  ROE-003 mood plates on develop; backlog ROE-005…006.
+  ROE-005 A removes demo venue Mythaai from catalog (migration + Index filter);
+  ROE-004 South Indian on develop; backlog ROE-006.
 ```
 
 ---
