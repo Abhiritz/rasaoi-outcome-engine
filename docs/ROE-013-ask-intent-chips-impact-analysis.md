@@ -6,7 +6,7 @@
 | Ask / symptom | Ask “Or try” chips under-teach situations the engine already supports (sweet, Jain+event, cuisine, wellness, friends celebration) |
 | Parent | `develop` (post ROE-008) |
 | Proposed branch | `feature/ROE-013-ask-intent-chips` |
-| Status | **Awaiting approval** |
+| Status | **Implementing** |
 | Related | ROE-001 sweet; ROE-003 mood; ROE-007 healthy/lens; TODO §8 onboarding A/B |
 
 ---
@@ -95,4 +95,10 @@ Frontend only — Vercel auto-deploy. No edge redeploy.
 
 ## 8. Implementation notes
 
-_(fill after implement)_
+| Change | Detail |
+|--------|--------|
+| `Ask.tsx` EXAMPLES | 10 chips — core 1–4 + sweet, friends celebration, Jain+birthday, Thai, gut+desi, family+veg |
+| Placeholder | Neutral: “Mood, craving, diet, budget — tell Veda what you need…” |
+| Mobile | Chip row `max-h-[40vh] overflow-y-auto` on small screens |
+
+No parse-intent / sanitizer changes.

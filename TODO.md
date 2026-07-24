@@ -9,7 +9,17 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
-## [ROE-011] Fulfillment order copy (FUL-003+004) — implementing
+## [ROE-013] Ask intent chips (ASK-001) — implementing
+
+Impact: `docs/ROE-013-ask-intent-chips-impact-analysis.md`
+
+- [x] Expand `Ask.tsx` EXAMPLES to 10 (sweet, celebration, Jain+birthday, Thai, wellness, family)
+- [x] Align placeholder; mobile chip scroll
+- [ ] Docs sync in PR
+
+---
+
+## [ROE-011] Fulfillment order copy (FUL-003+004) — merged
 
 Impact: `docs/ROE-011-fulfillment-order-copy-impact-analysis.md`  
 **ROE-012** folded into this ticket (do not open separately).
@@ -17,7 +27,7 @@ Impact: `docs/ROE-011-fulfillment-order-copy-impact-analysis.md`
 - [x] Pass dish-only (not `Dish + carrier`) into `FulfillmentSheet`
 - [x] Refresh pickup draft on open / dish change (respect dirty edit)
 - [x] Align delivery clipboard + toast; Vitest `buildPickupMessage`
-- [ ] Docs sync in PR
+- [x] Merged PR #25
 
 ---
 
@@ -44,15 +54,6 @@ Impact: `docs/ROE-009-fulfillment-contacts-impact-analysis.md`
 - [ ] **Ops:** `db push` + run personal contact backfill on linked project
 
 Related: **ROE-010** delivery URLs — merged PR #23
-
----
-
-## [ROE-013] Ask intent chips (ASK-001) — awaiting approval
-
-Impact: `docs/ROE-013-ask-intent-chips-impact-analysis.md`
-
-- [ ] Expand `Ask.tsx` EXAMPLES to ~10 (sweet, celebration, Jain+birthday, Thai, wellness, family)
-- [ ] Align placeholder; docs sync
 
 ---
 

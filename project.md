@@ -152,12 +152,14 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
 | Ticket | Status | Impact |
 |--------|--------|--------|
-| **ROE-011** (FUL-003+004) order copy | Implementing | `docs/ROE-011-fulfillment-order-copy-impact-analysis.md` |
-| **ROE-013** (ASK-001) Ask chips | Awaiting approval | `docs/ROE-013-ask-intent-chips-impact-analysis.md` |
+| **ROE-013** (ASK-001) Ask chips | Implementing | `docs/ROE-013-ask-intent-chips-impact-analysis.md` |
 | **ROE-012** | Superseded — folded into ROE-011 | — |
+| **ROE-011** (FUL-003+004) order copy | Merged PR #25; QA | `docs/ROE-011-fulfillment-order-copy-impact-analysis.md` |
 | **ROE-010** (FUL-002) delivery URLs | Merged PR #23; QA | `docs/ROE-010-delivery-handoff-urls-impact-analysis.md` |
 | **ROE-009** (FUL-001) contacts | Merged PR #21; ops + QA | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
 | ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
+
+Next free serial: **ROE-014**.
 
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-ask-audit` canvas.
 
