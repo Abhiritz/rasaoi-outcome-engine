@@ -25,5 +25,6 @@ Read `src/CURSOR.md` and `.cursor/CONTEXT_PLAN.md` before editing.
 ## Required Sync on Change
 
 - Dietary logic → also update `supabase/functions/_shared/dietary.ts`
+- Intent sanitizer → also update `supabase/functions/_shared/intent-sanitize.ts`
 - Scoring → add regression in `src/lib/*.test.ts`
 - Mock fixtures → sync edge fixture in `places-search/fixtures/`

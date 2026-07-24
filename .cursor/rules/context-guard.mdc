@@ -18,6 +18,7 @@ If a file, API endpoint, table, or module is not listed in CONTEXT_PLAN, **searc
 ## Sync Pairs (Must Update Together)
 
 - `src/lib/dietary.ts` ↔ `supabase/functions/_shared/dietary.ts`
+- `src/lib/intentSanitize.ts` ↔ `supabase/functions/_shared/intent-sanitize.ts`
 - `src/testing/mock-places.json` ↔ `supabase/functions/places-search/fixtures/mock-places.json`
 - `WELLNESS_TAG_SLUGS` in `src/lib/veda.ts` ↔ `parse-intent` output slugs
 

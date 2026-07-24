@@ -23,6 +23,7 @@ Read `supabase/CURSOR.md` and `.cursor/CONTEXT_PLAN.md` before editing.
 ## Required Sync on Change
 
 - `_shared/dietary.ts` → also update `src/lib/dietary.ts`
+- `_shared/intent-sanitize.ts` → also update `src/lib/intentSanitize.ts`
 - `parse-intent` prompt changes → verify client scoring alignment in `veda.ts`, `pairings.ts`
 - Mock fixtures → sync `src/testing/mock-places.json`
 

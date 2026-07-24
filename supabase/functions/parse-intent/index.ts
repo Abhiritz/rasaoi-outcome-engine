@@ -2,7 +2,15 @@
 // Uses native Google Gemini API with tool-calling for reliable structured output.
 
 import { DEFAULT_GEMINI_MODEL, geminiToolCall } from "../_shared/ai-client.ts";
-import { DIETARY_INTENT_SLUGS, isDietaryIntent } from "../_shared/dietary.ts";
+import { DIETARY_INTENT_SLUGS } from "../_shared/dietary.ts";
+import {
+  extractCuisineFromTranscript,
+  extractDishFromTranscript,
+  isSweetCravingTranscript,
+  mergeBloodSugarLens,
+  mergeDietary,
+  type StrictDietary,
+} from "../_shared/intent-sanitize.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,10 +33,10 @@ MAPPING RULES:
 - "great", "energized", "peak", "after workout" → energy 75-95
 - "date night", "celebrating", "anniversary", "family dinner", "with friends", "party mood", "celebrating mood" → context 80-95; energy 55-75; purity 60-75. Omit filters.dish unless a specific food was named. NEVER invent roti, naan, bread, or paratha as the dish for a mood-only ask.
 - "quick", "alone", "grab something", "in a rush" → context 5-20
-- "healthy", "clean", "good for me", "organic" → purity 75-90
+- "healthy", "clean", "good for me", "organic" → purity 75-90. NEVER set filters.cuisine to "Healthy" from the word healthy alone (purity-only).
 - "indulgent", "treat", "comfort food" → purity 20-40
-- "sweet", "something sweet", "dessert", "mithai", "gulab jamun", "kheer" → purity 25-45 (treat band); set filters.dish to "dessert" or the named sweet. NEVER invent a savory dish.
-- "diabetic", "diabetes", "low sugar", "low carb", "blood sugar", "no rice", "no bread", "no naan", "keto" → set lens="blood_sugar"
+- "sweet", "something sweet", "dessert", "mithai", "gulab jamun", "kheer" → purity 25-45 (treat band); set filters.dish to "dessert" or the named sweet. NEVER invent a savory dish. Do not treat "sweet potato" as dessert.
+- "diabetic", "diabetes", "low sugar", "low carb", "blood sugar", "keto" → set lens="blood_sugar". Prefer explicit metabolic language; bare "no bread/naan" alone is not enough.
 - Explicit dollar amounts: $25 → budget 0, $35 → budget 25, $50 → budget 50, $75 → budget 70, $100+ → budget 85+
 - No budget mentioned → budget 50 (neutral)
 - No energy mentioned → energy 50
@@ -188,13 +196,6 @@ function isWellnessTag(v: unknown): v is WellnessTag {
   return typeof v === "string" && (WELLNESS_TAG_SLUGS as readonly string[]).includes(v);
 }
 
-const DIETARY_SLUGS = DIETARY_INTENT_SLUGS;
-type StrictDietary = (typeof DIETARY_SLUGS)[number];
-
-function isStrictDietary(v: unknown): v is StrictDietary {
-  return isDietaryIntent(v);
-}
-
 interface FilterPayload {
   cuisine?: string;
   dish?: string;
@@ -214,19 +215,6 @@ interface ParsedPayload {
   lens?: "blood_sugar";
 }
 
-/** Ordered: first match wins when multiple cuisines appear in transcript. */
-const TRANSCRIPT_CUISINE_PATTERNS: { canonical: string; pattern: RegExp }[] = [
-  { canonical: "Thai", pattern: /\bthai\b|pad thai|tom yum|panang|massaman|larb\b/i },
-  { canonical: "Japanese", pattern: /\bjapanese\b|sushi|ramen|izakaya|sashimi|teriyaki/i },
-  { canonical: "Mexican", pattern: /\bmexican\b|taco|burrito|taqueria|enchilada|mole\b/i },
-  { canonical: "Italian", pattern: /\bitalian\b|pasta|pizza|risotto|trattoria/i },
-  { canonical: "Mediterranean", pattern: /\bmediterranean\b|greek\b|hummus|falafel|gyro/i },
-  { canonical: "Indian", pattern: /\bindian\b|tandoori|biryani\b|tikka masala|naan\b|dal\b/i },
-  { canonical: "Indian", pattern: /\bdesi\b|desi food|homestyle indian|indian home\b/i },
-  { canonical: "Healthy", pattern: /\bhealthy\b|salad bowl|grain bowl|poke\b/i },
-  { canonical: "American", pattern: /\bamerican\b|burger\b|bbq\b|steakhouse/i },
-];
-
 const INDIAN_DISH_MARKERS = /\b(tandoori|biryani|naan|dal\b|tikka masala|butter chicken|rogan josh)\b/i;
 
 /** Transcript-grounded wellness concept patterns → canonical slugs. */
@@ -238,7 +226,8 @@ const TRANSCRIPT_WELLNESS_PATTERNS: { tag: WellnessTag; pattern: RegExp }[] = [
     pattern: /gut[- ]?friendly|digestive health|good for (my )?gut|microbiome/i,
   },
   { tag: "probiotic", pattern: /\bprobiotic\b|\bfermented\b|kanji\b|kimchi\b/i },
-  { tag: "light", pattern: /\blight\b|low[- ]?oil|not heavy|lightly cooked/i },
+  // “light” without auto-including low-oil (low_oil has its own pattern)
+  { tag: "light", pattern: /\blight\b|not heavy|lightly cooked/i },
   { tag: "low_oil", pattern: /low[- ]?oil|minimal oil|less oil/i },
 ];
 
@@ -249,17 +238,6 @@ const CULTURE_TAG_PATTERNS: { tag: string; cuisine?: string; pattern: RegExp }[]
 
 const DEFAULT_HEAVY_DISH_INVENTIONS =
   /\b(tandoori chicken|chicken tikka|navratan korma|butter chicken|biryani)\b/i;
-
-const TRANSCRIPT_DIETARY_PATTERNS: { dietary: StrictDietary; pattern: RegExp }[] = [
-  { dietary: "jain", pattern: /\bjain\b|jain diet|jain food|jain vegetarian|ahimsa\b/i },
-  { dietary: "vegan", pattern: /\bvegan\b|plant[- ]only|no dairy\b/i },
-  { dietary: "vegetarian", pattern: /\bvegetarian\b|pure veg\b|eggless\b|no meat\b|no eggs?\b/i },
-  { dietary: "eggetarian", pattern: /\beggetarian\b|eggs? (are )?ok\b|ovo[- ]vegetarian\b/i },
-  { dietary: "halal", pattern: /\bhalal\b/i },
-  { dietary: "jhatka", pattern: /\bjhatka\b|jatka\b/i },
-  { dietary: "kosher", pattern: /\bkosher\b/i },
-  { dietary: "non_veg", pattern: /\bnon[- ]?veg\b|meat only\b|chicken only\b/i },
-];
 
 const MEAT_OR_NON_JAIN_DISH =
   /\b(chicken|tandoori|mutton|lamb|beef|pork|fish|seafood|shrimp|prawn|egg|eggs|biryani|tikka|kebab|bacon|ham|sausage|turkey|duck|crab|lobster)\b/i;
@@ -280,13 +258,6 @@ function cuisinesEquivalent(a: string, b: string): boolean {
   const x = a.toLowerCase().trim();
   const y = b.toLowerCase().trim();
   return x === y || x.includes(y) || y.includes(x);
-}
-
-function extractCuisineFromTranscript(transcript: string): string | undefined {
-  for (const { canonical, pattern } of TRANSCRIPT_CUISINE_PATTERNS) {
-    if (pattern.test(transcript)) return canonical;
-  }
-  return undefined;
 }
 
 function extractWellnessFromTranscript(transcript: string): WellnessTag[] {
@@ -317,46 +288,6 @@ function mergeWellnessTags(modelTags: unknown, transcript: string): WellnessTag[
   }
   for (const t of extractWellnessFromTranscript(transcript)) merged.add(t);
   return WELLNESS_TAG_SLUGS.filter((t) => merged.has(t));
-}
-
-function extractDietaryFromTranscript(transcript: string): StrictDietary | undefined {
-  for (const { dietary, pattern } of TRANSCRIPT_DIETARY_PATTERNS) {
-    if (pattern.test(transcript)) return dietary;
-  }
-  return undefined;
-}
-
-function mergeDietary(modelDietary: unknown, transcript: string): StrictDietary | undefined {
-  const fromTranscript = extractDietaryFromTranscript(transcript);
-  if (fromTranscript) return fromTranscript;
-  if (isStrictDietary(modelDietary)) return modelDietary;
-  return undefined;
-}
-
-function extractDishFromTranscript(transcript: string): string | undefined {
-  const t = transcript.trim();
-  if (extractDietaryFromTranscript(t)) return undefined;
-  // ROE-001: sweet / dessert craving (before cuisine-specific dish markers)
-  if (/\b(gulab\s*jamun|rasmalai|rasgulla|kheer|kulfi|falooda|jalebi|halwa|ladoo|laddu|barfi|mithai)\b/i.test(t)) {
-    const m = t.match(/\b(gulab\s*jamun|rasmalai|rasgulla|kheer|kulfi|falooda|jalebi|halwa|ladoo|laddu|barfi|mithai)\b/i);
-    if (m) return m[0];
-  }
-  if (/\b(dessert|desserts|something sweet|sweet tooth|mithai)\b/i.test(t) || /\bsweet\b/i.test(t)) {
-    return "dessert";
-  }
-  if (THAI_DISH_MARKERS.test(t)) {
-    const m = t.match(THAI_DISH_MARKERS);
-    if (m) return m[0];
-  }
-  if (INDIAN_DISH_MARKERS.test(t)) {
-    const m = t.match(INDIAN_DISH_MARKERS);
-    if (m) return m[0];
-  }
-  return undefined;
-}
-
-function isSweetCravingTranscript(transcript: string): boolean {
-  return /\b(sweet|sweets|dessert|desserts|mithai|gulab|kheer|kulfi|halwa|jalebi|rasmalai)\b/i.test(transcript);
 }
 
 /** ROE-003: mood / social celebration phrases (not a food request). */
@@ -424,6 +355,11 @@ function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
     if (!cuisine || !cuisinesEquivalent(cuisine, transcriptCuisine)) {
       cuisine = transcriptCuisine;
     }
+  }
+
+  // IP-FIX: never keep model-invented "Healthy" cuisine (purity adjective ≠ cuisine).
+  if (cuisine && /^healthy$/i.test(cuisine.trim())) {
+    cuisine = undefined;
   }
 
   // Strict dietary: strip violative invented dishes (e.g. Tandoori when Jain).
@@ -561,7 +497,8 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
   }
 
   const payload: ParsedPayload = { restated_intent: restated, dials, filters, confidence };
-  if (obj.lens === "blood_sugar") payload.lens = "blood_sugar";
+  const lens = mergeBloodSugarLens(obj.lens, transcript);
+  if (lens) payload.lens = lens;
   return payload;
 }
 

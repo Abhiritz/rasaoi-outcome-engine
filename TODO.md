@@ -9,6 +9,19 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## IP-FIX: Intent sanitizer false-positives
+
+- [x] Impact notes in agent audit canvas (`intent-parser-audit`)
+- [x] Sync pair `src/lib/intentSanitize.ts` ↔ `_shared/intent-sanitize.ts`
+- [x] No `Healthy` cuisine from word “healthy”; strip model `Healthy`
+- [x] Transcript-ground `lens=blood_sugar` (diabetes / low sugar / keto — not bare no-bread)
+- [x] Negation-aware dietary extract; eggetarian before vegetarian
+- [x] Tighten sweet craving (not sweet potato); allow dish extract with dietary present
+- [x] Unit tests `intentSanitize.test.ts`
+- [ ] **After merge:** redeploy `parse-intent`
+
+---
+
 ## CRS-003: “Oceany” reading QA (2026-07-23) — address one-by-one
 
 Evidence: `Source of Knowledge/issue-docs/rasaoi.pdf` (Ask: *“I want something Oceany”* → VEDA HEARD: *Oceany seafood · fresh & coastal*).
