@@ -158,6 +158,7 @@ CI: `.github/workflows/ci-cd.yml` (lint → test → build → Vercel prod on `d
 ## Sync Invariants
 
 - `src/lib/dietary.ts` ↔ `supabase/functions/_shared/dietary.ts`
+- `src/lib/intentSanitize.ts` ↔ `supabase/functions/_shared/intent-sanitize.ts`
 - `src/testing/mock-places.json` ↔ `places-search/fixtures/mock-places.json`
 - `WELLNESS_TAG_SLUGS` in `veda.ts` ↔ `parse-intent` output slugs
 - Rebuild `src/data/culinary-index.json` via `node scripts/personal/build-culinary-index.mjs` when matrix/registry sources change (no AI)

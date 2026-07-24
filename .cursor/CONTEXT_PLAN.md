@@ -4,13 +4,14 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: b48bd8b
+last_verified_commit: a4417e5
 last_verified_date: 2026-07-24
-branch: feature/ROE-006-gl-lens-ux
+branch: feature/IP-FIX-intent-sanitize
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-006 GL lens discoverability (chip, Turn off, GL copy); ROE-005 Mythaai removed;
-  backlog ROE-002…006 implement queue complete pending merge.
+  IP-FIX intent sanitizer: no Healthy-as-cuisine; transcript blood_sugar lens;
+  negation-aware dietary; sync pair intentSanitize.ts ↔ _shared/intent-sanitize.ts.
+  ROE-006 GL lens UX; backlog ROE-002…006 complete pending merge.
 ```
 
 ---
@@ -83,7 +84,7 @@ sequenceDiagram
 
 | Domain | Canonical files |
 |--------|-----------------|
-| Intent parsing | `src/lib/intent.ts`, `supabase/functions/parse-intent/index.ts` |
+| Intent parsing | `src/lib/intent.ts`, `src/lib/intentSanitize.ts`, `supabase/functions/parse-intent/index.ts` |
 | Restaurant scoring | `src/lib/veda.ts`, `src/lib/vedaDishes.ts` |
 | Culinary matrix index | `src/lib/culinaryIndex.ts`, `src/data/culinary-index.json` (built by `scripts/personal/build-culinary-index.mjs`) |
 | Dish intent tokens | `src/lib/dishIntent.ts` — oceany/coastal + **sweet/dessert** synonym expansion (CRS-003, ROE-001) |
@@ -169,6 +170,9 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 2. **`dietary.ts` sync pair** — exists in exactly two places; both must change together:
    - `src/lib/dietary.ts`
    - `supabase/functions/_shared/dietary.ts`
+2b. **`intentSanitize` sync pair** — transcript cuisine / dietary / lens / sweet helpers:
+   - `src/lib/intentSanitize.ts`
+   - `supabase/functions/_shared/intent-sanitize.ts`
 3. **Mock fixtures sync pair:**
    - `src/testing/mock-places.json`
    - `supabase/functions/places-search/fixtures/mock-places.json`

@@ -2,12 +2,14 @@
 
 | Priority | Ticket | Status |
 |----------|--------|--------|
-| — | Backlog clear for ROE-002…006 | Optional: ROE-006 **+perf** (matrix-first GL) later |
+| 1 | **IP-FIX** intent sanitizer false-positives | Implemented — redeploy `parse-intent` after merge |
+| — | Optional: ROE-006 **+perf** (matrix-first GL) | Later |
 
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`
 
 ### In progress / shipping
-- **ROE-006** GL lens UX — `feature/ROE-006-gl-lens-ux`
+- **IP-FIX** — Healthy≠cuisine, transcript blood_sugar lens, negation dietary (`intentSanitize` sync pair)
+- **ROE-006** GL lens UX — `feature/ROE-006-gl-lens-ux` (may already be on branch)
 
 ### Done
 - ROE-005 A Mythaai removed (PR #6, merged `356eae8`)
