@@ -138,11 +138,12 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-007][IP-FIX-001] tighten parse-intent grounding` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-007-intent-sanitize` |
 
-1. **ROE-NNN** — global serial (never skip). Next free: **ROE-008**.
+1. **ROE-NNN** — global serial (never skip). Next free: **ROE-009** (after ROE-008 merges).
 2. **ABC-NNN** — workstream alias when applicable (`IP-FIX-001`, `CRS-003`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
-**CRS-003** / **ROE-001**…**ROE-006** — on `develop` (stakeholder QA on board).  
+**CRS-003** / **ROE-001**…**ROE-007** — on `develop` (stakeholder QA on board).  
+**[ROE-008] Intent parser hardening (IP-FIX-002)** — client normalize + shared mood helpers + priority restated.  
 **[ROE-007] Intent sanitizer false-positives (IP-FIX-001)** — merged PR #16; `parse-intent` redeployed.  
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`.
 

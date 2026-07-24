@@ -15,6 +15,7 @@ vi.mock("@/lib/google-places", () => ({
 import {
   clearIntent,
   getCachedParse,
+  normalizeParsedIntent,
   parseIntent,
   PARSE_CACHE_TTL_MS,
   RateLimitError,
@@ -96,4 +97,42 @@ describe("parseIntent ROE-002 rate limit + cache", () => {
     expect(intent.filters.dish).toBeUndefined();
     expect(invoke).toHaveBeenCalledTimes(3);
   }, 15000);
+});
+
+describe("normalizeParsedIntent [ROE-008] (IP-FIX-002)", () => {
+  it("fills missing dials and strips bad dietary / wellness", () => {
+    const intent = normalizeParsedIntent(
+      {
+        restated_intent: "",
+        dials: { energy: 999 },
+        filters: { dietary: "pescatarian", wellness_tags: ["raw", "spicy", "fresh"] },
+        confidence: "nope",
+      },
+      "something raw and fresh",
+    );
+    expect(intent.dials.energy).toBe(100);
+    expect(intent.dials.context).toBe(40);
+    expect(intent.dials.budget).toBe(50);
+    expect(intent.dials.purity).toBe(70);
+    expect(intent.filters.dietary).toBeUndefined();
+    expect(intent.filters.wellness_tags).toEqual(["raw", "fresh"]);
+    expect(intent.confidence).toBe("medium");
+    expect(intent.restated_intent).toBe("Your request");
+    expect(intent.transcript).toBe("something raw and fresh");
+  });
+
+  it("normalizes malformed edge payloads on parseIntent", async () => {
+    invoke.mockResolvedValueOnce({
+      data: {
+        restated_intent: "x".repeat(80),
+        dials: null,
+        filters: { cuisine: "Thai" },
+      },
+      error: null,
+    });
+    const intent = await parseIntent("Thai food nearby please");
+    expect(intent.dials.energy).toBe(50);
+    expect(intent.filters.cuisine).toBe("Thai");
+    expect(intent.restated_intent.length).toBeLessThanOrEqual(60);
+  });
 });

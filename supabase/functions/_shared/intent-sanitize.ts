@@ -1,11 +1,27 @@
 /**
- * [ROE-007] (IP-FIX-001): Transcript-grounded intent sanitizer helpers.
+ * [ROE-007] (IP-FIX-001) + [ROE-008] (IP-FIX-002): Intent sanitizer helpers.
  * Keep in sync with src/lib/intentSanitize.ts
+ *
+ * Pure functions — unit-tested on the src twin; edge parse-intent imports this file.
  */
 
 import { DIETARY_INTENT_SLUGS, isDietaryIntent, type DietaryIntent } from "./dietary.ts";
 
 export type StrictDietary = DietaryIntent;
+
+export const WELLNESS_TAG_SLUGS = [
+  "raw",
+  "fresh",
+  "gut_friendly",
+  "light",
+  "low_oil",
+  "probiotic",
+] as const;
+export type WellnessTag = (typeof WELLNESS_TAG_SLUGS)[number];
+
+export function isWellnessTag(v: unknown): v is WellnessTag {
+  return typeof v === "string" && (WELLNESS_TAG_SLUGS as readonly string[]).includes(v);
+}
 
 /** Ordered: first match wins. Do NOT map “healthy” → cuisine (purity-only). */
 export const TRANSCRIPT_CUISINE_PATTERNS: { canonical: string; pattern: RegExp }[] = [
@@ -48,6 +64,17 @@ const NAMED_SWEET =
 
 const THAI_DISH_MARKERS = /\b(pad thai|tom yum|panang|massaman|larb|basil chicken|drunken noodles)\b/i;
 const INDIAN_DISH_MARKERS = /\b(tandoori|biryani|naan|dal\b|tikka masala|butter chicken|rogan josh)\b/i;
+
+const CELEBRATORY_MOOD =
+  /\b(celebrat(e|ing|ion)?|party|with friends|date night|anniversary|family (dinner|gathering)|festive|mood with friends)\b/i;
+
+const CARRIER_PROTEIN_OR_MAIN =
+  /\b(chicken|lamb|goat|mutton|beef|pork|fish|shrimp|prawn|seafood|paneer|tofu|egg|dal|lentil|curry|biryani|tikka|kebab|platter|thali|dosa|idli|samosa|salad|soup|stew|masala|korma|vindaloo|rogan|saag|chana|pizza|burger|pasta|risotto)\b/;
+
+const CARRIER_ONLY =
+  /\b(roti|naan|paratha|chapati|phulka|kulcha|bread|bhatura|poori|puri)\b/;
+
+export const RESTATED_MAX_CHARS = 60;
 
 /** True when match at `index` is preceded by negation (not / non- / isn't …). */
 export function isNegatedAt(transcript: string, index: number): boolean {
@@ -131,4 +158,123 @@ export function extractDishFromTranscript(transcript: string): string | undefine
   return undefined;
 }
 
+/** ROE-003: celebratory / social mood phrases (feeling-based Ask). */
+export function isCelebratoryMoodIntent(transcript?: string): boolean {
+  if (!transcript) return false;
+  return CELEBRATORY_MOOD.test(transcript);
+}
+
+/**
+ * ROE-003: bread/roti/naan alone must never be a Triple Outcome "dish"
+ * (they may still appear as carriers).
+ */
+export function isCarrierOnlyDish(name: string, desc = ""): boolean {
+  const t = `${name} ${desc}`.toLowerCase();
+  if (CARRIER_PROTEIN_OR_MAIN.test(t)) return false;
+  return CARRIER_ONLY.test(t);
+}
+
+export interface DialStateLike {
+  energy: number;
+  context: number;
+  budget: number;
+  purity: number;
+}
+
+export function celebratoryMoodDials(): DialStateLike {
+  return { energy: 65, context: 88, budget: 55, purity: 68 };
+}
+
+export function celebratoryRestatedIntent(transcript: string): string {
+  if (/\bdate night\b/i.test(transcript)) return "Celebratory · date night";
+  if (/\bfamily\b/i.test(transcript)) return "Celebratory · family gathering";
+  if (/\bfriends\b/i.test(transcript)) return "Celebratory · with friends";
+  return "Celebratory · festive mood";
+}
+
+export interface BuildRestatedInput {
+  modelRestated?: string;
+  dietary?: StrictDietary;
+  sweetCraving?: boolean;
+  celebratoryMood?: boolean;
+  transcript?: string;
+  culture_tag?: string;
+  cuisine?: string;
+  wellness_tags?: WellnessTag[];
+}
+
+/**
+ * [ROE-008] (IP-FIX-002): Assemble restated_intent by priority; drop lowest
+ * segments until ≤ RESTATED_MAX_CHARS (never mid-token chop of dietary/cuisine).
+ *
+ * Priority high→low: dietary → sweet/celebratory core → cuisine/culture →
+ * one wellness tag → model restated (if it adds signal).
+ */
+export function buildRestatedIntent(input: BuildRestatedInput): string {
+  const segments: string[] = [];
+  const seen = new Set<string>();
+
+  const push = (raw: string | undefined) => {
+    const s = raw?.trim();
+    if (!s) return;
+    const key = s.toLowerCase();
+    if (seen.has(key)) return;
+    // Skip if any existing segment already covers this token
+    for (const prev of seen) {
+      if (prev.includes(key) || key.includes(prev)) return;
+    }
+    seen.add(key);
+    segments.push(s);
+  };
+
+  if (input.dietary) {
+    push(input.dietary.charAt(0).toUpperCase() + input.dietary.slice(1));
+  }
+
+  if (input.sweetCraving) {
+    push("Sweet · dessert / mithai · treat");
+  } else if (input.celebratoryMood) {
+    push(celebratoryRestatedIntent(input.transcript ?? ""));
+  }
+
+  if (input.culture_tag) {
+    push(input.culture_tag);
+  } else if (input.cuisine) {
+    push(input.cuisine);
+  }
+
+  if (input.wellness_tags?.length) {
+    const tag = input.wellness_tags[0].replace(/_/g, " ");
+    push(tag);
+  }
+
+  const model = input.modelRestated?.trim();
+  if (model && model.toLowerCase() !== "your request") {
+    // Only keep model phrase if it adds tokens not already present
+    const modelLc = model.toLowerCase();
+    const covered = [...seen].some((s) => modelLc.includes(s) || s.includes(modelLc.split(" · ")[0] ?? ""));
+    if (!covered) push(model);
+  }
+
+  if (!segments.length) return "Your request";
+
+  // Drop from the end (lowest priority) until ≤ max
+  let out = segments.slice();
+  while (out.length > 1 && out.join(" · ").length > RESTATED_MAX_CHARS) {
+    out.pop();
+  }
+  let joined = out.join(" · ");
+  if (joined.length > RESTATED_MAX_CHARS && out.length === 1) {
+    // Single segment too long — hard slice as last resort
+    joined = joined.slice(0, RESTATED_MAX_CHARS);
+  }
+  return joined;
+}
+
+export function clampDial(n: unknown, fallback: number): number {
+  const v = typeof n === "number" && Number.isFinite(n) ? Math.round(n) : fallback;
+  return Math.max(0, Math.min(100, v));
+}
+
+/** Re-export for callers that validate model dietary slugs. */
 export { DIETARY_INTENT_SLUGS, isDietaryIntent };

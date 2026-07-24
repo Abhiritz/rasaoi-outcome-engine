@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildRestatedIntent,
   extractBloodSugarLens,
   extractCuisineFromTranscript,
   extractDietaryFromTranscript,
   extractDishFromTranscript,
+  isCarrierOnlyDish,
+  isCelebratoryMoodIntent,
   isSweetCravingTranscript,
   mergeBloodSugarLens,
   mergeDietary,
+  RESTATED_MAX_CHARS,
 } from "./intentSanitize";
 
 describe("intentSanitize [ROE-007] (IP-FIX-001)", () => {
@@ -86,6 +90,43 @@ describe("intentSanitize [ROE-007] (IP-FIX-001)", () => {
     it("keeps named mithai and allows dish with dietary present", () => {
       expect(extractDishFromTranscript("jain gulab jamun")).toMatch(/gulab/i);
       expect(extractDishFromTranscript("pad thai")).toMatch(/pad thai/i);
+    });
+  });
+});
+
+describe("intentSanitize [ROE-008] (IP-FIX-002)", () => {
+  describe("celebratory / carrier (IP-9)", () => {
+    it("detects celebratory mood and carrier-only dishes", () => {
+      expect(isCelebratoryMoodIntent("Celebrating mood with friends")).toBe(true);
+      expect(isCarrierOnlyDish("Garlic Naan")).toBe(true);
+      expect(isCarrierOnlyDish("Butter Chicken")).toBe(false);
+    });
+  });
+
+  describe("buildRestatedIntent (IP-12)", () => {
+    it("keeps Jain visible for birthday + celebratory stack", () => {
+      const r = buildRestatedIntent({
+        modelRestated: "Birthday · celebratory · high context · festive gathering nearby",
+        dietary: "jain",
+        celebratoryMood: true,
+        transcript: "my friend is a jain, it is his birthday",
+        cuisine: "Indian",
+        wellness_tags: ["fresh", "light"],
+      });
+      expect(r.toLowerCase()).toContain("jain");
+      expect(r.length).toBeLessThanOrEqual(RESTATED_MAX_CHARS);
+    });
+
+    it("drops lowest-priority segments before hard-slicing dietary", () => {
+      const r = buildRestatedIntent({
+        dietary: "vegetarian",
+        sweetCraving: true,
+        cuisine: "Indian",
+        wellness_tags: ["gut_friendly", "probiotic"],
+        modelRestated: "Long model phrase that adds little new signal about the ask",
+      });
+      expect(r.toLowerCase()).toMatch(/vegetarian|sweet/);
+      expect(r.length).toBeLessThanOrEqual(RESTATED_MAX_CHARS);
     });
   });
 });

@@ -3,8 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   celebratoryMoodDials,
   celebratoryRestatedIntent,
+  clampDial,
   isCelebratoryMoodIntent,
-} from "@/lib/dishIntent";
+  isDietaryIntent,
+  RESTATED_MAX_CHARS,
+  WELLNESS_TAG_SLUGS,
+} from "@/lib/intentSanitize";
 import type { DialState, Restaurant } from "./veda";
 
 export interface ParsedIntent {
@@ -52,6 +56,75 @@ const PARSE_CACHE_KEY = "rasaoi.parse_cache.v1";
 export const PARSE_CACHE_TTL_MS = 90_000;
 const MAX_RETRIES = 2;
 
+/**
+ * [ROE-008] (IP-FIX-002): Normalize edge/cache payloads so Reading never sees
+ * missing dials or unknown filter enums.
+ */
+export function normalizeParsedIntent(raw: unknown, transcript: string): ParsedIntent {
+  const obj = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const dialsRaw = obj.dials && typeof obj.dials === "object" ? (obj.dials as Record<string, unknown>) : {};
+  const filtersRaw =
+    obj.filters && typeof obj.filters === "object" ? (obj.filters as Record<string, unknown>) : {};
+
+  const dials: DialState = {
+    energy: clampDial(dialsRaw.energy, 50),
+    context: clampDial(dialsRaw.context, 40),
+    budget: clampDial(dialsRaw.budget, 50),
+    purity: clampDial(dialsRaw.purity, 70),
+  };
+
+  const filters: ParsedIntent["filters"] = {};
+  if (typeof filtersRaw.cuisine === "string" && filtersRaw.cuisine.trim()) {
+    filters.cuisine = filtersRaw.cuisine.trim();
+  }
+  if (typeof filtersRaw.dish === "string" && filtersRaw.dish.trim()) {
+    filters.dish = filtersRaw.dish.trim();
+  }
+  if (typeof filtersRaw.restaurant === "string" && filtersRaw.restaurant.trim()) {
+    filters.restaurant = filtersRaw.restaurant.trim();
+  }
+  if (typeof filtersRaw.radius_mi === "number" && Number.isFinite(filtersRaw.radius_mi)) {
+    filters.radius_mi = filtersRaw.radius_mi;
+  }
+  if (typeof filtersRaw.max_price_usd === "number" && Number.isFinite(filtersRaw.max_price_usd)) {
+    filters.max_price_usd = filtersRaw.max_price_usd;
+  }
+  if (typeof filtersRaw.culture_tag === "string" && filtersRaw.culture_tag.trim()) {
+    filters.culture_tag = filtersRaw.culture_tag.trim();
+  }
+  if (isDietaryIntent(filtersRaw.dietary)) {
+    filters.dietary = filtersRaw.dietary;
+  }
+  if (Array.isArray(filtersRaw.wellness_tags)) {
+    const tags = WELLNESS_TAG_SLUGS.filter((t) =>
+      (filtersRaw.wellness_tags as unknown[]).includes(t),
+    );
+    if (tags.length) filters.wellness_tags = [...tags];
+  }
+
+  const confidence =
+    obj.confidence === "high" || obj.confidence === "medium" || obj.confidence === "low"
+      ? obj.confidence
+      : "medium";
+
+  let restated =
+    typeof obj.restated_intent === "string" && obj.restated_intent.trim()
+      ? obj.restated_intent.trim()
+      : "Your request";
+  if (restated.length > RESTATED_MAX_CHARS) restated = restated.slice(0, RESTATED_MAX_CHARS);
+
+  const intent: ParsedIntent = {
+    restated_intent: restated,
+    dials,
+    filters,
+    confidence,
+    transcript,
+    ts: typeof obj.ts === "number" && Number.isFinite(obj.ts) ? obj.ts : Date.now(),
+  };
+  if (obj.lens === "blood_sugar") intent.lens = "blood_sugar";
+  return intent;
+}
+
 function normalizeTranscript(t: string): string {
   return t.toLowerCase().replace(/\s+/g, " ").trim();
 }
@@ -88,7 +161,7 @@ export function getCachedParse(transcript: string): ParsedIntent | null {
   const hit = map[parseCacheKey(transcript)];
   if (!hit) return null;
   if (Date.now() - hit.ts > PARSE_CACHE_TTL_MS) return null;
-  return hit.intent;
+  return normalizeParsedIntent(hit.intent, transcript);
 }
 
 function putCachedParse(intent: ParsedIntent) {
@@ -162,25 +235,20 @@ async function invokeParseOnce(transcript: string): Promise<ParsedIntent> {
     throw new Error(errBody.error);
   }
 
-  const intent: ParsedIntent = {
-    ...(data as Omit<ParsedIntent, "transcript" | "ts">),
-    transcript,
-    ts: Date.now(),
-  };
-  return intent;
+  return normalizeParsedIntent(data, transcript);
 }
 
 function celebratoryOfflineIntent(transcript: string): ParsedIntent {
   const dials = celebratoryMoodDials() as DialState;
-  const intent: ParsedIntent = {
-    restated_intent: celebratoryRestatedIntent(transcript),
-    dials,
-    filters: {},
-    confidence: "low",
+  return normalizeParsedIntent(
+    {
+      restated_intent: celebratoryRestatedIntent(transcript),
+      dials,
+      filters: {},
+      confidence: "low",
+    },
     transcript,
-    ts: Date.now(),
-  };
-  return intent;
+  );
 }
 
 export async function parseIntent(transcript: string): Promise<ParsedIntent> {
@@ -239,7 +307,9 @@ export function loadIntent(): ParsedIntent | null {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as ParsedIntent;
+    const parsed = JSON.parse(raw) as { transcript?: string };
+    const transcript = typeof parsed.transcript === "string" ? parsed.transcript : "";
+    return normalizeParsedIntent(parsed, transcript);
   } catch {
     return null;
   }
