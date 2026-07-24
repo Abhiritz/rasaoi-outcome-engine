@@ -9,9 +9,9 @@ last_verified_date: 2026-07-24
 branch: feature/IP-FIX-intent-sanitize
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-007 (IP-FIX-001) intent sanitizer: no Healthy-as-cuisine; transcript blood_sugar lens;
-  negation-aware dietary; sync pair intentSanitize.ts ↔ _shared/intent-sanitize.ts.
-  Naming: commits `[ROE-NNN] : (ABC-NNN) - msg`; issues `[ROE-NNN] Title (ABC-NNN)`. Next free ROE-008.
+  ROE-007 (IP-FIX-001) intent sanitizer live. Naming standard: issue/PR
+  `[ROE-NNN] Title (ABC-NNN)`; commit `[ROE-NNN][ABC-NNN] message`; branch
+  `feature/ROE-NNN-slug`. Next free ROE-008.
 ```
 
 ---
