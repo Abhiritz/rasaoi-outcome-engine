@@ -4,14 +4,14 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: a4417e5
+last_verified_commit: 9e17980
 last_verified_date: 2026-07-24
-branch: feature/IP-FIX-intent-sanitize
+branch: feature/ROE-008-intent-hardening
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-007 (IP-FIX-001) intent sanitizer live. Naming standard: issue/PR
-  `[ROE-NNN] Title (ABC-NNN)`; commit `[ROE-NNN][ABC-NNN] message`; branch
-  `feature/ROE-NNN-slug`. Next free ROE-008.
+  ROE-008 (IP-FIX-002) intent hardening: normalizeParsedIntent, shared
+  celebratory/carrier in intentSanitize, buildRestatedIntent priority ≤60.
+  Naming: `[ROE-NNN] Title (ABC-NNN)` / commit `[ROE-NNN][ABC-NNN] msg`.
 ```
 
 ---

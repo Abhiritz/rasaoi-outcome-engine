@@ -1,7 +1,18 @@
 /**
  * Shared dish-intent token helpers (ranking + triple outcomes).
  * Keep synonyms offline — no Gemini at score/plate time.
+ *
+ * ROE-003 celebratory / carrier helpers live in intentSanitize (sync pair) and
+ * are re-exported here for pairings / client callers.
  */
+
+export {
+  celebratoryMoodDials,
+  celebratoryRestatedIntent,
+  isCarrierOnlyDish,
+  isCelebratoryMoodIntent,
+  type DialStateLike,
+} from "./intentSanitize";
 
 /** Stop words — do NOT include craving modes (sweet) or they never expand. */
 const DISH_STOP = new Set([
@@ -110,49 +121,6 @@ export function isLightSweetDish(name: string, desc = ""): boolean {
 
 export function isHeavyFriedDish(name: string, desc = ""): boolean {
   return HEAVY_FRIED.test(`${name} ${desc}`);
-}
-
-/**
- * ROE-003: bread/roti/naan alone must never be a Triple Outcome "dish"
- * (they may still appear as carriers).
- */
-export function isCarrierOnlyDish(name: string, desc = ""): boolean {
-  const t = `${name} ${desc}`.toLowerCase();
-  if (
-    /\b(chicken|lamb|goat|mutton|beef|pork|fish|shrimp|prawn|seafood|paneer|tofu|egg|dal|lentil|curry|biryani|tikka|kebab|platter|thali|dosa|idli|samosa|salad|soup|stew|masala|korma|vindaloo|rogan|saag|chana|pizza|burger|pasta|risotto)\b/.test(
-      t,
-    )
-  ) {
-    return false;
-  }
-  return /\b(roti|naan|paratha|chapati|phulka|kulcha|bread|bhatura|poori|puri)\b/.test(t);
-}
-
-/** ROE-003: celebratory / social mood phrases (feeling-based Ask). */
-export function isCelebratoryMoodIntent(transcript?: string): boolean {
-  if (!transcript) return false;
-  return /\b(celebrat(e|ing|ion)?|party|with friends|date night|anniversary|family (dinner|gathering)|festive|mood with friends)\b/i.test(
-    transcript,
-  );
-}
-
-export function celebratoryMoodDials(): DialStateLike {
-  return { energy: 65, context: 88, budget: 55, purity: 68 };
-}
-
-export function celebratoryRestatedIntent(transcript: string): string {
-  if (/\bdate night\b/i.test(transcript)) return "Celebratory · date night";
-  if (/\bfamily\b/i.test(transcript)) return "Celebratory · family gathering";
-  if (/\bfriends\b/i.test(transcript)) return "Celebratory · with friends";
-  return "Celebratory · festive mood";
-}
-
-/** Minimal dial shape so dishIntent stays free of veda imports. */
-export interface DialStateLike {
-  energy: number;
-  context: number;
-  budget: number;
-  purity: number;
 }
 
 export function isStarchAccompaniment(name: string): boolean {

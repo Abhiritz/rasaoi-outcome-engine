@@ -4,8 +4,11 @@
 import { DEFAULT_GEMINI_MODEL, geminiToolCall } from "../_shared/ai-client.ts";
 import { DIETARY_INTENT_SLUGS } from "../_shared/dietary.ts";
 import {
+  buildRestatedIntent,
   extractCuisineFromTranscript,
   extractDishFromTranscript,
+  isCarrierOnlyDish,
+  isCelebratoryMoodIntent,
   isSweetCravingTranscript,
   mergeBloodSugarLens,
   mergeDietary,
@@ -290,33 +293,6 @@ function mergeWellnessTags(modelTags: unknown, transcript: string): WellnessTag[
   return WELLNESS_TAG_SLUGS.filter((t) => merged.has(t));
 }
 
-/** ROE-003: mood / social celebration phrases (not a food request). */
-function isCelebratoryMoodTranscript(transcript: string): boolean {
-  return /\b(celebrat(e|ing|ion)?|party|with friends|date night|anniversary|family (dinner|gathering)|festive|mood with friends)\b/i.test(
-    transcript,
-  );
-}
-
-/** Bread/roti alone — never a mood-invented dish (mirrors src/lib/dishIntent.ts). */
-function isCarrierOnlyDishName(name: string): boolean {
-  const t = name.toLowerCase();
-  if (
-    /\b(chicken|lamb|goat|mutton|beef|pork|fish|shrimp|prawn|seafood|paneer|tofu|egg|dal|lentil|curry|biryani|tikka|kebab|platter|thali|dosa|idli|samosa|salad|soup|stew|masala|korma|vindaloo|rogan|saag|chana|pizza|burger|pasta|risotto)\b/.test(
-      t,
-    )
-  ) {
-    return false;
-  }
-  return /\b(roti|naan|paratha|chapati|phulka|kulcha|bread|bhatura|poori|puri)\b/.test(t);
-}
-
-function celebratoryRestatedFromTranscript(transcript: string): string {
-  if (/\bdate night\b/i.test(transcript)) return "Celebratory · date night";
-  if (/\bfamily\b/i.test(transcript)) return "Celebratory · family gathering";
-  if (/\bfriends\b/i.test(transcript)) return "Celebratory · with friends";
-  return "Celebratory · festive mood";
-}
-
 function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
   const raw = filters && typeof filters === "object" ? (filters as Record<string, unknown>) : {};
   const transcriptCuisine = extractCuisineFromTranscript(transcript);
@@ -400,9 +376,9 @@ function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
   }
 
   // ROE-003: never keep carrier-only dish from mood / model invention
-  if (dish && isCarrierOnlyDishName(dish)) {
+  if (dish && isCarrierOnlyDish(dish)) {
     const askedForBread = /\b(roti|naan|paratha|chapati|phulka|kulcha|bread|bhatura|poori|puri)\b/i.test(transcript);
-    if (!askedForBread || isCelebratoryMoodTranscript(transcript)) {
+    if (!askedForBread || isCelebratoryMoodIntent(transcript)) {
       dish = undefined;
     }
   }
@@ -446,13 +422,13 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
   }
 
   // ROE-003: celebratory / social mood → fixed dial band; never invent a dish
-  const celebratoryMood = isCelebratoryMoodTranscript(transcript);
+  const celebratoryMood = isCelebratoryMoodIntent(transcript);
   if (celebratoryMood) {
     if (dials.context < 80) dials.context = clampDial(88, 88);
     if (dials.energy < 55 || dials.energy > 75) dials.energy = clampDial(65, 65);
     if (dials.purity < 60 || dials.purity > 80) dials.purity = clampDial(68, 68);
     if (dials.budget < 40 || dials.budget > 75) dials.budget = clampDial(55, 55);
-    if (filters.dish && isCarrierOnlyDishName(filters.dish)) {
+    if (filters.dish && isCarrierOnlyDish(filters.dish)) {
       delete filters.dish;
     }
   }
@@ -469,32 +445,22 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
       ? obj.confidence
       : "medium";
 
-  let restated =
+  const modelRestated =
     typeof obj.restated_intent === "string" && obj.restated_intent.trim()
-      ? obj.restated_intent.trim().slice(0, 60)
-      : "Your request";
+      ? obj.restated_intent.trim()
+      : undefined;
 
-  if (sweetCraving && !/sweet|dessert|mithai|treat/i.test(restated)) {
-    restated = `Sweet · dessert / mithai · treat`.slice(0, 60);
-  }
-  if (celebratoryMood && !/celebrat/i.test(restated)) {
-    restated = celebratoryRestatedFromTranscript(transcript).slice(0, 60);
-  }
-  if (filters.culture_tag && !restated.toLowerCase().includes(filters.culture_tag)) {
-    restated = `${filters.culture_tag} · ${restated}`.slice(0, 60);
-  } else if (filters.cuisine && !restated.toLowerCase().includes(filters.cuisine.toLowerCase())) {
-    restated = `${filters.cuisine} · ${restated}`.slice(0, 60);
-  }
-  if (filters.wellness_tags?.length) {
-    const wellnessLabel = filters.wellness_tags.slice(0, 2).join(" · ").replace(/_/g, " ");
-    if (!restated.toLowerCase().includes(wellnessLabel.split(" · ")[0])) {
-      restated = `${wellnessLabel} · ${restated}`.slice(0, 60);
-    }
-  }
-  if (filters.dietary && !restated.toLowerCase().includes(filters.dietary)) {
-    const label = filters.dietary.charAt(0).toUpperCase() + filters.dietary.slice(1);
-    restated = `${label} · ${restated}`.slice(0, 60);
-  }
+  // [ROE-008] (IP-FIX-002): priority segment assembly (dietary first; ≤60)
+  const restated = buildRestatedIntent({
+    modelRestated,
+    dietary: filters.dietary,
+    sweetCraving,
+    celebratoryMood,
+    transcript,
+    culture_tag: filters.culture_tag,
+    cuisine: filters.cuisine,
+    wellness_tags: filters.wellness_tags,
+  });
 
   const payload: ParsedPayload = { restated_intent: restated, dials, filters, confidence };
   const lens = mergeBloodSugarLens(obj.lens, transcript);

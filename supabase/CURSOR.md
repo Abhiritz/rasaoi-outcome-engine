@@ -32,7 +32,7 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 |------|------|
 | `functions/_shared/ai-client.ts` | Gemini client (`geminiToolCall`, `geminiJsonObject`); reads `GEMINI_API_KEY` |
 | `functions/_shared/dietary.ts` | DIET-001 taxonomy: diet classes, modifiers, normalization, gatekeeper logic |
-| `functions/_shared/intent-sanitize.ts` | [ROE-007] (IP-FIX-001) transcript grounding (cuisine / dietary / lens / sweet) — sync with `src/lib/intentSanitize.ts` |
+| `functions/_shared/intent-sanitize.ts` | [ROE-007]/[ROE-008] transcript grounding, celebratory/carrier, `buildRestatedIntent` — sync with `src/lib/intentSanitize.ts` |
 
 **Sync pairs:**
 - `functions/_shared/dietary.ts` ↔ `src/lib/dietary.ts` — both must change together.

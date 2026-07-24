@@ -9,6 +9,16 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-008] Intent parser hardening (IP-FIX-002)
+
+- [x] Client `normalizeParsedIntent` (missing dials / bad enums)
+- [x] Celebratory + carrier helpers in `intentSanitize` sync pair (dishIntent re-exports)
+- [x] Priority `buildRestatedIntent` (≤60; dietary first)
+- [x] Unit tests (`intentSanitize` + `intent`)
+- [ ] **After merge:** redeploy `parse-intent`
+
+---
+
 ## [ROE-007] Intent sanitizer false-positives (IP-FIX-001)
 
 - [x] Impact notes in agent audit canvas (`intent-parser-audit`)
