@@ -4,7 +4,7 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: (pending ROE-006 commit)
+last_verified_commit: b48bd8b
 last_verified_date: 2026-07-24
 branch: feature/ROE-006-gl-lens-ux
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
