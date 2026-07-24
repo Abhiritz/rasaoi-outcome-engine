@@ -9,7 +9,20 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
-## [ROE-009] Fulfillment venue contacts (FUL-001) — implementing
+## [ROE-010] Delivery handoff URLs (FUL-002) — implementing
+
+Impact: `docs/ROE-010-delivery-handoff-urls-impact-analysis.md`
+
+- [x] `resolveDeliveryUrl` in `lib/fulfillment` (catalog URL or DD/UE search)
+- [x] Wire `FulfillmentSheet` + `RestaurantCard`
+- [x] Personal backfill SQL `scripts/personal/backfill-delivery-urls.sql`
+- [x] Vitest
+- [ ] Docs sync in PR
+- [ ] Optional after merge: run delivery URL backfill on linked project
+
+---
+
+## [ROE-009] Fulfillment venue contacts (FUL-001) — merged
 
 Impact: `docs/ROE-009-fulfillment-contacts-impact-analysis.md`
 
@@ -17,10 +30,9 @@ Impact: `docs/ROE-009-fulfillment-contacts-impact-analysis.md`
 - [x] Types + Folsom/EDH backfill SQL (`scripts/personal/backfill-restaurant-contacts.sql`)
 - [x] FulfillmentSheet null-safe SMS/Call/Directions (`lib/fulfillment`)
 - [x] Vitest for fulfillment helpers
-- [ ] **After merge:** `db push` + run personal backfill on linked project
-- [ ] Docs sync in PR
+- [ ] **Ops:** `db push` + run personal contact backfill on linked project
 
-Related: **ROE-010** delivery URLs — `docs/ROE-010-delivery-handoff-urls-impact-analysis.md`
+Related: **ROE-010** delivery URLs — implementing
 
 ---
 

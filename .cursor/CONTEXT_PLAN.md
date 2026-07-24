@@ -4,14 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: (pending ROE-009 merge)
+last_verified_commit: fa95cfe
 last_verified_date: 2026-07-24
-branch: feature/ROE-009-fulfillment-contacts
+branch: feature/ROE-010-delivery-handoff-urls
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-009 (FUL-001): restaurants.phone + address; FulfillmentSheet null-safe SMS;
-  personal backfill SQL for Folsom/EDH lighthouse venues. Standing ticket flow:
-  .cursor/rules/roe-ticket-flow.mdc
+  ROE-010 (FUL-002): resolveDeliveryUrl — catalog DD/UE null → platform search
+  from name+address; FulfillmentSheet + RestaurantCard. ROE-009 contacts on develop.
 ```
 
 ---

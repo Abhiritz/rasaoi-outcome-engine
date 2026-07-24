@@ -119,7 +119,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | `Dial` | Energy / context / budget / purity sliders |
 | `CuisineFilter` | Cuisine filter chips |
 | `RestaurantSearch` | Remote restaurant lookup |
-| `FulfillmentSheet` | Dine-in / pickup / delivery handoff — uses `phone`/`address` via `lib/fulfillment` (disable SMS when phone null) |
+| `FulfillmentSheet` | Dine-in / pickup / delivery — `lib/fulfillment`: null-safe SMS; delivery uses `resolveDeliveryUrl` (catalog URL or platform search) |
 | `CheckinBanner` | Post-meal outcome check-in |
 | `IntentPill` | Parsed intent summary |
 | `VitalityPanel` | Bio vitality score (consent-gated) |

@@ -11,6 +11,7 @@ import {
   buildPhoneSearchUrl,
   buildSmsHref,
   buildTelHref,
+  resolveDeliveryUrl,
   venueAddress,
   venuePhone,
 } from "@/lib/fulfillment";
@@ -96,7 +97,8 @@ Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
   };
 
   // ---- Delivery handoff ----
-  const handoffDelivery = (carrier: "doordash" | "ubereats", url: string | null) => {
+  const handoffDelivery = (carrier: "doordash" | "ubereats") => {
+    const url = resolveDeliveryUrl(carrier, carrier === "doordash" ? r.doordash_url : r.ubereats_url, r.name, address);
     log("delivery", carrier);
     const tag = `${dish} at ${r.name}`;
     navigator.clipboard?.writeText(tag).catch(() => {});
@@ -105,6 +107,7 @@ Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
     });
     setTimeout(() => {
       if (url) window.open(url, "_blank", "noopener,noreferrer");
+      else toast("Could not open delivery", { description: "Restaurant name missing — try again from Reading." });
       reset();
     }, 700);
   };
@@ -224,10 +227,10 @@ Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
               We'll copy <em>"{dish}"</em> to your clipboard and open the platform.
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <Button onClick={() => handoffDelivery("doordash", r.doordash_url)} className="rounded-sm bg-primary">
+              <Button onClick={() => handoffDelivery("doordash")} className="rounded-sm bg-primary">
                 DoorDash <ExternalLink className="w-3 h-3 ml-2" />
               </Button>
-              <Button onClick={() => handoffDelivery("ubereats", r.ubereats_url)} variant="outline" className="rounded-sm border-primary/30">
+              <Button onClick={() => handoffDelivery("ubereats")} variant="outline" className="rounded-sm border-primary/30">
                 Uber Eats <ExternalLink className="w-3 h-3 ml-2" />
               </Button>
             </div>
