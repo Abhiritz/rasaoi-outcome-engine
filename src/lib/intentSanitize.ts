@@ -259,7 +259,7 @@ export function buildRestatedIntent(input: BuildRestatedInput): string {
   if (!segments.length) return "Your request";
 
   // Drop from the end (lowest priority) until ≤ max
-  let out = segments.slice();
+  const out = segments.slice();
   while (out.length > 1 && out.join(" · ").length > RESTATED_MAX_CHARS) {
     out.pop();
   }
