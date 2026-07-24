@@ -9,7 +9,19 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
-## [ROE-010] Delivery handoff URLs (FUL-002) — implementing
+## [ROE-011] Fulfillment order copy (FUL-003+004) — implementing
+
+Impact: `docs/ROE-011-fulfillment-order-copy-impact-analysis.md`  
+**ROE-012** folded into this ticket (do not open separately).
+
+- [x] Pass dish-only (not `Dish + carrier`) into `FulfillmentSheet`
+- [x] Refresh pickup draft on open / dish change (respect dirty edit)
+- [x] Align delivery clipboard + toast; Vitest `buildPickupMessage`
+- [ ] Docs sync in PR
+
+---
+
+## [ROE-010] Delivery handoff URLs (FUL-002) — merged
 
 Impact: `docs/ROE-010-delivery-handoff-urls-impact-analysis.md`
 
@@ -17,8 +29,7 @@ Impact: `docs/ROE-010-delivery-handoff-urls-impact-analysis.md`
 - [x] Wire `FulfillmentSheet` + `RestaurantCard`
 - [x] Personal backfill SQL `scripts/personal/backfill-delivery-urls.sql`
 - [x] Vitest
-- [ ] Docs sync in PR
-- [ ] Optional after merge: run delivery URL backfill on linked project
+- [ ] Optional: run delivery URL backfill on linked project
 
 ---
 
@@ -32,7 +43,7 @@ Impact: `docs/ROE-009-fulfillment-contacts-impact-analysis.md`
 - [x] Vitest for fulfillment helpers
 - [ ] **Ops:** `db push` + run personal contact backfill on linked project
 
-Related: **ROE-010** delivery URLs — implementing
+Related: **ROE-010** delivery URLs — merged PR #23
 
 ---
 

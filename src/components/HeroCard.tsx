@@ -84,9 +84,6 @@ export const HeroCard = ({ item, dials, vitality, intent, gl }: { item: ScoredRe
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const selected = picks[selectedIdx] ?? picks[0];
-  const dishLabel = selected
-    ? selected.carrier ? `${selected.dish} + ${selected.carrier}` : selected.dish
-    : r.signature_dish;
   const swap = gl && (gl.glycemic_load === "med" || gl.glycemic_load === "high")
     ? (suggestCarrierSwap(selected?.carrier) ?? (gl.swap_suggestion ? { replacement: gl.swap_suggestion, rationale: "lower glycemic load" } : null))
     : null;
@@ -215,7 +212,7 @@ export const HeroCard = ({ item, dials, vitality, intent, gl }: { item: ScoredRe
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         item={item}
-        dish={dishLabel ?? r.signature_dish}
+        dish={selected?.dish ?? r.signature_dish}
         rank={selectedIdx + 1}
         dials={dials}
         vitality={vitality}
