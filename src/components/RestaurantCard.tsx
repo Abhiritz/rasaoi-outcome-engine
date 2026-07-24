@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { buildMealPlate } from "@/lib/pairings";
 import { getSocialProof, getDishSentiment, reconciliationNote } from "@/lib/socialProof";
+import { resolveDeliveryUrl, venueAddress } from "@/lib/fulfillment";
 
 const purityLabel: Record<string, string> = {
   sovereign: "Organic",
@@ -27,7 +28,13 @@ export const RestaurantCard = ({ item, rank, dials }: { item: ScoredRestaurant; 
   const sentiment = getDishSentiment(r.id, sentimentDish, proof.avg);
   const reconciled = reconciliationNote(proof, sentiment);
 
-  const handleOrder = (platform: "doordash" | "ubereats", url: string | null) => {
+  const handleOrder = (platform: "doordash" | "ubereats") => {
+    const url = resolveDeliveryUrl(
+      platform,
+      platform === "doordash" ? r.doordash_url : r.ubereats_url,
+      r.name,
+      venueAddress(r),
+    );
     setHandoff(platform);
     recordOutcome(r.id, r.cuisine, 4);
     toast("Leaving Rasaoi — Restaurant / Platform terms now apply.", {
@@ -222,7 +229,7 @@ export const RestaurantCard = ({ item, rank, dials }: { item: ScoredRestaurant; 
 
       <div className="flex gap-3 pt-2">
         <Button
-          onClick={() => handleOrder("doordash", r.doordash_url)}
+          onClick={() => handleOrder("doordash")}
           disabled={handoff !== null}
           className="bg-primary hover:bg-primary/90 rounded-sm"
         >
@@ -230,7 +237,7 @@ export const RestaurantCard = ({ item, rank, dials }: { item: ScoredRestaurant; 
         </Button>
         <Button
           variant="outline"
-          onClick={() => handleOrder("ubereats", r.ubereats_url)}
+          onClick={() => handleOrder("ubereats")}
           disabled={handoff !== null}
           className="border-primary/30 hover:bg-secondary rounded-sm"
         >

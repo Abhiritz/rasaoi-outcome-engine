@@ -1,9 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
   buildDirectionsUrl,
+  buildDoordashSearchUrl,
   buildPhoneSearchUrl,
   buildSmsHref,
   buildTelHref,
+  buildUbereatsSearchUrl,
+  resolveDeliveryUrl,
   venueAddress,
   venuePhone,
 } from "./fulfillment";
@@ -58,5 +61,37 @@ describe("maps / phone search", () => {
 
   it("builds phone search fallback", () => {
     expect(buildPhoneSearchUrl("Mantra")).toContain(encodeURIComponent("Mantra phone"));
+  });
+});
+
+describe("resolveDeliveryUrl (ROE-010)", () => {
+  it("prefers stored catalog URL", () => {
+    expect(
+      resolveDeliveryUrl("doordash", "https://www.doordash.com/store/taj-279388/", "TAJ GRILL", "Folsom"),
+    ).toBe("https://www.doordash.com/store/taj-279388/");
+  });
+
+  it("builds DoorDash search when stored is null", () => {
+    const url = resolveDeliveryUrl("doordash", null, "Mantra", "1870 Prairie City Rd");
+    expect(url).toBe(buildDoordashSearchUrl("Mantra", "1870 Prairie City Rd"));
+    expect(url).toContain("doordash.com/search/store/");
+    expect(url).toContain(encodeURIComponent("Mantra 1870 Prairie City Rd"));
+  });
+
+  it("builds Uber Eats search when stored is null", () => {
+    const url = resolveDeliveryUrl("ubereats", null, "Mantra", "Folsom");
+    expect(url).toBe(buildUbereatsSearchUrl("Mantra", "Folsom"));
+    expect(url).toContain("ubereats.com/search?q=");
+  });
+
+  it("name-only fallback when address empty", () => {
+    expect(resolveDeliveryUrl("doordash", "", "DASARA", "")).toBe(
+      buildDoordashSearchUrl("DASARA", ""),
+    );
+  });
+
+  it("returns null only when name and address empty", () => {
+    expect(resolveDeliveryUrl("doordash", null, "", "")).toBeNull();
+    expect(buildUbereatsSearchUrl("", "")).toBeNull();
   });
 });
