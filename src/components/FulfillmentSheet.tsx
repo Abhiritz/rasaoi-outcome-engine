@@ -6,6 +6,14 @@ import { toast } from "sonner";
 import { ExternalLink, MapPin, Phone, MessageSquare, Sparkles, Copy } from "lucide-react";
 import type { ScoredRestaurant, DialState } from "@/lib/veda";
 import { recordSelection, type Path, type Carrier } from "@/lib/outcomes";
+import {
+  buildDirectionsUrl,
+  buildPhoneSearchUrl,
+  buildSmsHref,
+  buildTelHref,
+  venueAddress,
+  venuePhone,
+} from "@/lib/fulfillment";
 
 interface Props {
   open: boolean;
@@ -24,10 +32,8 @@ export const FulfillmentSheet = ({
 }: Props) => {
   const r = item.restaurant;
   const [step, setStep] = useState<Step>("choose");
-  const address = (r as { address?: string; location_neighborhood?: string }).address
-    ?? (r as { location_neighborhood?: string }).location_neighborhood
-    ?? "";
-  const phone = (r as { phone?: string }).phone ?? "";
+  const address = venueAddress(r);
+  const phone = venuePhone(r);
 
   const log = async (path: Path, carrier: Carrier) => {
     await recordSelection({
@@ -47,7 +53,7 @@ export const FulfillmentSheet = ({
     onOpenChange(false);
   };
 
-  const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${r.name} ${address}`)}`;
+  const directionsUrl = buildDirectionsUrl(r.name, address);
 
   // ---- Pickup composer ----
   const defaultMessage = `Hi, I'd like to place a pickup order:
@@ -58,19 +64,27 @@ Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
   const [pickupMsg, setPickupMsg] = useState(defaultMessage);
 
   const sendSms = () => {
+    const href = buildSmsHref(phone, pickupMsg);
+    if (!href) {
+      toast("Number unavailable", {
+        description: `No phone on file for ${r.name}. Copy the order and call via search.`,
+      });
+      return;
+    }
     log("pickup", "self");
-    const sms = `sms:${phone || ""}?&body=${encodeURIComponent(pickupMsg)}`;
-    window.location.href = sms;
+    window.location.href = href;
     toast("Pickup order ready", { description: `Message drafted for ${r.name}.` });
     reset();
   };
 
   const callRestaurant = () => {
     log("pickup", "self");
-    if (phone) window.location.href = `tel:${phone}`;
-    else {
+    const tel = buildTelHref(phone);
+    if (tel) {
+      window.location.href = tel;
+    } else {
       navigator.clipboard?.writeText(pickupMsg);
-      window.open(`https://www.google.com/search?q=${encodeURIComponent(r.name + " phone")}`, "_blank");
+      window.open(buildPhoneSearchUrl(r.name), "_blank");
       toast("Order copied", { description: "Find the restaurant's number and call to place this order." });
     }
     reset();
@@ -151,7 +165,13 @@ Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
               {phone && (
                 <Button
                   variant="outline"
-                  onClick={() => { log("dine_in", null); window.location.href = `tel:${phone}`; reset(); }}
+                  onClick={() => {
+                    const tel = buildTelHref(phone);
+                    if (!tel) return;
+                    log("dine_in", null);
+                    window.location.href = tel;
+                    reset();
+                  }}
                   className="rounded-sm border-primary/30"
                 >
                   <Phone className="w-3.5 h-3.5 mr-2" /> Reserve
@@ -173,8 +193,18 @@ Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
               rows={7}
               className="text-sm rounded-sm font-mono"
             />
+            {!phone && (
+              <p className="text-[11px] text-muted-foreground">
+                Number unavailable for {r.name}. Use Call (search) or copy the order text.
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-2">
-              <Button onClick={sendSms} className="rounded-sm bg-primary">
+              <Button
+                onClick={sendSms}
+                disabled={!phone}
+                className="rounded-sm bg-primary"
+                title={!phone ? "Number unavailable" : undefined}
+              >
                 <MessageSquare className="w-3.5 h-3.5 mr-2" /> Send SMS
               </Button>
               <Button onClick={callRestaurant} variant="outline" className="rounded-sm border-primary/30">

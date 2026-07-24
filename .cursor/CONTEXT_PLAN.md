@@ -4,14 +4,14 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: 9e17980
+last_verified_commit: (pending ROE-009 merge)
 last_verified_date: 2026-07-24
-branch: feature/ROE-008-intent-hardening
+branch: feature/ROE-009-fulfillment-contacts
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-008 (IP-FIX-002) intent hardening: normalizeParsedIntent, shared
-  celebratory/carrier in intentSanitize, buildRestatedIntent priority ≤60.
-  Naming: `[ROE-NNN] Title (ABC-NNN)` / commit `[ROE-NNN][ABC-NNN] msg`.
+  ROE-009 (FUL-001): restaurants.phone + address; FulfillmentSheet null-safe SMS;
+  personal backfill SQL for Folsom/EDH lighthouse venues. Standing ticket flow:
+  .cursor/rules/roe-ticket-flow.mdc
 ```
 
 ---
@@ -124,11 +124,11 @@ New routes must be added **above** the `*` catch-all in `App.tsx`.
 
 ## F. Database (Postgres via Supabase)
 
-**Migrations:** 10 files in `supabase/migrations/` (add-only — never edit applied migrations).
+**Migrations:** 12 files in `supabase/migrations/` (add-only — never edit applied migrations).
 
 | Table | Purpose |
 |-------|---------|
-| `restaurants` | Venues + `menu_items` JSONB, purity/oil/grain columns |
+| `restaurants` | Venues + `menu_items` JSONB, purity/oil/grain; **phone** / **address** (ROE-009, nullable) + `location_neighborhood` |
 | `dishes` | Parsed dish attribute graph (DIET-001 taxonomy) |
 | `restaurant_sources` | Menu ingest source URLs |
 | `dishes_feedback` | Operator dish QA feedback |
@@ -247,13 +247,15 @@ Defer to these for feature status — not model memory:
 - No edge function integration tests (use `Lab.tsx` for manual QA)
 - No `useQuery`/`useMutation` usage despite TanStack Query being installed
 
-**Guard rules that do exist:** `.cursor/rules/context-guard.mdc`, `frontend.mdc`, `backend.mdc`
+**Guard rules that do exist:** `.cursor/rules/context-guard.mdc`, `roe-ticket-flow.mdc`, `frontend.mdc`, `backend.mdc`
 
 **If a file, API, or table is not listed here, search the repo before assuming it exists.**
 
 ---
 
 ## M. Maintenance Protocol
+
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial after ROE-009…013 queue: **ROE-014**.
 
 | Trigger | Action |
 |---------|--------|
@@ -270,4 +272,4 @@ Defer to these for feature status — not model memory:
 
 - **Frontend/UI changes:** read `src/CURSOR.md`
 - **Backend/Supabase changes:** read `supabase/CURSOR.md`
-- **Guard rules:** `.cursor/rules/context-guard.mdc` (always), `frontend.mdc`, `backend.mdc`
+- **Guard rules:** `.cursor/rules/context-guard.mdc` + `roe-ticket-flow.mdc` (always), `frontend.mdc`, `backend.mdc`

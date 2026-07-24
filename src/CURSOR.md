@@ -21,7 +21,7 @@
 | `src/pages/` | Route-level screens (4 pages) |
 | `src/components/` | Domain UI (17 components) |
 | `src/components/ui/` | shadcn primitives (~45) — extend, don't replace |
-| `src/lib/` | Business logic (scoring, intent, places, memory, culinary index) |
+| `src/lib/` | Business logic (scoring, intent, places, fulfillment, memory, culinary index) |
 | `src/data/` | Compiled `culinary-index.json` (rebuild via personal script — do not hand-edit) |
 | `src/hooks/` | `use-toast`, `use-mobile` |
 | `src/integrations/supabase/` | Typed client + generated DB types |
@@ -119,7 +119,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | `Dial` | Energy / context / budget / purity sliders |
 | `CuisineFilter` | Cuisine filter chips |
 | `RestaurantSearch` | Remote restaurant lookup |
-| `FulfillmentSheet` | Dine-in / pickup / delivery handoff |
+| `FulfillmentSheet` | Dine-in / pickup / delivery handoff — uses `phone`/`address` via `lib/fulfillment` (disable SMS when phone null) |
 | `CheckinBanner` | Post-meal outcome check-in |
 | `IntentPill` | Parsed intent summary |
 | `VitalityPanel` | Bio vitality score (consent-gated) |
