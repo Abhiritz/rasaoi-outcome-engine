@@ -1,6 +1,6 @@
 name: Feature / enhancement
 description: New capability or product improvement
-title: "[feature] "
+title: "[ROE-NNN] "
 labels: ["type:feature"]
 body:
   - type: dropdown

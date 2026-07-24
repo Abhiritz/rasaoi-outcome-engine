@@ -357,7 +357,7 @@ function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
     }
   }
 
-  // IP-FIX: never keep model-invented "Healthy" cuisine (purity adjective ≠ cuisine).
+  // [ROE-007] (IP-FIX-001): never keep model-invented "Healthy" cuisine (purity adjective ≠ cuisine).
   if (cuisine && /^healthy$/i.test(cuisine.trim())) {
     cuisine = undefined;
   }

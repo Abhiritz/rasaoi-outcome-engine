@@ -5,6 +5,17 @@ https://github.com/users/Abhiritz/projects/1
 
 Status flow: **Inbox → Triaged → Ready → In progress → QA → Done**
 
+### Ticket naming (required)
+
+| Surface | Format | Example |
+|---------|--------|---------|
+| Commit / push | `[ROE-NNN] : (ABC-NNN) - message` | `[ROE-007] : (IP-FIX-001) - tighten parse-intent grounding` |
+| Issue | `[ROE-NNN] Title (ABC-NNN)` | `[ROE-007] Intent sanitizer false-positives (IP-FIX-001)` |
+| PR | `ROE-NNN: Title (ABC-NNN)` | `ROE-007: Intent sanitizer false-positives (IP-FIX-001)` |
+
+**ROE-NNN** = global serial (never skip; next free in `project.md` / `.lovable/plan.md`).  
+**ABC-NNN** = workstream alias (`IP-FIX-001`, `CRS-003`, …).
+
 ## What is automated
 | Event | Board Status |
 |-------|----------------|

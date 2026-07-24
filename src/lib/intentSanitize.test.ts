@@ -9,7 +9,7 @@ import {
   mergeDietary,
 } from "./intentSanitize";
 
-describe("intentSanitize IP-FIX", () => {
+describe("intentSanitize [ROE-007] (IP-FIX-001)", () => {
   describe("cuisine (IP-1)", () => {
     it("does not map 'something healthy' to cuisine Healthy (Ask example)", () => {
       expect(extractCuisineFromTranscript("I'm low energy, $35, something healthy")).toBeUndefined();

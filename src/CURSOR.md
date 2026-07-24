@@ -162,7 +162,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | `dietary.ts` | DIET-001 taxonomy (sync with `_shared/dietary.ts`) |
 | `pairings.ts` | Triple outcomes. Never invent dish from intent text. Coastal + sweet coherence; **never Best/Clean/Heritage = roti/naan alone** (ROE-003). **South Indian kitchens use Indian-South bank — never Dal Tadka** (ROE-004). Desserts get no rice/naan carrier. |
 | `intent.ts` | Intent client + 90s parse cache; RateLimitError + backoff (ROE-002); **celebratory offline dials on exhausted 429** (ROE-003) |
-| `intentSanitize.ts` | Transcript cuisine / dietary / blood_sugar lens / sweet helpers **(SYNC PAIR** with `_shared/intent-sanitize.ts`) — IP-FIX: no Healthy-as-cuisine; negation-aware dietary |
+| `intentSanitize.ts` | Transcript cuisine / dietary / blood_sugar lens / sweet helpers **(SYNC PAIR** with `_shared/intent-sanitize.ts`) — **[ROE-007] (IP-FIX-001):** no Healthy-as-cuisine; negation-aware dietary; transcript `blood_sugar` lens |
 | `google-places.ts` | Places search with mock interceptor |
 | `glycemic.ts` | Glycemic estimates + localStorage cache (matrix heuristics before edge, N≤8) |
 | `memory.ts` | Vitality Twin, consent, Mitra Pact — Twin counter is **twin syncs**, not restaurant outcomes |
@@ -183,6 +183,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - South Indian venues (e.g. Mylapore) → dosa/idli/sambar plates; never pan-Indian bank Dal Tadka / Butter Chicken.
 - **Mythaai** demo venue removed from catalog (ROE-005 A) — do not re-seed as a Folsom restaurant.
 - Blood-sugar / GL: Refine → **Blood sugar · glycemic load (GL)** Turn on/off; when on, chrome chip **Blood sugar · On** (ROE-006). Not a Low/Med/High dropdown.
+- **[ROE-007] (IP-FIX-001):** “something healthy” is purity-only (never cuisine Healthy); diabetic/low-sugar Ask grounds `lens=blood_sugar`; negated diets (“not vegetarian”) do not set `filters.dietary`.
 
 ---
 
