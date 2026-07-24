@@ -41,7 +41,8 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 
 ## Migrations
 
-**10 files** in `supabase/migrations/` — **add-only policy; never edit applied migrations.**
+**11 files** in `supabase/migrations/` — **add-only policy; never edit applied migrations.**  
+Latest: `20260724120000_roe005_remove_mythaai.sql` deletes demo venue **Mythaai** (ROE-005 A).
 
 | Migration | What it defines |
 |-----------|-----------------|

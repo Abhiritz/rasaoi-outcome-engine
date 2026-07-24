@@ -76,7 +76,10 @@ Output: [`src/data/culinary-index.json`](../../src/data/culinary-index.json) —
 
 ## Venues covered
 
-Folsom: Mythaai, Taj Grill, Sanskrit, Mantra, Ruchi, Mylapore  
-El Dorado Hills: India Oven, Bawarchi
+Folsom: Taj Grill, Sanskrit, Mantra, Ruchi, Mylapore  
+El Dorado Hills: India Oven, Bawarchi  
+
+**ROE-005:** Mythaai (demo sovereign seed) was **removed** from the catalog — not a verified Folsom/EDH restaurant.  
+To clean a personal DB: [`remove-mythaai.sql`](remove-mythaai.sql) (or apply migration `20260724120000_roe005_remove_mythaai.sql`).
 
 Menu URLs are documented in [`venues.json`](venues.json).

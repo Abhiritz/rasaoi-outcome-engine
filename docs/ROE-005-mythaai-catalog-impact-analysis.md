@@ -3,21 +3,57 @@
 | Field | Value |
 |-------|--------|
 | Ticket | **ROE-005** |
-| Question | Is there a restaurant named Mythai/Mythaai in Folsom/EDH? |
-| Status | Queued; **product decision required** |
-| Branch (later) | `feature/ROE-005-mythaai-catalog` |
+| Decision | **A — Remove from prod catalog** |
+| Parent | `develop` @ `e26ebda` (ROE-004 merged) |
+| Branch | `feature/ROE-005-mythaai-catalog` |
+| Status | **Implemented** — PR to `develop`; apply migration / personal SQL on DB |
+| Related | ROE-004; ROE-006 |
 
-## Sanity check (verified facts only)
+---
 
-1. Repo spelling: **`Mythaai`**.
-2. `scripts/personal/venues.json` states it is a **“Demo sovereign brand”** with menu URL pointing at **Sanskrit**, not a dedicated Mythaai site.
-3. Web search for Mythaai in Folsom / El Dorado Hills: **no independent public listing found** in this pass.
-4. Therefore: **do not treat Mythaai as a confirmed local restaurant.** Do not invent a substitute venue name in code or docs.
+## 1. Sanity check (facts only — re-verified 2026-07-24)
 
-## Options (product picks one)
-- A) Remove Mythaai from prod catalog / seeds  
-- B) Keep only in Lab/demo with a visible **Demo** badge  
-- C) Replace row with a **verified** Folsom/EDH venue after separate research ticket  
+| Check | Result |
+|-------|--------|
+| Repo spelling | **`Mythaai`** (not “Mythai”) |
+| `venues.json` (pre-fix) | Demo sovereign brand; menu URL → Sanskrit |
+| Public web | **No** Folsom/EDH listing for Mythaai |
 
-## Full analysis
-Expand after product chooses A/B/C.
+**Conclusion:** Demo seed only — removed under option **A**.
+
+---
+
+## 2–4. Scope executed (A)
+
+| ID | Change |
+|----|--------|
+| Migration | `20260724120000_roe005_remove_mythaai.sql` — delete dishes + restaurant |
+| Personal | `remove-mythaai.sql`; seed no longer enriches Mythaai; dropped from `venues.json` |
+| Index / seeds | Alias removed from culinary-index + build script; `seed-dishes` / catalog HTML skip Mythaai |
+| UI | `Index.tsx` filters out `name === "Mythaai"` until DB migrated |
+| Tests | Fixture renamed to `Test Sovereign Kitchen` |
+
+**Not done:** Inventing a replacement venue (option C deferred forever unless researched).
+
+---
+
+## 5. Test plan
+
+- [x] Culinary index has no `mythaai` alias  
+- [x] Pairings tests pass with renamed fixture  
+- [ ] Ops: `npx supabase db push` (or personal `remove-mythaai.sql`) on linked project  
+- [ ] Reading no longer lists Mythaai  
+
+---
+
+## 6. Deploy
+
+1. PR → `develop`  
+2. Apply migration on personal / prod Supabase  
+3. Frontend Actions deploy  
+
+---
+
+## 8. Implementation notes
+
+Option **A** landed. Historical migrations that *inserted* Mythaai remain immutable; new migration deletes the row. Dish JSON `scripts/personal/dish-data/mythaai.json` kept on disk for archive but is **not** seeded.

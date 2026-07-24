@@ -1,17 +1,6 @@
 -- Personal-only seed: Indian restaurants in Folsom / El Dorado Hills
 -- Target: kiugplotjcnmpwjlxajc (rasaoi-project). Do NOT add to supabase/migrations.
-
--- Enrich existing demo Indian row
-UPDATE public.restaurants
-SET
-  location_neighborhood = 'Folsom',
-  base_purity_tier = 'Sovereign',
-  oil_profile = 'cold-pressed',
-  grain_profile = 'ancient',
-  sovereign_seal = true,
-  anti_inflammatory = true,
-  verified_clean_oils = true
-WHERE name = 'Mythaai';
+-- ROE-005: Mythaai demo venue retired — do not re-insert or enrich it.
 
 -- Folsom venues
 INSERT INTO public.restaurants (

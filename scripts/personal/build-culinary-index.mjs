@@ -52,7 +52,7 @@ const ALIAS_SEEDS = [
   ["Chennai Bamboo Garden", "chennai bamboo garden"],
   ["Curry Pizza House Folsom", "curry pizza house folsom"],
   ["Chicago's Pizza With A Twist Folsom", "chicagos pizza with a twist folsom"],
-  ["Mythaai", "mythaai"],
+  // ROE-005: Mythaai demo retired — do not re-add alias
 ];
 
 /**

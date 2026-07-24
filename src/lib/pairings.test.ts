@@ -83,9 +83,9 @@ describe("buildTripleOutcome strict dietary (DIE-001 nested leak)", () => {
 describe("buildTripleOutcome venue-specific picks (no synthetic copy)", () => {
   it("does not invent the same intent dish on every restaurant", () => {
     const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 70 };
-    const mythaai = mockRestaurant({
+    const sovereignDemo = mockRestaurant({
       id: "m1",
-      name: "Mythaai",
+      name: "Test Sovereign Kitchen",
       cuisine: "Indian",
       signature_dish: "Ghee-Tempered Dal with Basmati",
       menu_items: [{ name: "Ghee-Tempered Dal with Basmati" }, { name: "Tandoori Chicken" }],
@@ -107,7 +107,7 @@ describe("buildTripleOutcome venue-specific picks (no synthetic copy)", () => {
     });
 
     const intent = { dish: "seafood" };
-    const a = buildTripleOutcome(mythaai, dials, intent);
+    const a = buildTripleOutcome(sovereignDemo, dials, intent);
     const b = buildTripleOutcome(mantra, dials, intent);
     const c = buildTripleOutcome(pizza, dials, intent);
 

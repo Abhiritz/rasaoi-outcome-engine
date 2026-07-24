@@ -179,6 +179,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - Sweet ask (“something sweet”) → `filters.dish` dessert signal; Best Match must be a real mithai/dessert when on menu.
 - Feeling ask (“Celebrating mood with friends”) → high context, **no** dish chip; Best Match is a shareable main — never roti/naan alone.
 - South Indian venues (e.g. Mylapore) → dosa/idli/sambar plates; never pan-Indian bank Dal Tadka / Butter Chicken.
+- **Mythaai** demo venue removed from catalog (ROE-005 A) — do not re-seed as a Folsom restaurant.
 
 ---
 

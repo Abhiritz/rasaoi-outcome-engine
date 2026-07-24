@@ -83,7 +83,18 @@ Partial fix already shipped (`86f2437`): stopped inventing the same synthetic di
 - [x] scoreClean / Clean override: dosa/idli not demoted to bank dal
 - [x] `isDessertDish` savory-name guard (samosa ≠ pastry dessert)
 - [x] Unit tests (`pairings`, `dishIntent`)
-- [ ] **After merge:** frontend auto-deploy (no edge redeploy)
+- [x] **After merge:** frontend auto-deploy (no edge redeploy)
+
+---
+
+## ROE-005 A: Mythaai catalog — remove demo venue
+
+- [x] Impact analysis `docs/ROE-005-mythaai-catalog-impact-analysis.md` (option A)
+- [x] Migration `20260724120000_roe005_remove_mythaai.sql`
+- [x] Personal `remove-mythaai.sql`; stop seeding / venues / index alias
+- [x] `Index.tsx` client filter until DB migrated
+- [x] Tests fixture renamed off catalog name
+- [ ] **After merge:** `npx supabase db push` (or run personal SQL) on linked project
 
 ---
 
