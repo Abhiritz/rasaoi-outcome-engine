@@ -19,6 +19,8 @@ function mockRestaurant(overrides: Partial<Restaurant> & Pick<Restaurant, "id" |
     dish_outcome: "balanced meal",
     menu_items: [{ name: "House Special" }],
     doordash_url: null,
+    address: null,
+    phone: null,
     ubereats_url: null,
     location_neighborhood: null,
     created_at: new Date().toISOString(),
@@ -77,5 +79,273 @@ describe("buildTripleOutcome strict dietary (DIE-001 nested leak)", () => {
     expect(names).not.toContain("Dal Tadka");
     expect(names).not.toContain("Tandoori Chicken");
     expect(names.some((n) => /jain|fruit/i.test(n))).toBe(true);
+  });
+});
+
+describe("buildTripleOutcome venue-specific picks (no synthetic copy)", () => {
+  it("does not invent the same intent dish on every restaurant", () => {
+    const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 70 };
+    const sovereignDemo = mockRestaurant({
+      id: "m1",
+      name: "Test Sovereign Kitchen",
+      cuisine: "Indian",
+      signature_dish: "Ghee-Tempered Dal with Basmati",
+      menu_items: [{ name: "Ghee-Tempered Dal with Basmati" }, { name: "Tandoori Chicken" }],
+      purity_tier: "sovereign",
+    });
+    const mantra = mockRestaurant({
+      id: "m2",
+      name: "Mantra",
+      cuisine: "Indian",
+      signature_dish: "Spicy Indian Cucumber Salad",
+      menu_items: [{ name: "Spicy Indian Cucumber Salad" }, { name: "Chicken Tikka" }],
+    });
+    const pizza = mockRestaurant({
+      id: "p1",
+      name: "Chicago's Pizza With A Twist Folsom",
+      cuisine: "American",
+      signature_dish: "Butter Chicken Pizza",
+      menu_items: [{ name: "Butter Chicken Pizza" }, { name: "Garlic Naan Pizza" }],
+    });
+
+    const intent = { dish: "seafood" };
+    const a = buildTripleOutcome(sovereignDemo, dials, intent);
+    const b = buildTripleOutcome(mantra, dials, intent);
+    const c = buildTripleOutcome(pizza, dials, intent);
+
+    expect(a[0].dish.toLowerCase()).not.toBe("seafood");
+    expect(b[0].dish.toLowerCase()).not.toBe("seafood");
+    expect(c[0].dish.toLowerCase()).not.toBe("seafood");
+    // Different kitchens should not all share the same invented headline
+    expect(new Set([a[0].dish, b[0].dish, c[0].dish]).size).toBeGreaterThan(1);
+  });
+});
+
+describe("CRS-003 oceany / coastal coherence", () => {
+  const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 75 };
+
+  it("Best Match prefers seafood when menu has it (oceany intent)", () => {
+    const taj = mockRestaurant({
+      id: "taj",
+      name: "Taj Grill Indian Cuisine",
+      cuisine: "Indian",
+      signature_dish: "Tandoori Chicken",
+      menu_items: [
+        { name: "Tandoori Seafood Platter", description: "mixed seafood from the tandoor" },
+        { name: "Vegetable Samosa", description: "fried pastry" },
+        { name: "Tandoori Chicken", description: "clay oven chicken" },
+        { name: "Dal Tadka", description: "yellow lentils" },
+      ],
+    });
+    const picks = buildTripleOutcome(taj, dials, { dish: "oceany seafood" });
+    expect(picks[0].dish.toLowerCase()).toMatch(/seafood|fish|shrimp|prawn/);
+    expect(picks[1].dish.toLowerCase()).not.toMatch(/samosa/);
+  });
+
+  it("does not force rice+naan carrier onto idli or salad", () => {
+    const south = mockRestaurant({
+      id: "myl",
+      name: "Mylapore",
+      cuisine: "Indian",
+      signature_dish: "Masala Dosa",
+      menu_items: [
+        { name: "Steamed Idli (3)", description: "soft rice cakes" },
+        { name: "Spicy Indian Cucumber Salad", description: "fresh salad" },
+        { name: "Masala Dosa", description: "crispy dosa" },
+      ],
+    });
+    const picks = buildTripleOutcome(south, dials, { dish: "something light" });
+    const idli = picks.find((p) => /idli/i.test(p.dish));
+    const salad = picks.find((p) => /salad/i.test(p.dish));
+    if (idli) {
+      expect(idli.carrier ?? "").not.toMatch(/basmati rice & naan/i);
+    }
+    if (salad) {
+      expect(salad.carrier ?? "").toBeFalsy();
+    }
+  });
+
+  it("why text names the actual carrier when present", () => {
+    const r = mockRestaurant({
+      id: "tg2",
+      name: "Taj Grill B",
+      cuisine: "Indian",
+      signature_dish: "Fish Curry",
+      menu_items: [{ name: "Fish Curry", description: "coastal curry" }, { name: "Garlic Naan" }],
+    });
+    const picks = buildTripleOutcome(r, dials, { dish: "seafood" });
+    const best = picks[0];
+    if (best.carrier) {
+      expect(best.why).toContain(best.carrier);
+    }
+  });
+});
+
+describe("ROE-001 sweet / dessert coherence", () => {
+  const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 35 };
+
+  it("Best Match prefers dessert when menu has it", () => {
+    const r = mockRestaurant({
+      id: "sweet1",
+      name: "Mithai House",
+      cuisine: "Indian",
+      signature_dish: "Tandoori Chicken",
+      menu_items: [
+        { name: "Tandoori Chicken", description: "clay oven" },
+        { name: "Gulab Jamun", description: "warm mithai in syrup" },
+        { name: "Vegetable Samosa", description: "fried pastry" },
+        { name: "Kheer", description: "rice pudding" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, { dish: "something sweet" });
+    expect(picks[0].dish.toLowerCase()).toMatch(/gulab|kheer|jamun|rasmalai|mithai/);
+    expect(picks[0].dish.toLowerCase()).not.toBe("sweet");
+    expect(picks[0].carrier ?? "").toBeFalsy();
+    expect(picks[1].dish.toLowerCase()).not.toMatch(/samosa/);
+  });
+
+  it("does not invent a dish named Sweet on kitchens without dessert", () => {
+    const r = mockRestaurant({
+      id: "savory",
+      name: "Savory Only",
+      cuisine: "Indian",
+      signature_dish: "Dal Tadka",
+      menu_items: [{ name: "Dal Tadka" }, { name: "Tandoori Chicken" }],
+    });
+    const picks = buildTripleOutcome(r, dials, { dish: "dessert" });
+    expect(picks[0].dish.toLowerCase()).not.toBe("sweet");
+    expect(picks[0].dish.toLowerCase()).not.toBe("dessert");
+  });
+});
+
+describe("ROE-003 celebratory mood — never bread as Best", () => {
+  const dials: DialState = { energy: 65, context: 88, budget: 55, purity: 68 };
+
+  it("Best Match prefers Butter Chicken over Tandoor Roti", () => {
+    const r = mockRestaurant({
+      id: "party1",
+      name: "Celebration Kitchen",
+      cuisine: "Indian",
+      signature_dish: "Butter Chicken",
+      menu_items: [
+        { name: "Tandoor Roti", description: "clay oven flatbread" },
+        { name: "Garlic Naan", description: "buttered bread" },
+        { name: "Butter Chicken", description: "creamy tomato curry, shareable" },
+        { name: "Dal Tadka", description: "yellow lentils" },
+      ],
+      context_tags: ["celebratory"],
+    });
+    const picks = buildTripleOutcome(r, dials);
+    const names = picks.map((p) => p.dish.toLowerCase());
+    expect(names[0]).toMatch(/butter chicken|dal|paneer|biryani|platter|tikka/);
+    expect(names[0]).not.toMatch(/roti|naan|paratha|bread/);
+    for (const n of names) {
+      expect(n).not.toMatch(/^tandoor roti$/);
+      expect(n).not.toMatch(/^garlic naan$/);
+    }
+    // Carrier may still mention naan on a main
+    const best = picks[0];
+    if (best.carrier) {
+      expect(best.dish.toLowerCase()).not.toMatch(/roti|naan/);
+    }
+  });
+});
+
+describe("ROE-014 situational plate bias", () => {
+  const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 85 };
+
+  it("kids_meal prefers mild dal over vindaloo for Best", () => {
+    const r = mockRestaurant({
+      id: "kids1",
+      name: "Family Kitchen",
+      cuisine: "Indian",
+      signature_dish: "Dal Tadka",
+      menu_items: [
+        { name: "Extra Spicy Vindaloo", description: "very spicy pork curry" },
+        { name: "Mild Yellow Dal", description: "mild kids-friendly lentils" },
+        { name: "Garlic Naan", description: "bread" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, {
+      occasion: "kids_meal",
+      age_group: "child",
+    });
+    expect(picks[0].dish.toLowerCase()).toMatch(/dal|mild/);
+    expect(picks[0].dish.toLowerCase()).not.toMatch(/vindaloo|roti|naan/);
+  });
+
+  it("health clean leans Clean slot toward grilled/dal over fried", () => {
+    const r = mockRestaurant({
+      id: "clean1",
+      name: "Clean Kitchen",
+      cuisine: "Indian",
+      signature_dish: "Grilled Paneer Tikka",
+      menu_items: [
+        { name: "Samosa Platter", description: "deep fried appetizer" },
+        { name: "Grilled Paneer Tikka", description: "grilled cottage cheese" },
+        { name: "Steamed Dal", description: "light lentils" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, { health_fitness: "clean" });
+    const clean = picks.find((p) => /clean/i.test(p.label)) ?? picks[1];
+    expect(clean.dish.toLowerCase()).toMatch(/grill|dal|steamed|tikka/);
+    expect(clean.dish.toLowerCase()).not.toMatch(/samosa/);
+  });
+});
+
+describe("ROE-004 South Indian / Mylapore plate integrity", () => {
+  const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 80 };
+  const NORTH_BAN = /\b(dal tadka|butter chicken|tandoori chicken|rogan josh|saag paneer)\b/i;
+
+  it("sparse Mylapore never surfaces North Indian bank inventions", () => {
+    const mylapore = mockRestaurant({
+      id: "myl-sparse",
+      name: "Mylapore",
+      cuisine: "Indian",
+      signature_dish: "Masala Dosa",
+      menu_items: [{ name: "Masala Dosa", description: "crispy rice-lentil crepe" }],
+      purity_tier: "sovereign",
+    });
+    const picks = buildTripleOutcome(mylapore, dials);
+    expect(picks).toHaveLength(3);
+    for (const p of picks) {
+      expect(NORTH_BAN.test(p.dish)).toBe(false);
+    }
+    expect(picks.some((p) => /dosa|idli|sambar|rasam|salad/i.test(p.dish))).toBe(true);
+  });
+
+  it("does not demote menu idli/dosa Clean into Dal Tadka", () => {
+    const mylapore = mockRestaurant({
+      id: "myl-full",
+      name: "Mylapore",
+      cuisine: "Indian",
+      signature_dish: "Masala Dosa",
+      menu_items: [
+        { name: "Masala Dosa", description: "crispy dosa with potato" },
+        { name: "Steamed Idli (3)", description: "soft rice cakes with sambar" },
+        { name: "Cucumber Salad", description: "fresh salad" },
+        { name: "Dal Tadka", description: "should never win on South kitchen" },
+      ],
+    });
+    const picks = buildTripleOutcome(mylapore, dials);
+    const names = picks.map((p) => p.dish);
+    expect(names).not.toContain("Dal Tadka");
+    expect(names.some((n) => /idli|dosa|salad|sambar/i.test(n))).toBe(true);
+  });
+
+  it("generic North Indian kitchen may still use Dal Tadka from bank", () => {
+    const north = mockRestaurant({
+      id: "north1",
+      name: "Ruchi Indian Cuisine",
+      cuisine: "Indian",
+      signature_dish: "Chicken Tikka Masala",
+      menu_items: [{ name: "Chicken Tikka Masala", description: "creamy tomato curry" }],
+    });
+    const picks = buildTripleOutcome(north, dials);
+    // At least one slot may be bank-filled with North dishes; Dal Tadka is allowed here
+    const joined = picks.map((p) => p.dish).join(" | ");
+    expect(joined.length).toBeGreaterThan(0);
+    // Sanity: not forced into dosa-only South bank
+    expect(picks.every((p) => /dosa|idli/i.test(p.dish))).toBe(false);
   });
 });

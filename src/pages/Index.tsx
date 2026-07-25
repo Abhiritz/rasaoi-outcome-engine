@@ -15,8 +15,31 @@ import { scoreRestaurants, type DialState, type Restaurant, type Promo, type Sco
 import { loadTwin, getBloodSugarLens, setBloodSugarLens } from "@/lib/memory";
 import { loadIntent, clearIntent, findRestaurantByName, type ParsedIntent } from "@/lib/intent";
 import { estimateGlycemic, type GLEstimate } from "@/lib/glycemic";
+import type { IntentHint } from "@/lib/pairings";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ArrowLeft, Info, Droplet } from "lucide-react";
+
+/** ROE-014: filters + situational layers for plates / scoring. */
+function intentHintFromParsed(intent: ParsedIntent | null): IntentHint | undefined {
+  if (!intent) return undefined;
+  return {
+    ...intent.filters,
+    mood: intent.mood,
+    occasion: intent.occasion,
+    age_group: intent.age_group,
+    health_fitness: intent.health_fitness,
+  };
+}
+
+function situationalFromParsed(intent: ParsedIntent | null) {
+  if (!intent) return undefined;
+  return {
+    mood: intent.mood,
+    occasion: intent.occasion,
+    age_group: intent.age_group,
+    health_fitness: intent.health_fitness,
+  };
+}
 
 const Index = () => {
   const navigate = useNavigate();
@@ -37,8 +60,17 @@ const Index = () => {
     purity: 70,
   });
   const [lens, setLens] = useState<boolean>(getBloodSugarLens());
+  const [refineOpen, setRefineOpen] = useState(true);
   const [glMap, setGlMap] = useState<Record<string, GLEstimate>>({});
   const animatedFromIntentRef = useRef(false);
+  const refineRef = useRef<HTMLDetailsElement | null>(null);
+
+  const toggleLens = (next?: boolean) => {
+    const n = typeof next === "boolean" ? next : !lens;
+    setLens(n);
+    setBloodSugarLens(n);
+    if (n) setRefineOpen(true);
+  };
 
   // On mount: load intent, redirect to / if none, then animate dials to parsed values.
   useEffect(() => {
@@ -53,6 +85,10 @@ const Index = () => {
     if (i.lens === "blood_sugar" && !getBloodSugarLens()) {
       setBloodSugarLens(true);
       setLens(true);
+      setRefineOpen(true);
+    }
+    if (i.lens === "blood_sugar" || getBloodSugarLens()) {
+      setRefineOpen(true);
     }
     // Apply cuisine filter from intent if it matches an option later (handled below).
     // Animate the dials in over ~600ms from neutral to parsed values.
@@ -100,8 +136,12 @@ const Index = () => {
       ]);
       // Only surface restaurants whose menus we've actually parsed
       // (menu_items is populated by the ingest pipeline from the dishes table).
+      // ROE-005: never show retired demo venue Mythaai (even if DB not yet migrated).
       const parsedOnly = (rRes.data ?? []).filter(
-        (r) => Array.isArray(r.menu_items) && r.menu_items.length > 0,
+        (r) =>
+          r.name !== "Mythaai" &&
+          Array.isArray(r.menu_items) &&
+          r.menu_items.length > 0,
       );
       setRestaurants(parsedOnly);
       setPromos(pRes.data ?? []);
@@ -163,6 +203,7 @@ const Index = () => {
       intent?.filters?.cuisine,
       intent?.filters?.wellness_tags,
       intent?.filters?.dietary,
+      situationalFromParsed(intent),
     );
     const filtered = cuisineFilter ? all.filter((s) => s.restaurant.cuisine === cuisineFilter) : all;
     const needsSort = (!cuisineFilter && intentCuisine) || lens;
@@ -184,7 +225,7 @@ const Index = () => {
       }
       return b.score - a.score;
     });
-  }, [restaurants, dials, promos, twin, cuisineFilter, intentCuisine, lens, glMap]);
+  }, [restaurants, dials, promos, twin, cuisineFilter, intentCuisine, lens, glMap, intent]);
 
   // When lens is on, estimate GL for top-N visible signature dishes.
   useEffect(() => {
@@ -198,6 +239,7 @@ const Index = () => {
       intent?.filters?.cuisine,
       intent?.filters?.wellness_tags,
       intent?.filters?.dietary,
+      situationalFromParsed(intent),
     );
     const topRestaurants = all.slice(0, 8).map((s) => s.restaurant);
     const dishes = topRestaurants
@@ -283,6 +325,7 @@ const Index = () => {
         intent?.filters?.cuisine,
         intent?.filters?.wellness_tags,
         intent?.filters?.dietary,
+        situationalFromParsed(intent),
       )[0];
       if (pinnedScored) hero = pinnedScored;
     }
@@ -366,6 +409,40 @@ const Index = () => {
 
         {intent && <IntentPill intent={intent} />}
 
+        {/* ROE-006: blood-sugar / GL lens status in Reading chrome (not a hero overlay) */}
+        {lens ? (
+          <div className="flex items-center justify-between gap-3 flex-wrap rounded-sm border border-emerald-400/50 bg-emerald-50/80 px-3 py-2">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-emerald-900 font-semibold">
+              <Droplet className="w-3.5 h-3.5 fill-emerald-600 text-emerald-600 shrink-0" />
+              Blood sugar · On
+              <span className="normal-case tracking-normal font-normal italic text-emerald-800/80">
+                ranking by estimated glycemic load (GL)
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => toggleLens(false)}
+              className="text-[10px] uppercase tracking-[0.22em] px-2.5 py-1 rounded-sm border border-emerald-500/60 text-emerald-900 hover:bg-emerald-100/80 transition-elegant"
+            >
+              Turn off
+            </button>
+          </div>
+        ) : (
+          <p className="text-[11px] text-muted-foreground">
+            Looking for GL / blood-sugar ranking?{" "}
+            <button
+              type="button"
+              className="uppercase tracking-[0.18em] text-primary font-semibold hover:underline"
+              onClick={() => {
+                setRefineOpen(true);
+                refineRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              }}
+            >
+              Refine → Blood sugar lens
+            </button>
+          </p>
+        )}
+
         {nameLookupBusy && intent?.filters?.restaurant && (
           <div className="text-[11px] uppercase tracking-[0.25em] text-gold/80 italic flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
@@ -399,7 +476,7 @@ const Index = () => {
                 item={hero}
                 dials={dials}
                 vitality={vitality}
-                intent={intent?.filters}
+                intent={intentHintFromParsed(intent)}
                 gl={lens ? glMap[hero.restaurant.signature_dish?.toLowerCase() ?? ""] : undefined}
               />
 
@@ -428,7 +505,7 @@ const Index = () => {
                           item={alt}
                           rank={i + 1}
                           dials={dials}
-                          intent={intent?.filters}
+                          intent={intentHintFromParsed(intent)}
                           gl={lens ? glMap[alt.restaurant.signature_dish?.toLowerCase() ?? ""] : undefined}
                           onPromote={() => setHeroIdOverride(alt.restaurant.id)}
                         />
@@ -456,8 +533,13 @@ const Index = () => {
           )}
         </section>
 
-        {/* REFINE — collapsed on mobile, open on desktop */}
-        <details className="group rounded-sm border border-border/60 bg-card/50" open>
+        {/* REFINE — open when blood-sugar lens is on so Turn off stays findable (ROE-006) */}
+        <details
+          ref={refineRef}
+          className="group rounded-sm border border-border/60 bg-card/50"
+          open={refineOpen}
+          onToggle={(e) => setRefineOpen((e.currentTarget as HTMLDetailsElement).open)}
+        >
           <summary className="cursor-pointer list-none flex items-center justify-between px-4 py-3 select-none">
             <span className="text-[11px] uppercase tracking-[0.25em] text-primary font-semibold">
               Refine this reading
@@ -496,28 +578,31 @@ const Index = () => {
               />
             )}
 
-            {/* Blood-sugar lens */}
-            <div className="flex items-center justify-between gap-3 flex-wrap rounded-sm border border-border/60 bg-card px-4 py-3">
+            {/* Blood-sugar / GL lens (On/Off — not a GL dropdown) */}
+            <div
+              id="blood-sugar-lens"
+              className="flex items-center justify-between gap-3 flex-wrap rounded-sm border border-border/60 bg-card px-4 py-3"
+            >
               <div className="flex items-start gap-2 text-sm">
                 <Droplet className={`w-4 h-4 mt-0.5 shrink-0 ${lens ? "fill-emerald-600 text-emerald-600" : "text-muted-foreground"}`} />
                 <div>
                   <div className="text-[11px] uppercase tracking-[0.22em] text-primary font-semibold">
-                    Blood-sugar-friendly lens
+                    Blood sugar · glycemic load (GL)
                   </div>
                   {lens ? (
                     <p className="text-[11px] text-muted-foreground italic mt-0.5">
-                      Showing low-glycemic options first. Estimates only — talk to your doctor about your targets.
+                      Low-GL options first. Estimates only — talk to your doctor about your targets.
                     </p>
                   ) : (
                     <p className="text-[11px] text-muted-foreground italic mt-0.5">
-                      Re-ranks results by estimated glycemic load and suggests carrier swaps.
+                      Turn on to re-rank by estimated glycemic load and suggest lighter carriers. No separate GL dropdown.
                     </p>
                   )}
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => { const n = !lens; setLens(n); setBloodSugarLens(n); }}
+                onClick={() => toggleLens()}
                 aria-pressed={lens}
                 className={`text-[10px] uppercase tracking-[0.22em] px-3 py-1.5 rounded-sm border transition-elegant ${
                   lens
@@ -525,7 +610,7 @@ const Index = () => {
                     : "bg-card text-muted-foreground border-border/70 hover:border-emerald-300 hover:text-emerald-800"
                 }`}
               >
-                {lens ? "On" : "Turn on"}
+                {lens ? "Turn off" : "Turn on"}
               </button>
             </div>
 

@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 
     let parsed: { estimates?: unknown[] };
     try {
-      const argsJson = await geminiToolCall(
+      parsed = (await geminiToolCall(
         DEFAULT_GEMINI_MODEL,
         SYSTEM_PROMPT,
         `Estimate glycemic load for these dishes:\n${userMsg}`,
@@ -102,15 +102,21 @@ Deno.serve(async (req) => {
           description: TOOL_SCHEMA.function.description ?? "",
           parameters: TOOL_SCHEMA.function.parameters as Record<string, unknown>,
         },
-      );
-      parsed = JSON.parse(argsJson);
+      )) as { estimates?: unknown[] };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (/429|rate limit|quota/i.test(msg)) {
-        return new Response(JSON.stringify({ error: "Rate limit reached. Try again shortly." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            error: "Glycemic estimator rate-limited. Using local estimates where available.",
+            code: "rate_limit",
+            retry_after_ms: 8000,
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
       console.error("estimate-glycemic Gemini error:", msg);
       return new Response(JSON.stringify({ error: "Estimator unavailable." }), {

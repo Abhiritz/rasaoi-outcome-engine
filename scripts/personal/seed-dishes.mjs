@@ -12,7 +12,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const RESTAURANT_MAP = {
   "sanskrit.json": "Sanskrit",
-  "mythaai.json": "Mythaai",
+  // ROE-005: mythaai.json retired from catalog seeding
   "mylapore.json": "Mylapore",
   "mantra.json": "Mantra",
   "taj-grill.json": "Taj Grill Indian Cuisine",

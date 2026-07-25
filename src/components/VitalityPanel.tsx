@@ -85,7 +85,11 @@ export const VitalityPanel = ({ onChange }: Props) => {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              {historyCount} outcomes
+              {consented
+                ? `${historyCount} twin sync${historyCount === 1 ? "" : "s"}`
+                : historyCount === 0
+                  ? "Twin inactive"
+                  : `${historyCount} twin sync${historyCount === 1 ? "" : "s"}`}
             </span>
             <div className="flex items-center gap-2">
               <HeartPulse className="w-3.5 h-3.5 text-gold" />

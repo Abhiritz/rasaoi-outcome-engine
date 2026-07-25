@@ -1,4 +1,7 @@
 import type { Tables } from "@/integrations/supabase/types";
+import { expandDishTokens } from "./dishIntent";
+import type { SituationalLayers } from "./intentSanitize";
+import { DEFAULT_SITUATIONAL } from "./intentSanitize";
 
 export type Restaurant = Tables<"restaurants">;
 export type Promo = Tables<"active_promos">;
@@ -57,6 +60,14 @@ import {
   passesDietaryGate,
   passesStrictDietaryGate,
 } from "./dietary";
+import {
+  isHeavyDishType,
+  isLightDishType,
+  lookupDish,
+  lookupRestaurant,
+  restaurantMatrixSignals,
+  type CulinaryDishMeta,
+} from "./culinaryIndex";
 
 export {
   DIET_CLASSES,
@@ -262,23 +273,9 @@ function contextState(v: number) {
   return "celebratory";
 }
 
-// Stop words & carrier words to ignore when tokenizing the user's dish phrase.
-const DISH_STOP = new Set([
-  "i","want","to","eat","a","an","the","some","please","need","craving",
-  "for","with","and","or","of","my","me","get","have","like","love","tonight",
-  "today","now","food","meal","dish","dishes","something","quick","spicy","mild",
-  "hot","cold","fresh","good","great","really","just","maybe","plate","order",
-  // carriers — match the dish, not the side
-  "rice","naan","roti","bread","tortilla","wrap","noodles","pasta","fries","chips",
-]);
-
 function dishTokens(phrase?: string): string[] {
-  if (!phrase) return [];
-  return phrase
-    .toLowerCase()
-    .replace(/[^a-z\s]/g, " ")
-    .split(/\s+/)
-    .filter((t) => t.length >= 3 && !DISH_STOP.has(t));
+  // CRS-003a: expand oceany/coastal → seafood/fish/… for ranking.
+  return expandDishTokens(phrase);
 }
 
 /** Cuisine families for intent ↔ restaurant matching (substring + alias). */
@@ -328,6 +325,7 @@ export function scoreRestaurants(
   intentCuisine?: string,
   intentWellnessTags?: WellnessTag[] | unknown[],
   intentDietary?: StrictDietaryTag | unknown,
+  situational?: Partial<SituationalLayers> | null,
 ): ScoredRestaurant[] {
   const eState = energyState(dials.energy);
   const cState = contextState(dials.context);
@@ -336,6 +334,21 @@ export function scoreRestaurants(
   const cuisineIntent = intentCuisine?.trim();
   const wellnessTags = normalizeWellnessTags(intentWellnessTags);
   const strictDietary = normalizeDietaryIntent(intentDietary);
+  const sit: SituationalLayers = {
+    ...DEFAULT_SITUATIONAL,
+    ...(situational ?? {}),
+  };
+  const kidsLean =
+    sit.occasion === "kids_meal" ||
+    sit.age_group === "toddler" ||
+    sit.age_group === "child";
+  const healthLean = sit.health_fitness;
+  const shareableLean =
+    sit.mood === "celebratory" ||
+    sit.mood === "romantic" ||
+    ["friends", "family", "birthday", "anniversary", "festival", "date_night"].includes(
+      sit.occasion,
+    );
 
   // --- Hard-exclusion gatekeeper: non-compliant venues never enter ranking ---
   const eligible = strictDietary
@@ -386,17 +399,32 @@ export function scoreRestaurants(
           const sig = (r.signature_dish ?? "").toLowerCase();
           if (dTokens.some((t) => sig.includes(t))) nameHit = true;
         }
+        // Culinary matrix: dish listed under this venue even when menu_items is thin.
+        if (!nameHit) {
+          const mxRest = lookupRestaurant(r.name);
+          if (mxRest) {
+            for (const dish of Object.values(mxRest.dishes)) {
+              const n = dish.name.toLowerCase();
+              if (dTokens.some((t) => n.includes(t))) {
+                nameHit = true;
+                tags.push("Matrix dish");
+                break;
+              }
+            }
+          }
+        }
         if (nameHit) {
-          score += 35;
+          score += 48;
           tags.push(`Has ${dTokens[0]}`);
         } else if (descHit) {
-          score += 15;
+          score += 22;
           tags.push(`Mentions ${dTokens[0]}`);
         } else {
-          score -= 5;
+          // Strong miss penalty so high-purity non-matches don't bury seafood kitchens (CRS-003a).
+          score -= 28;
+          tags.push("No dish match");
         }
       }
-
 
       // --- Purity alignment (Sovereign Seal weighting) ---
       const userPurity = dials.purity;
@@ -436,10 +464,120 @@ export function scoreRestaurants(
         tags.push("Peak-State Fuel");
       }
 
+      // --- Culinary matrix signals (price / macros / dish_type) — offline, no AI ---
+      const mx = restaurantMatrixSignals(r.name);
+      if (mx.main || mx.avgPriceUsd != null) {
+        if (mx.avgPriceUsd != null) {
+          const targetUsd = 12 + (dials.budget / 100) * 23;
+          const gap = Math.abs(mx.avgPriceUsd - targetUsd);
+          const priceDelta = Math.max(-12, 10 - gap * 0.8);
+          score += priceDelta;
+          if (Math.abs(priceDelta) >= 4) tags.push("Matrix price");
+          if (mx.avgPriceUsd > targetUsd + 8 && dials.budget < 40) {
+            score -= 10;
+            tags.push("Over matrix budget");
+          }
+        }
+
+        const mainType = mx.main?.dish_type;
+        const sigMeta =
+          (r.signature_dish
+            ? (lookupDish(r.signature_dish, r.name) as CulinaryDishMeta | null)
+            : null) ?? mx.main;
+
+        if (lowRecovery) {
+          if (isHeavyDishType(sigMeta?.dish_type ?? mainType) || (sigMeta?.calories_kcal ?? 0) > 700) {
+            score -= 14;
+            tags.push("Matrix heavy");
+          }
+          if (
+            isLightDishType(sigMeta?.dish_type ?? mainType) ||
+            ((sigMeta?.protein_g ?? 0) >= 15 && (sigMeta?.fiber_g ?? 0) >= 5)
+          ) {
+            score += 12;
+            tags.push("Matrix macros");
+          }
+        }
+
+        if (wellnessTags.length) {
+          const wantsLight =
+            wellnessTags.includes("light") ||
+            wellnessTags.includes("fresh") ||
+            wellnessTags.includes("raw") ||
+            wellnessTags.includes("low_oil");
+          if (wantsLight) {
+            if (isHeavyDishType(sigMeta?.dish_type ?? mainType) || mx.heavyCount > mx.lightCount + 2) {
+              score -= 16;
+              tags.push("Matrix vs light");
+            }
+            if (isLightDishType(sigMeta?.dish_type ?? mainType) || mx.lightCount > 0) {
+              score += 14;
+              tags.push("Matrix light");
+            }
+          }
+        }
+
+        if (eState === "peak" && isLightDishType(sigMeta?.dish_type ?? mainType)) {
+          score += 8;
+          tags.push("Matrix peak fuel");
+        }
+      }
+
       // --- Context (solo/social/celebratory) ---
       if (cState === "celebratory" && r.context_tags.includes("celebratory")) { score += 14; tags.push("Celebratory"); }
       if (cState === "solo" && r.context_tags.includes("solo")) score += 8;
       if (cState === "social" && r.context_tags.includes("social")) score += 10;
+
+      // --- ROE-014 situational ranking biases ---
+      if (shareableLean && r.context_tags.includes("celebratory")) {
+        score += 8;
+        tags.push("Occasion fit");
+      }
+      if (kidsLean) {
+        const blob = `${r.signature_dish ?? ""} ${r.cuisine}`.toLowerCase();
+        if (/\b(mild|kids|child|family|tiffin|idli|dosa|khichdi|dal)\b/.test(blob)) {
+          score += 12;
+          tags.push("Kids / mild");
+        }
+        if (/\b(vindaloo|extra spicy|ghost pepper|phall)\b/.test(blob)) {
+          score -= 14;
+          tags.push("Too spicy for kids");
+        }
+      }
+      if (healthLean === "athletic") {
+        const mxAth = restaurantMatrixSignals(r.name);
+        const protein = mxAth.main?.protein_g ?? 0;
+        if (protein >= 20) {
+          score += 12;
+          tags.push("Athletic protein");
+        }
+        if (r.energy_tags.some((t) => ["peak", "energizing", "light"].includes(t))) {
+          score += 8;
+          tags.push("Athletic fuel");
+        }
+      }
+      if (healthLean === "recovery" || sit.mood === "restorative") {
+        if (r.anti_inflammatory || r.energy_tags.some((t) => ["grounding", "restorative", "warming"].includes(t))) {
+          score += 10;
+          tags.push("Recovery fit");
+        }
+      }
+      if (
+        healthLean === "clean" ||
+        healthLean === "light" ||
+        healthLean === "digestive" ||
+        healthLean === "metabolic"
+      ) {
+        const mxH = restaurantMatrixSignals(r.name);
+        if (mxH.lightCount > mxH.heavyCount) {
+          score += 10;
+          tags.push("Health light menu");
+        }
+        if (mxH.heavyCount > mxH.lightCount + 2) {
+          score -= 8;
+          tags.push("Health heavy menu");
+        }
+      }
 
       // --- Budget alignment ---
       const targetTier = 1 + (dials.budget / 100) * 2;

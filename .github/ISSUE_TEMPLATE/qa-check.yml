@@ -1,0 +1,48 @@
+name: QA check
+description: Stakeholder verification for a shipped ROE ticket or fix
+title: "[QA] "
+labels: ["type:qa"]
+body:
+  - type: input
+    id: ticket
+    attributes:
+      label: Ticket ID
+      description: e.g. ROE-007 (IP-FIX-001) or linked issue number
+      placeholder: "ROE-00N (ABC-NNN) e.g. ROE-007 (IP-FIX-001)"
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Build / URL to test
+      placeholder: "https://rasaoi-delta.vercel.app or Vercel preview"
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      description: Checklist to verify (one per line)
+      placeholder: |
+        - [ ] Ask X produces dials Y
+        - [ ] Best Match is never roti alone
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - Pass
+        - Fail
+        - Blocked
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Feedback
+      description: What worked, what failed, or what is blocking
+    validations:
+      required: true

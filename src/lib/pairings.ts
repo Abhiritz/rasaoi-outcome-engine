@@ -16,6 +16,31 @@ import {
   passesDietaryGate,
   sanitizeRestaurantForDietary,
 } from "./veda";
+import {
+  isLightDishType,
+  lookupRestaurant,
+  matrixCourseDish,
+  restaurantDishes,
+} from "./culinaryIndex";
+import {
+  expandDishTokens,
+  intentMatchScore as sharedIntentMatchScore,
+  isCarrierOnlyDish,
+  isCoastalDishIntent,
+  isDessertDish,
+  isHeavyFriedDish,
+  isLightSweetDish,
+  isStarchAccompaniment,
+  isSweetDishIntent,
+  needsPlateCarrier,
+  STARCH_COMPLETE,
+} from "./dishIntent";
+import type {
+  AgeGroupSlug,
+  HealthFitnessSlug,
+  MoodSlug,
+  OccasionSlug,
+} from "./intentSanitize";
 
 export type DishRole = "Base" | "Booster" | "Carrier";
 
@@ -96,7 +121,7 @@ interface CarrierSpec {
 }
 
 // 1) Self-contained dishes — never get a carrier appended.
-const SELF_CONTAINED = /(\bbiryani\b|fried rice|paella|risotto|lasagna|pasta|spaghetti|fettuccine|penne|ravioli|gnocchi|pizza|calzone|sandwich|burger|wrap|burrito|quesadilla|enchilada|chimichanga|torta|banh mi|ramen|udon|soba|pho|chow mein|lo mein|chow fun|pad (thai|see ew|woon sen)|drunken noodles|fried noodles|noodle (bowl|soup)|sushi|sashimi|nigiri|chirashi|don\b|donburi|poke|grain bowl|buddha bowl|power bowl|salad|crudo|ceviche|tartare|soup|stew(?!ed)|broth|tom kha|tom yum|miso soup|congee|porridge|dumplings|gyoza|baozi|samosa(?! plate)|pakora plate)/i;
+const SELF_CONTAINED = /(\bbiryani\b|fried rice|paella|risotto|lasagna|pasta|spaghetti|fettuccine|penne|ravioli|gnocchi|pizza|calzone|sandwich|burger|wrap|burrito|quesadilla|enchilada|chimichanga|torta|banh mi|ramen|udon|soba|pho|chow mein|lo mein|chow fun|pad (thai|see ew|woon sen)|drunken noodles|fried noodles|noodle (bowl|soup)|sushi|sashimi|nigiri|chirashi|don\b|donburi|poke|grain bowl|buddha bowl|power bowl|salad|crudo|ceviche|tartare|soup|stew(?!ed)|broth|tom kha|tom yum|miso soup|congee|porridge|dumplings|gyoza|baozi|samosa(?! plate)|pakora plate|\bidli\b|\bdosa\b|uttapam|appam|puttu|upma|pongal|\bkhichdi\b|\bkhichri\b)/i;
 
 // 2) Dish-specific traditional pairings (override cuisine default)
 function dishSpecificCarrier(name: string, cuisine: string): CarrierSpec | null {
@@ -235,12 +260,19 @@ function cuisineDefaultCarrier(cuisine: string): CarrierSpec | null {
 }
 
 function carrierFor(baseName: string, cuisine: string): CarrierSpec | null {
-  if (SELF_CONTAINED.test(baseName)) return null;
+  if (SELF_CONTAINED.test(baseName) || STARCH_COMPLETE.test(baseName) || !needsPlateCarrier(baseName)) {
+    return null;
+  }
   return dishSpecificCarrier(baseName, cuisine) ?? cuisineDefaultCarrier(cuisine);
 }
 
 // Score a candidate menu item for the current dial state. Higher = better fit.
-function scoreDishForDials(name: string, desc: string, dials: DialState): number {
+function scoreDishForDials(
+  name: string,
+  desc: string,
+  dials: DialState,
+  situational?: IntentHint,
+): number {
   const t = (name + " " + (desc ?? "")).toLowerCase();
   let s = 0;
 
@@ -261,11 +293,42 @@ function scoreDishForDials(name: string, desc: string, dials: DialState): number
     if (/(fried|deep|cream|cheese sauce)/.test(t)) s -= 4;
   }
 
-  // Context: high → celebratory / shareable mains; low → quick solo
+  // Context: high → celebratory / shareable mains; low → quick solo (ROE-003)
   if (dials.context > 65) {
-    if (/(osso buco|biryani|short rib|whole|family|platter|risotto|scaloppine)/.test(t)) s += 3;
+    if (/(osso buco|biryani|short rib|whole|family|platter|risotto|scaloppine|thali|share|feast|tikka|kebab|butter chicken|lamb|goat|paneer|korma)/.test(t)) {
+      s += 8;
+    }
+    if (isCarrierOnlyDish(name, desc)) s -= 40;
   } else if (dials.context < 35) {
     if (/(bowl|wrap|taco|soup|noodle|sandwich|salad)/.test(t)) s += 3;
+  }
+
+  // ROE-014 situational plate biases
+  const mood = situational?.mood;
+  const occasion = situational?.occasion;
+  const age = situational?.age_group;
+  const health = situational?.health_fitness;
+  const kids =
+    occasion === "kids_meal" || age === "toddler" || age === "child";
+  if (kids) {
+    if (/\b(mild|kids|child|khichdi|khichri|idli|dosa|dal|yogurt|curd|plain|steamed)\b/.test(t)) s += 10;
+    if (/\b(vindaloo|extra spicy|ghost|phall|chili bomb|very spicy)\b/.test(t)) s -= 16;
+    if (isHeavyFriedDish(name, desc)) s -= 8;
+  }
+  if (health === "athletic") {
+    if (/\b(chicken|paneer|fish|shrimp|egg|protein|grill|tandoori|tikka)\b/.test(t)) s += 10;
+    if (isDessertDish(name, desc)) s -= 12;
+  }
+  if (health === "clean" || health === "light" || health === "recovery" || health === "digestive") {
+    if (/(salad|grilled|steamed|baked|roasted|dal|soup|broth|raita|sambar|rasam|idli)/.test(t)) s += 8;
+    if (isHeavyFriedDish(name, desc) || /(cream|butter chicken|malai|fried)/.test(t)) s -= 8;
+  }
+  if (health === "metabolic") {
+    if (/(grill|tandoori|salad|veg|dal|soup)/.test(t)) s += 6;
+    if (isDessertDish(name, desc) || /(gulab|jalebi|halwa|sweet|syrup|rice pudding)/.test(t)) s -= 14;
+  }
+  if (mood === "celebratory" || occasion === "friends" || occasion === "birthday") {
+    if (/(platter|biryani|thali|share|family|kebab|tikka)/.test(t)) s += 6;
   }
 
   return s;
@@ -280,7 +343,12 @@ export function buildMealPlate(
   const safe = dietary ? sanitizeRestaurantForDietary(r, dietary) : r;
   const menu = getMenu(safe, dietary);
 
-  // --- BASE: dial-aware pick from verified menu_items ---
+  // --- BASE: prefer culinary-matrix main_course when dietary-safe, else dial-aware menu pick ---
+  const matrixMain = matrixCourseDish(safe.name, "main_course");
+  const matrixMainOk =
+    matrixMain &&
+    dishPassesGate(matrixMain.name, "", dietary, { name: matrixMain.name });
+
   const sigName = safe.signature_dish?.trim();
   const sigLower = sigName?.toLowerCase() ?? "";
   const sigCore = sigLower.replace(/\s*\([^)]*\)\s*/g, "").trim();
@@ -307,12 +375,17 @@ export function buildMealPlate(
     }
   }
 
-  const chosenBase = bestPick ?? sigInMenu;
+  const chosenBase = matrixMainOk
+    ? { name: matrixMain!.name, description: `Matrix main (${matrixMain!.dish_type ?? "main"})` }
+    : bestPick ?? sigInMenu;
   const base: PlateItem = chosenBase
     ? {
         name: chosenBase.name,
         role: "Base",
-        outcome: (chosenBase === sigInMenu && safe.dish_outcome) || chosenBase.description || "primary outcome carrier",
+        outcome:
+          (!matrixMainOk && chosenBase === sigInMenu && safe.dish_outcome) ||
+          ("description" in chosenBase ? chosenBase.description : undefined) ||
+          "primary outcome carrier",
         sovereign: inferSovereign(safe),
         verified: true,
       }
@@ -342,9 +415,28 @@ export function buildMealPlate(
     return "other";
   };
 
-  // --- CARRIER: inferred staple when Base is a Dependency Item ---
+  // --- CARRIER: matrix starch accompaniment only when base needs a carrier ---
   let carrier: PlateItem | undefined;
-  if (base.verified) {
+  const matrixCarrier = matrixCourseDish(safe.name, "accompaniment_base");
+  const matrixCarrierOk =
+    matrixCarrier &&
+    isStarchAccompaniment(matrixCarrier.name) &&
+    needsPlateCarrier(base.name) &&
+    dishPassesGate(matrixCarrier.name, "", dietary, { name: matrixCarrier.name });
+
+  if (base.verified && matrixCarrierOk) {
+    const onMenu = menu.find(
+      (m) => m.name.toLowerCase() === matrixCarrier!.name.toLowerCase(),
+    );
+    carrier = {
+      name: matrixCarrier!.name,
+      role: "Carrier",
+      outcome: "Matrix accompaniment for a complete plate",
+      sovereign: inferSovereign(safe),
+      verified: !!onMenu || !!lookupRestaurant(safe.name),
+      inferred: !onMenu,
+    };
+  } else if (base.verified) {
     const spec = carrierFor(base.name, safe.cuisine);
     if (spec) {
       // Low-carb alternative when user signals grain-free / very low-recovery /
@@ -372,34 +464,50 @@ export function buildMealPlate(
     }
   }
 
-  // --- BOOSTER: Single-Protein Guardrail ---
-  // Prefer a vegetable/greens side. Never select a second primary protein.
-  // Skip the base and the carrier (avoid redundancy). If only proteins remain,
-  // drop the booster entirely so the plate stays clean.
-  const baseLower = sigInMenu?.name.toLowerCase();
+  // --- BOOSTER: matrix appetizer/starter, else Single-Protein Guardrail ---
+  const baseLower = (chosenBase?.name ?? sigInMenu?.name)?.toLowerCase();
   const carrierLower = carrier?.name.toLowerCase();
-  const candidates = menu.filter((m) => {
-    const ln = m.name.toLowerCase();
-    if (baseLower && ln === baseLower) return false;
-    if (carrierLower && carrierLower.split(/\s*&\s*|\s*\/\s*/).some((p) => p && ln.includes(p))) return false;
-    return true;
-  });
-  const veg = candidates.find((m) => classify(m.name) === "vegetable");
-  const lightOther = candidates.find((m) => classify(m.name) === "other");
-  const boosterPick = veg ?? lightOther ?? null;
 
-  const booster: PlateItem | null = boosterPick
-    ? {
-        name: boosterPick.name,
-        role: "Booster",
-        outcome: boosterPick.description ||
-          (classify(boosterPick.name) === "vegetable"
-            ? "fiber + micronutrient counterbalance to the protein"
-            : "complementary item from this kitchen"),
-        sovereign: inferSovereign(r),
-        verified: true,
-      }
-    : null;
+  const matrixApp =
+    matrixCourseDish(safe.name, "appetizer") ?? matrixCourseDish(safe.name, "starter");
+  const matrixAppOk =
+    matrixApp &&
+    matrixApp.name.toLowerCase() !== baseLower &&
+    dishPassesGate(matrixApp.name, "", dietary, { name: matrixApp.name });
+
+  let booster: PlateItem | null = null;
+  if (matrixAppOk) {
+    booster = {
+      name: matrixApp!.name,
+      role: "Booster",
+      outcome: "Matrix starter / appetizer counterbalance",
+      sovereign: inferSovereign(r),
+      verified: true,
+    };
+  } else {
+    const candidates = menu.filter((m) => {
+      const ln = m.name.toLowerCase();
+      if (baseLower && ln === baseLower) return false;
+      if (carrierLower && carrierLower.split(/\s*&\s*|\s*\/\s*/).some((p) => p && ln.includes(p))) return false;
+      return true;
+    });
+    const veg = candidates.find((m) => classify(m.name) === "vegetable");
+    const lightOther = candidates.find((m) => classify(m.name) === "other");
+    const boosterPick = veg ?? lightOther ?? null;
+
+    booster = boosterPick
+      ? {
+          name: boosterPick.name,
+          role: "Booster",
+          outcome: boosterPick.description ||
+            (classify(boosterPick.name) === "vegetable"
+              ? "fiber + micronutrient counterbalance to the protein"
+              : "complementary item from this kitchen"),
+          sovereign: inferSovereign(r),
+          verified: true,
+        }
+      : null;
+  }
 
   const bothVerified = base.verified && (booster?.verified ?? true);
   const bothSovereign = base.sovereign && (booster?.sovereign ?? true);
@@ -480,6 +588,12 @@ const CUISINE_BANKS: Record<string, CuisineBank> = {
     clean: ["Dal Tadka", "Saag Paneer", "Fish Tikka", "Tandoori Salmon", "Chana Masala"],
     heritage: ["Lamb Rogan Josh", "Hyderabadi Biryani", "Butter Chicken", "Goat Curry"],
   },
+  /** ROE-004 — South Indian / tiffin kitchens (Mylapore etc.) — no North bank inventions */
+  "Indian-South": {
+    best: ["Masala Dosa", "Plain Dosa", "Mini Idli"],
+    clean: ["Steamed Idli", "Sambar", "Rasam", "Cucumber Salad"],
+    heritage: ["Mylapore Special Dosa", "Ghee Roast Dosa", "Masala Dosa"],
+  },
   "Indian-Jain": {
     best: ["Jain Paneer Tikka", "Jain Dal Makhani", "Jain Moong Dal"],
     clean: ["Fresh Fruit Salad", "Jain Papad Platter", "Steamed Jain Vegetables"],
@@ -517,17 +631,64 @@ const CUISINE_BANKS: Record<string, CuisineBank> = {
   },
 };
 
-function bankFor(cuisine: string, dietary?: StrictDietaryTag): CuisineBank | null {
-  if (dietary === "jain" && cuisine.toLowerCase() === "indian") {
+/** Known South Indian venues in catalog (name match, case-insensitive). */
+const SOUTH_INDIAN_VENUE_NAMES = new Set(["mylapore", "mylapore south indian vegetarian"]);
+
+const SOUTH_TIFFIN =
+  /\b(dosa|dosai|dose|idli|idly|vada|vadai|uttapam|oothappam|sambar|rasam|pongal|upma|puttu|appam|podi|filter\s*coffee|tiffin)\b/i;
+
+/** North Indian dishes that must never invent onto South kitchens (ROE-004). */
+const NORTH_INDIAN_INVENTION =
+  /\b(dal tadka|saag paneer|butter chicken|tandoori chicken|chicken tikka|rogan josh|lamb rogan|hyderabadi biryani|goat curry|chana masala|fish tikka|tandoori salmon|navratan|malai kofta|paneer tikka masala)\b/i;
+
+export function isSouthTiffinDish(name: string, desc = ""): boolean {
+  return SOUTH_TIFFIN.test(`${name} ${desc}`);
+}
+
+export function isNorthIndianInvention(name: string): boolean {
+  return NORTH_INDIAN_INVENTION.test(name);
+}
+
+/** Detect South Indian kitchen without a DB cuisine_region column (ROE-004). */
+export function isSouthIndianKitchen(r: Pick<Restaurant, "name" | "signature_dish" | "menu_items" | "cuisine">): boolean {
+  const nameKey = (r.name ?? "").toLowerCase().trim();
+  if (SOUTH_INDIAN_VENUE_NAMES.has(nameKey)) return true;
+  if (/\bsouth\s*indian\b/i.test(r.cuisine ?? "")) return true;
+  if (isSouthTiffinDish(r.signature_dish ?? "")) return true;
+  const menu = r.menu_items ?? [];
+  let hits = 0;
+  for (const m of menu) {
+    if (isSouthTiffinDish(m.name, m.description ?? "")) hits += 1;
+    if (hits >= 2) return true;
+  }
+  return false;
+}
+
+function bankFor(
+  r: Pick<Restaurant, "name" | "signature_dish" | "menu_items" | "cuisine">,
+  dietary?: StrictDietaryTag,
+): CuisineBank | null {
+  const cuisine = r.cuisine ?? "";
+  if (dietary === "jain" && cuisine.toLowerCase().includes("indian")) {
     return CUISINE_BANKS["Indian-Jain"];
+  }
+  if (cuisine.toLowerCase().includes("indian") && isSouthIndianKitchen(r)) {
+    return CUISINE_BANKS["Indian-South"];
   }
   const key = Object.keys(CUISINE_BANKS).find((k) => k.toLowerCase() === cuisine.toLowerCase());
   return key ? CUISINE_BANKS[key] : null;
 }
 
-function pickFromBank(bank: string[], used: Set<string>, dietary?: StrictDietaryTag): string | undefined {
+function pickFromBank(
+  bank: string[],
+  used: Set<string>,
+  dietary?: StrictDietaryTag,
+  southKitchen = false,
+): string | undefined {
   return bank.find((d) => {
     if (used.has(d.toLowerCase())) return false;
+    if (isCarrierOnlyDish(d)) return false;
+    if (southKitchen && isNorthIndianInvention(d)) return false;
     return dishPassesGate(d, "", dietary);
   });
 }
@@ -537,53 +698,135 @@ function filterBankList(list: string[], dietary?: StrictDietaryTag): string[] {
   return list.filter((d) => dishPassesGate(d, "", dietary));
 }
 
-function pickBest(menu: MenuItem[], dials: DialState, sigName: string | undefined, exclude: Set<string>): MenuItem | undefined {
+function pickBest(
+  menu: MenuItem[],
+  dials: DialState,
+  sigName: string | undefined,
+  exclude: Set<string>,
+  situational?: IntentHint,
+): MenuItem | undefined {
   let best: MenuItem | undefined;
   let bestScore = -Infinity;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
+    if (isCarrierOnlyDish(m.name, m.description ?? "")) continue; // ROE-003
     const isSig = sigName && m.name.toLowerCase() === sigName.toLowerCase();
-    const s = scoreDishForDials(m.name, m.description ?? "", dials) + (isSig ? 2 : 0);
+    const s =
+      scoreDishForDials(m.name, m.description ?? "", dials, situational) + (isSig ? 2 : 0);
     if (s > bestScore) { bestScore = s; best = m; }
   }
   return best;
 }
 
-function scoreClean(name: string, desc: string): number {
+function scoreClean(
+  name: string,
+  desc: string,
+  coastal = false,
+  sweet = false,
+  health?: HealthFitnessSlug,
+): number {
   const t = (name + " " + (desc ?? "")).toLowerCase();
   let s = 0;
-  if (/(salad|sashimi|crudo|poke|grilled|steamed|baked|roasted|dal|saag|tikka|ceviche|soup|broth|kale|quinoa|greens|fish|salmon|veg)/.test(t)) s += 6;
-  if (/(fried|deep|cream|cheese|butter|biryani|risotto|lasagna|pizza|naan|bread|noodle)/.test(t)) s -= 5;
+  if (/(salad|sashimi|crudo|poke|grilled|steamed|baked|roasted|dal|saag|tikka|ceviche|soup|broth|kale|quinoa|greens|fish|salmon|seafood|shrimp|prawn|veg)/.test(t)) s += 6;
+  // ROE-004: South tiffin counts as clean (so bank Dal Tadka cannot demote it)
+  if (isSouthTiffinDish(name, desc)) s += 8;
+  if (/(fried|deep|cream|cheese|butter|biryani|risotto|lasagna|pizza|naan|bread|noodle|samosa|pakora|bhatura)/.test(t)) s -= 5;
+  // Don't punish "butter dosa" / "ghee roast" as heavily as creamy North curries
+  if (/\b(butter|ghee)\b/.test(t) && isSouthTiffinDish(name, desc)) s += 4;
+  if (coastal && /(fish|seafood|shrimp|prawn|salmon|crab|lobster|ceviche|grilled|steamed)/.test(t)) s += 8;
+  if (coastal && isHeavyFriedDish(name, desc)) s -= 12;
+  if (sweet && isDessertDish(name, desc)) s += 10;
+  if (sweet && isLightSweetDish(name, desc)) s += 6;
+  if (sweet && isHeavyFriedDish(name, desc) && !isDessertDish(name, desc)) s -= 12;
+  if (sweet && !isDessertDish(name, desc) && /(chicken|tandoori|biryani|curry|dal tadka)/.test(t)) s -= 8;
+  if (health === "clean" || health === "light" || health === "recovery" || health === "digestive") {
+    if (/(salad|grilled|steamed|dal|soup|raita|sambar|rasam)/.test(t)) s += 6;
+    if (isHeavyFriedDish(name, desc)) s -= 8;
+  }
+  if (health === "metabolic" && isDessertDish(name, desc)) s -= 10;
   return s;
 }
 
-function pickClean(menu: MenuItem[], exclude: Set<string>): MenuItem | undefined {
+function pickClean(
+  menu: MenuItem[],
+  exclude: Set<string>,
+  coastal = false,
+  sweet = false,
+  health?: HealthFitnessSlug,
+): MenuItem | undefined {
   let best: MenuItem | undefined;
   let bestScore = -Infinity;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
-    const s = scoreClean(m.name, m.description ?? "");
-    if (s > bestScore) { bestScore = s; best = m; }
+    if (isCarrierOnlyDish(m.name, m.description ?? "")) continue;
+    if (coastal && isHeavyFriedDish(m.name, m.description ?? "")) continue;
+    if (sweet && isHeavyFriedDish(m.name, m.description ?? "") && !isDessertDish(m.name, m.description ?? "")) {
+      continue;
+    }
+    if (sweet && !isDessertDish(m.name, m.description ?? "") && best && isDessertDish(best.name)) {
+      continue;
+    }
+    const s = scoreClean(m.name, m.description ?? "", coastal, sweet, health);
+    if (s > bestScore) {
+      bestScore = s;
+      best = m;
+    }
+  }
+  // Prefer any dessert over savory when sweet craving
+  if (sweet) {
+    const dessert = menu.find(
+      (m) =>
+        !exclude.has(m.name.toLowerCase()) &&
+        isDessertDish(m.name, m.description ?? "") &&
+        !(isHeavyFriedDish(m.name, m.description ?? "") && !isLightSweetDish(m.name, m.description ?? "")),
+    );
+    if (dessert) {
+      const light = menu.find(
+        (m) =>
+          !exclude.has(m.name.toLowerCase()) &&
+          isLightSweetDish(m.name, m.description ?? ""),
+      );
+      return light ?? dessert ?? best;
+    }
   }
   return best;
 }
 
-function scoreHeritage(name: string, desc: string, sigName?: string): number {
+function scoreHeritage(
+  name: string,
+  desc: string,
+  sigName?: string,
+  coastal = false,
+  sweet = false,
+): number {
   const t = (name + " " + (desc ?? "")).toLowerCase();
   let s = 0;
   if (sigName && name.toLowerCase() === sigName.toLowerCase()) s += 8;
   if (/(tandoori|biryani|rogan josh|tikka masala|butter chicken|osso buco|risotto|scaloppine|braised|short rib|lasagna|tom kha|pad thai|panang|massaman|mole|carnitas|pozole|al pastor|paella|chirashi|sashimi|ramen|unagi|kebab|korma)/.test(t)) s += 5;
+  if (isSouthTiffinDish(name, desc)) s += 6;
   if (/(traditional|classic|house|signature|chef|family|heritage)/.test(t)) s += 3;
   if (/(salad|bowl|wrap|soup)/.test(t)) s -= 3;
+  if (coastal && /(seafood|fish|shrimp|prawn|salmon|crab|lobster|tandoori seafood)/.test(t)) s += 10;
+  if (coastal && /\bchicken\b/.test(t) && !/seafood|fish/.test(t)) s -= 6;
+  if (sweet && isDessertDish(name, desc)) s += 12;
+  if (sweet && /(gulab|rasmalai|kheer|jalebi|halwa|ladoo|mithai)/.test(t)) s += 4;
+  if (sweet && /\bchicken\b/.test(t) && !isDessertDish(name, desc)) s -= 8;
   return s;
 }
 
-function pickHeritage(menu: MenuItem[], sigName: string | undefined, exclude: Set<string>): MenuItem | undefined {
+function pickHeritage(
+  menu: MenuItem[],
+  sigName: string | undefined,
+  exclude: Set<string>,
+  coastal = false,
+  sweet = false,
+): MenuItem | undefined {
   let best: MenuItem | undefined;
   let bestScore = -Infinity;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
-    const s = scoreHeritage(m.name, m.description ?? "", sigName);
+    if (isCarrierOnlyDish(m.name, m.description ?? "")) continue;
+    const s = scoreHeritage(m.name, m.description ?? "", sigName, coastal, sweet);
     if (s > bestScore) { bestScore = s; best = m; }
   }
   return best;
@@ -625,30 +868,51 @@ function whyFor(
 ): string {
   const d = dish.toLowerCase();
   const energyWord = dials.energy < 40 ? "low energy" : dials.energy > 70 ? "peak energy" : "current state";
-  const pairingClause = carrier && carrierName
-    ? ` Paired with ${carrierName} — ${carrier.rationale}.`
-    : "";
+  // CRS-003d: rationale must describe the *shown* carrier, not a stale dish-default.
+  let pairingClause = "";
+  if (carrierName) {
+    const rationale =
+      carrier && carrier.primary === carrierName
+        ? carrier.rationale
+        : carrier && carrier.lowCarbAlt === carrierName
+          ? carrier.rationale
+          : isStarchAccompaniment(carrierName)
+            ? `${carrierName} completes the plate without fighting the main`
+            : `paired alongside ${carrierName}`;
+    pairingClause = ` Paired with ${carrierName} — ${rationale}.`;
+  }
 
   let core = "";
   if (label === "best-match") {
-    if (/curry|masala|tikka masala|butter chicken/.test(d)) core = `Warming spice and gentle fats anchor your ${energyWord}.`;
+    if (/gulab|rasmalai|kheer|kulfi|jalebi|halwa|mithai|dessert|ice cream|sweet/.test(d) || isDessertDish(dish)) {
+      core = `${dish} satisfies a sweet craving — dessert first.`;
+    } else if (/seafood|fish|shrimp|prawn|crab|lobster|salmon|oceany|coastal/.test(d)) {
+      core = `${dish} brings coastal protein for your ${energyWord}.`;
+    } else if (/curry|masala|tikka masala|butter chicken/.test(d)) core = `Warming spice and gentle fats anchor your ${energyWord}.`;
     else if (/biryani/.test(d)) core = `Slow-cooked rice and spice — sustained release for ${energyWord}; complete on its own.`;
     else if (/tandoori|grilled|kebab/.test(d)) core = `Lean clay-oven protein matches your ${energyWord} cleanly.`;
     else if (/pad thai|noodle|pasta/.test(d)) core = `Balanced carbs and protein for steady ${energyWord} — a complete plate as served.`;
     else if (/risotto|osso|braised|short rib/.test(d)) core = `Deep grounding warmth — ideal for ${energyWord}.`;
     else if (/salad|bowl|sashimi|crudo|poke/.test(d)) core = `Light and lean — keeps your ${energyWord} crisp.`;
-    else core = `Tuned to your ${energyWord} — anchors the meal without overload.`;
+    else if (/idli|dosa|khichdi/.test(d)) core = `${dish} is a complete starch plate for your ${energyWord} — no extra rice needed.`;
+    else core = `${dish} — tuned to your ${energyWord} without overload.`;
   } else if (label === "clean-vital") {
-    if (/dal|lentil/.test(d)) core = `Plant-protein, easy on digestion, naturally low-fat.`;
-    else if (/saag|spinach|greens/.test(d)) core = `Iron and folate-rich greens with minimal added fats.`;
-    else if (/fish|salmon|sashimi|crudo|ceviche/.test(d)) core = `Omega-3 lean protein — clean and vital.`;
-    else if (/salad|kale|quinoa/.test(d)) core = `Fiber-forward, lower-calorie, micronutrient-dense.`;
-    else if (/soup|broth|tom kha/.test(d)) core = `Hydrating broth with lean protein — gentle and clarifying.`;
-    else if (/grilled|roasted|steamed|baked/.test(d)) core = `Dry-heat preparation keeps fats and calories in check.`;
-    else if (/tikka(?! masala)/.test(d)) core = `Yogurt-marinated, clay-oven cooked — lean and clean.`;
-    else core = `A lighter, lower-calorie pick from this kitchen.`;
+    if (isDessertDish(dish) && isLightSweetDish(dish)) {
+      core = `${dish}: a lighter sweet — still a treat, easier on the plate.`;
+    } else if (isDessertDish(dish)) {
+      core = `${dish}: dessert from this kitchen, kept as a focused sweet.`;
+    } else if (/dal|lentil/.test(d)) core = `${dish}: plant-protein, easy on digestion, naturally low-fat.`;
+    else if (/saag|spinach|greens/.test(d)) core = `${dish}: iron and folate-rich greens with minimal added fats.`;
+    else if (/fish|salmon|sashimi|crudo|ceviche|seafood|shrimp/.test(d)) core = `${dish}: omega-3 lean protein — clean and vital.`;
+    else if (/salad|kale|quinoa/.test(d)) core = `${dish}: fiber-forward, lower-calorie, micronutrient-dense.`;
+    else if (/soup|broth|tom kha/.test(d)) core = `${dish}: hydrating broth with lean protein — gentle and clarifying.`;
+    else if (/grilled|roasted|steamed|baked/.test(d)) core = `${dish}: dry-heat preparation keeps fats and calories in check.`;
+    else if (/tikka(?! masala)/.test(d)) core = `${dish}: yogurt-marinated, clay-oven cooked — lean and clean.`;
+    else core = `${dish}: a lighter pick from this kitchen.`;
   } else {
-    if (/rogan josh/.test(d)) core = `Kashmiri slow-braise — the kitchen's heritage benchmark.`;
+    if (isDessertDish(dish)) core = `${dish} — classic sweet from this kitchen's heritage table.`;
+    else if (/seafood|fish|shrimp|prawn/.test(d)) core = `${dish} — coastal heritage from this kitchen.`;
+    else if (/rogan josh/.test(d)) core = `Kashmiri slow-braise — the kitchen's heritage benchmark.`;
     else if (/biryani/.test(d)) core = `Layered, aromatic — a centerpiece dish complete in itself.`;
     else if (/butter chicken|tikka masala/.test(d)) core = `The crowd-favorite signature — rich, balanced, time-tested.`;
     else if (/osso buco/.test(d)) core = `Milanese braised veal shank — Italy's classic celebratory plate.`;
@@ -658,8 +922,8 @@ function whyFor(
     else if (/mole|al pastor|pozole|cochinita/.test(d)) core = `A regional Mexican heritage dish with deep prep ritual.`;
     else if (/ramen|unagi|chirashi|nigiri/.test(d)) core = `An anchor of Japanese tradition — refined and seasonal.`;
     else if (/short rib|brisket|pot roast/.test(d)) core = `Slow-cooked Americana — depth and patience on a plate.`;
-    else if (/tandoori/.test(d)) core = `The clay-oven classic — smoke, char, and heritage spice.`;
-    else core = `The kitchen's heritage signature — order it the way regulars do.`;
+    else if (/tandoori/.test(d)) core = `${dish}: clay-oven classic — smoke, char, and heritage spice.`;
+    else core = `${dish}: the kitchen's heritage signature — order it the way regulars do.`;
   }
 
   return dietaryWhyPrefix(dietary) + core + pairingClause;
@@ -674,6 +938,11 @@ function whyFor(
 export interface IntentHint {
   dish?: string; // raw user phrase, e.g. "spicy shrimp curry with naan"
   dietary?: StrictDietaryTag;
+  /** ROE-014 situational layers */
+  mood?: MoodSlug;
+  occasion?: OccasionSlug;
+  age_group?: AgeGroupSlug;
+  health_fitness?: HealthFitnessSlug;
 }
 
 const STOP = new Set([
@@ -717,19 +986,11 @@ function intentCarrierName(hint?: string): string | undefined {
 // Carrier tokens shouldn't drive *dish* matching (otherwise "naan" would
 // pull a Naan side dish into the headline). We separate them out.
 function dishOnlyTokens(hint?: string): string[] {
-  return intentTokens(hint).filter((t) => !(t in CARRIER_WORDS));
+  return expandDishTokens(hint).filter((t) => !(t in CARRIER_WORDS));
 }
 
 function intentMatchScore(name: string, desc: string, tokens: string[]): number {
-  if (!tokens.length) return 0;
-  const t = (name + " " + (desc ?? "")).toLowerCase();
-  let hits = 0;
-  for (const tok of tokens) if (t.includes(tok)) hits += 1;
-  if (!hits) return 0;
-  // Strong boost so an intent-matching item dominates over generic dial picks.
-  // Full match (all tokens) gets a big bonus; partial scales linearly.
-  const ratio = hits / tokens.length;
-  return 20 * ratio + (ratio === 1 ? 10 : 0);
+  return sharedIntentMatchScore(name, desc, tokens);
 }
 
 function pickByIntent(menu: MenuItem[], tokens: string[], exclude: Set<string>): MenuItem | undefined {
@@ -738,29 +999,11 @@ function pickByIntent(menu: MenuItem[], tokens: string[], exclude: Set<string>):
   let bestScore = 0;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
+    if (isCarrierOnlyDish(m.name, m.description ?? "")) continue;
     const s = intentMatchScore(m.name, m.description ?? "", tokens);
     if (s > bestScore) { bestScore = s; best = m; }
   }
   return best;
-}
-
-function titleCase(s: string): string {
-  return s.replace(/\b([a-z])([a-z]*)/g, (_m, a, b) => a.toUpperCase() + b);
-}
-
-// Build a synthetic dish name from the user's request when nothing on the
-// menu matches. Marked verified=false so the UI can flag it as inferred.
-function synthDishFromHint(hint: string): string {
-  const cleaned = hint
-    .toLowerCase()
-    .replace(/\b(with|and|please|some|a|the|of|for|i|want|would|like|get|me|to|on|in|or|plus|also)\b/g, " ")
-    .replace(/[^a-z\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  // Strip any trailing carrier word so we don't say "Shrimp Curry Naan"
-  const carrierWord = Object.keys(CARRIER_WORDS).find((w) => new RegExp(`\\b${w}\\b`).test(cleaned));
-  const dishPart = carrierWord ? cleaned.replace(new RegExp(`\\b${carrierWord}\\b`, "g"), "").trim() : cleaned;
-  return titleCase(dishPart || cleaned);
 }
 
 export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: IntentHint): OutcomePick[] {
@@ -770,9 +1013,19 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const sigName = safe.signature_dish?.trim();
   const purityTag = purityTagFor(safe);
   const used = new Set<string>();
-  const bank = bankFor(safe.cuisine, dietary);
+  const southKitchen = isSouthIndianKitchen(safe);
+  const bank = bankFor(safe, dietary);
   const dishTokens = dishOnlyTokens(intent?.dish);
   const userCarrier = intentCarrierName(intent?.dish);
+  const coastal = isCoastalDishIntent(intent?.dish);
+  const sweet = isSweetDishIntent(intent?.dish);
+  const health = intent?.health_fitness;
+  const preferLightMatrix =
+    health === "clean" ||
+    health === "light" ||
+    health === "recovery" ||
+    health === "digestive" ||
+    health === "metabolic";
 
   // Helper: try menu first, then cuisine bank fallback (treated as "inferred")
   type Pick = {
@@ -788,77 +1041,193 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   });
   const tryMenu = (m?: MenuItem): Pick | null => {
     if (!m) return null;
+    if (isCarrierOnlyDish(m.name, m.description ?? "")) return null;
+    if (southKitchen && isNorthIndianInvention(m.name)) return null;
     if (!dishPassesGate(m.name, m.description ?? "", dietary, m)) return null;
     return { name: m.name, verified: true, description: m.description, ...menuDiet(m) };
   };
   const tryBank = (list: string[] | undefined): Pick | null => {
     if (!list) return null;
-    const filtered = filterBankList(list, dietary);
-    const n = pickFromBank(filtered, used, dietary);
+    const filtered = filterBankList(list, dietary)
+      .filter((d) => !isCarrierOnlyDish(d))
+      .filter((d) => !(southKitchen && isNorthIndianInvention(d)));
+    const n = pickFromBank(filtered, used, dietary, southKitchen);
     return n ? { name: n, verified: false } : null;
   };
 
-  // 1) BEST MATCH — intent-aware. If the user explicitly asked for a dish,
-  // try to find a verified menu item that contains those food tokens. If the
-  // menu doesn't list it, surface the user's request as an inferred dish so
-  // they see "Spicy Shrimp Curry" instead of an unrelated default.
+  // Culinary matrix — real venue dishes when menu_items is thin
+  const tryMatrix = (
+    prefer: "main_course" | "appetizer" | "starter" | "light" | "any",
+  ): Pick | null => {
+    const mxDishes = restaurantDishes(safe.name).filter(
+      (d) =>
+        d.course !== "registry" &&
+        !used.has(d.name.toLowerCase()) &&
+        !isCarrierOnlyDish(d.name) &&
+        !(southKitchen && isNorthIndianInvention(d.name)) &&
+        dishPassesGate(d.name, "", dietary, { name: d.name }),
+    );
+    if (!mxDishes.length) return null;
+
+    let chosen =
+      prefer === "main_course"
+        ? mxDishes.find((d) => d.course === "main_course")
+        : prefer === "appetizer"
+          ? mxDishes.find((d) => d.course === "appetizer")
+          : prefer === "starter"
+            ? mxDishes.find((d) => d.course === "starter")
+            : prefer === "light"
+              ? mxDishes.find(
+                  (d) =>
+                    isLightDishType(d.dish_type) ||
+                    /salad|dal|raita|chutney|steamed|idli|idly|dosa|dosai|sambar|rasam|uttapam|vada/i.test(d.name),
+                )
+              : undefined;
+
+    if (!chosen && prefer === "light") {
+      chosen = mxDishes.find((d) => d.course === "appetizer" || d.course === "starter");
+    }
+    if (!chosen) chosen = mxDishes.find((d) => d.course === "main_course") ?? mxDishes[0];
+    if (!chosen) return null;
+    return {
+      name: chosen.name,
+      verified: true,
+      description: chosen.dish_type ? `Matrix ${chosen.course}` : undefined,
+    };
+  };
+
+  const trySignature = (): Pick | null => {
+    if (!sigName || used.has(sigName.toLowerCase())) return null;
+    if (isCarrierOnlyDish(sigName)) return null;
+    if (southKitchen && isNorthIndianInvention(sigName)) return null;
+    if (!dishPassesGate(sigName, "", dietary)) return null;
+    return { name: sigName, verified: true };
+  };
+
+  // 1) BEST MATCH — intent-aware, but NEVER invent the same synthetic dish
+  // on every restaurant. Only surface an intent dish when this kitchen
+  // actually has it (menu / matrix / cuisine bank).
   let best: Pick | null = null;
   if (dishTokens.length) {
     const hit = pickByIntent(menu, dishTokens, used);
-    if (hit) {
+    if (hit && !isCarrierOnlyDish(hit.name, hit.description ?? "")) {
       best = { name: hit.name, verified: true, ...menuDiet(hit) };
-    } else if (bank) {
+    } else {
+      // Matrix dish names that match intent tokens
+      const mxHit = restaurantDishes(safe.name).find((d) => {
+        if (used.has(d.name.toLowerCase())) return false;
+        if (isCarrierOnlyDish(d.name)) return false;
+        if (!dishPassesGate(d.name, "", dietary, { name: d.name })) return false;
+        return intentMatchScore(d.name, "", dishTokens) > 0;
+      });
+      if (mxHit) best = { name: mxHit.name, verified: true };
+    }
+    if (!best && bank) {
       const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
-        .filter((d) => !used.has(d.toLowerCase()))
+        .filter((d) => !used.has(d.toLowerCase()) && !isCarrierOnlyDish(d))
+        .filter((d) => !(southKitchen && isNorthIndianInvention(d)))
         .map((d) => ({ d, s: intentMatchScore(d, "", dishTokens) }))
         .filter((x) => x.s > 0)
         .sort((a, b) => b.s - a.s);
       if (ranked[0]) best = { name: ranked[0].d, verified: false };
     }
-    // Last resort: synthesize from the user's phrase so the headline
-    // reflects the request rather than a generic dial-pick.
-    if (!best && intent?.dish) {
-      best = { name: synthDishFromHint(intent.dish), verified: false };
-    }
+    // Do NOT synthDishFromHint here — inventing "Seafood" on sparse kitchens / Mantra / Pizza
+    // made every alternate card identical and wrong.
   }
-  if (!best) best = tryMenu(pickBest(menu, dials, sigName, used));
+  if (!best) best = tryMenu(pickBest(menu, dials, sigName, used, intent));
+  if (!best) best = tryMatrix(preferLightMatrix ? "light" : "main_course");
+  if (!best) best = trySignature();
   if (!best && bank) {
     const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
-      .filter((d) => !used.has(d.toLowerCase()))
-      .map((d) => ({ d, s: scoreDishForDials(d, "", dials) }))
+      .filter((d) => !used.has(d.toLowerCase()) && !isCarrierOnlyDish(d))
+      .filter((d) => !(southKitchen && isNorthIndianInvention(d)))
+      .map((d) => ({ d, s: scoreDishForDials(d, "", dials, intent) }))
       .sort((a, b) => b.s - a.s);
     if (ranked[0]) best = { name: ranked[0].d, verified: false };
   }
   if (best) used.add(best.name.toLowerCase());
 
-  // 2) CLEAN & VITAL — must be different & lighter
-  let clean: Pick | null = tryMenu(pickClean(menu, used));
+  // 2) CLEAN & VITAL — lighter; coastal skips fried; sweet prefers light dessert
+  let clean: Pick | null = tryMenu(pickClean(menu, used, coastal, sweet, health));
+  if (!clean) clean = tryMatrix("light");
   if (!clean && bank) clean = tryBank(bank.clean);
   // If menu pick exists but happens to NOT be lighter than the best, prefer bank
-  if (clean && best && clean.verified && scoreClean(clean.name, "") < 3 && bank) {
+  // ROE-004: never demote South tiffin / South kitchens into North bank (Dal Tadka)
+  if (
+    clean &&
+    best &&
+    clean.verified &&
+    scoreClean(clean.name, clean.description ?? "", coastal, sweet, health) < 3 &&
+    bank &&
+    !southKitchen &&
+    !isSouthTiffinDish(clean.name, clean.description ?? "")
+  ) {
     const alt = tryBank(bank.clean);
-    if (alt) clean = alt;
+    if (alt && !(coastal && isHeavyFriedDish(alt.name)) && !(sweet && isHeavyFriedDish(alt.name))) {
+      clean = alt;
+    }
+  }
+  if (clean && coastal && isHeavyFriedDish(clean.name)) {
+    clean = tryMatrix("light") ?? (bank ? tryBank(bank.clean) : null) ?? clean;
+    if (clean && isHeavyFriedDish(clean.name)) {
+      // Last resort: keep non-fried menu item if any
+      const safer = menu.find(
+        (m) =>
+          !used.has(m.name.toLowerCase()) &&
+          !isHeavyFriedDish(m.name, m.description ?? "") &&
+          dishPassesGate(m.name, m.description ?? "", dietary, m),
+      );
+      if (safer) clean = { name: safer.name, verified: true, ...menuDiet(safer) };
+    }
   }
   if (clean) used.add(clean.name.toLowerCase());
 
-  // 3) HERITAGE FAVORITE — must be different & traditional
-  let heritage: Pick | null = tryMenu(pickHeritage(menu, sigName, used));
+  // 3) HERITAGE — coastal ocean / sweet mithai when present
+  let heritage: Pick | null = null;
+  if ((coastal || sweet) && dishTokens.length) {
+    const intentHit = pickByIntent(menu, dishTokens, used);
+    if (intentHit && intentHit.name.toLowerCase() !== best?.name.toLowerCase()) {
+      if (!sweet || isDessertDish(intentHit.name, intentHit.description ?? "")) {
+        heritage = { name: intentHit.name, verified: true, ...menuDiet(intentHit) };
+      }
+    }
+  }
+  if (!heritage) heritage = tryMenu(pickHeritage(menu, sigName, used, coastal, sweet));
+  if (!heritage) heritage = trySignature();
+  if (!heritage) heritage = tryMatrix("main_course");
   if (!heritage && bank) heritage = tryBank(bank.heritage);
   if (heritage) used.add(heritage.name.toLowerCase());
 
   // Final guarantee: if any slot is still empty or duplicates, pull next bank entry
   const ensureUnique = (p: Pick | null, listKey: keyof CuisineBank): Pick => {
-    if (p && dishPassesGate(p.name, p.description ?? "", dietary)) return p;
+    const pickOk = (name: string, desc = "") =>
+      !isCarrierOnlyDish(name, desc) &&
+      !(southKitchen && isNorthIndianInvention(name)) &&
+      dishPassesGate(name, desc, dietary);
+
+    if (p && pickOk(p.name, p.description ?? "")) return p;
+
+    const mx = tryMatrix(listKey === "clean" ? "light" : "main_course");
+    if (mx && pickOk(mx.name)) {
+      used.add(mx.name.toLowerCase());
+      return mx;
+    }
     if (bank) {
       const pool = filterBankList(
         [...bank[listKey], ...bank.best, ...bank.clean, ...bank.heritage],
         dietary,
-      );
-      const n = pickFromBank(pool, used, dietary);
+      )
+        .filter((d) => !isCarrierOnlyDish(d))
+        .filter((d) => !(southKitchen && isNorthIndianInvention(d)));
+      const n = pickFromBank(pool, used, dietary, southKitchen);
       if (n) { used.add(n.toLowerCase()); return { name: n, verified: false }; }
     }
     const menuFallback = menu.find(
-      (m) => !used.has(m.name.toLowerCase()) && dishPassesGate(m.name, m.description ?? "", dietary, m),
+      (m) =>
+        !used.has(m.name.toLowerCase()) &&
+        !isCarrierOnlyDish(m.name, m.description ?? "") &&
+        !(southKitchen && isNorthIndianInvention(m.name)) &&
+        dishPassesGate(m.name, m.description ?? "", dietary, m),
     );
     if (menuFallback) {
       used.add(menuFallback.name.toLowerCase());
@@ -869,7 +1238,13 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
         ...menuDiet(menuFallback),
       };
     }
-    if (sigName && dishPassesGate(sigName, "", dietary) && !used.has(sigName.toLowerCase())) {
+    if (
+      sigName &&
+      !isCarrierOnlyDish(sigName) &&
+      !(southKitchen && isNorthIndianInvention(sigName)) &&
+      dishPassesGate(sigName, "", dietary) &&
+      !used.has(sigName.toLowerCase())
+    ) {
       return { name: sigName, verified: true };
     }
     return { name: dietary === "jain" ? "Jain-compliant selection" : "Chef's selection", verified: false };
@@ -885,16 +1260,23 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     { key: "heritage",   label: "Heritage Favorite", pick: heritage },
   ];
 
-  // Carrier rule: ALWAYS use the culturally authentic primary carrier
-  // (e.g. dal → Basmati Rice & Roti). Only fall back to the low-carb alt
-  // when the kitchen is explicitly grain-free — otherwise we'd violate the
-  // cultural pairing (dal must never be served with just "greens").
+  // Carrier per dish (CRS-003c): never stamp one venue accompaniment on every slot.
+  const matrixCarrier = matrixCourseDish(safe.name, "accompaniment_base");
+  const matrixCarrierOk =
+    matrixCarrier &&
+    isStarchAccompaniment(matrixCarrier.name) &&
+    dishPassesGate(matrixCarrier.name, "", dietary, { name: matrixCarrier.name });
+
   const useLowCarb = safe.grain_profile === "grain-free";
   return slots.map(({ key, label, pick }) => {
     const carrierSpec = carrierFor(pick.name, safe.cuisine);
     let carrierName = carrierSpec
       ? (useLowCarb ? carrierSpec.lowCarbAlt : carrierSpec.primary)
       : undefined;
+    // Matrix starch only when this dish still needs a carrier.
+    if (matrixCarrierOk && !useLowCarb && carrierSpec && needsPlateCarrier(pick.name)) {
+      carrierName = matrixCarrier!.name;
+    }
     // If the user explicitly requested a carrier (e.g. "with naan"), honor it
     // on the headline best-match dish — even if the cultural default differs.
     if (key === "best-match" && userCarrier) {

@@ -1,52 +1,54 @@
-## The bug
+## Next up
 
-When you type **"want to eat shrimp"**, Veda parses `filters.dish = "shrimp"` correctly — but the **restaurant ranker** (`src/lib/veda.ts` → `scoreRestaurants`) completely ignores `intent.filters.dish`. It only uses the 4 dials (energy / context / budget / purity) plus the Vitality Twin.
+| Priority | Ticket | Status |
+|----------|--------|--------|
+| 1 | **ROE-014** Layered situational intent | Shipping — PR #28; redeploy `parse-intent` after merge |
+| 2 | **ROE-015** (ASK-002) Ask situational label chips | **Queued** — teach mood/age/occasion/health after ROE-014 |
+| — | Optional: ROE-006 **+perf** (matrix-first GL) | Later / unscoped |
+| — | **ROE-016** | Next free after ROE-015 lands |
 
-So the hero ends up being whichever restaurant scores highest on **purity + dial alignment** — which for most Indian spots is Tandoori Chicken / Dal Tadka (their `signature_dish`), regardless of whether they even serve shrimp.
+**ROE-012** — superseded (folded into ROE-011).
 
-The per-restaurant dish picker (`buildTripleOutcome` in `src/lib/pairings.ts`) *does* read the intent and would surface a shrimp dish — but only **after** the restaurant has already been chosen by the ranker. By then it's too late.
+### Naming standard
 
-## The fix (single, surgical change)
+| Surface | Format | Example |
+|---------|--------|---------|
+| Issue / PR | `[ROE-NNN] Short title (ABC-NNN)` | `[ROE-015] Ask situational chips (ASK-002)` |
+| Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-015][ASK-002] expand Ask chips for situational layers` |
+| Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-015-ask-situational-chips` |
 
-Inject a **dish-match boost** into restaurant ranking when `intent.filters.dish` is set.
+Rules:
+1. **ROE-NNN** is the global serial — never skip. Next free to **assign**: **ROE-015** (queued ASK-002). After that: **ROE-016**.
+2. **ABC-NNN** is the workstream alias when one exists. Omit when none.
+3. Issue and PR titles use the **same** format.
+4. Commit subject: dual tags then a short imperative phrase.
 
-### 1. `src/lib/veda.ts` — `scoreRestaurants`
-- Accept an optional `intentDish?: string` parameter.
-- Tokenize the dish phrase (reusing the same stop-word/carrier filter logic that already lives in `pairings.ts` — extract `dishOnlyTokens` to a shared util, or inline a small version).
-- For each restaurant, scan `menu_items[].name` and `menu_items[].description` for token hits.
-- If hits found: add a large boost (e.g. `+35` for a strong name match, `+15` for description-only) and push an inference tag like `"Has shrimp"`.
-- If no hits: small penalty (`-5`) so menus that explicitly don't serve it sink — but never hard-filter (we still want to show alternatives).
+**Standing flow:** `.cursor/rules/roe-ticket-flow.mdc` + `project.md` + `.github/PROJECT_BOARD.md` (Ask EXAMPLES gate, **GitHub Labels** on Issue/PR, ops deploy).
 
-### 2. `src/pages/Index.tsx`
-- Pass `intent?.filters?.dish` into `scoreRestaurants(...)`.
-- When `intent.filters.dish` is set and **zero** restaurants matched, surface a one-line banner above "Other Outcomes":
-  > *"No shrimp dishes found in parsed menus nearby — showing best-aligned alternatives. Try widening the search."*
-- Remove the now-redundant "Showing {cuisine} first" sort branch for the dish case (dish match is stronger than cuisine hint).
+Triage: `docs/ROE-backlog-triage-2026-07-24.md`
 
-### 3. Nothing else needs to change
-- `HeroCard` / `MiniCard` already receive `intent` and call `buildTripleOutcome`, which already promotes the user's requested dish to slot 1 when the menu contains it. Once the ranker picks the right restaurant, the right dish appears automatically.
+### In progress / shipping
+- **[ROE-014] Layered mood/age/occasion/health intent mapping** — PR #28; redeploy `parse-intent` after merge
 
-## Why this is the right place to fix it
+### Queued (do next after ROE-014)
+- **[ROE-015] Ask situational label chips (ASK-002)** — expand `Ask.tsx` EXAMPLES for kids / athletic / recovery / senior / digestive / light (engine already supports via ROE-014). Impact analysis first.
 
-I traced the full data path before writing this plan (per the credit-saver rule in project memory):
+### Board QA
+- **[ROE-013] Ask intent chips (ASK-001)** — merged PR #27; Pass pending
+- **[ROE-011] Fulfillment order copy (FUL-003)** — merged PR #25; Pass pending
+- **[ROE-010] Delivery handoff URLs (FUL-002)** — merged PR #23; Pass pending
+- **[ROE-009] Fulfillment venue contacts (FUL-001)** — merged PR #21; ops + Pass pending
+- **[ROE-008] / [ROE-007]** — merged; Pass pending
 
-```text
-parse-intent edge fn ──▶ intent.filters.dish ──▶ Index.tsx
-                                                    │
-                                                    ├──▶ scoreRestaurants()  ❌ ignores dish  ← bug lives here
-                                                    │
-                                                    └──▶ HeroCard ──▶ buildTripleOutcome()  ✅ uses dish
-```
-
-The symptom (wrong dish shown) is downstream; the root cause (wrong *restaurant* picked) is in the ranker. Fixing only the ranker fixes both.
-
-## Files touched
-- `src/lib/veda.ts` — add `intentDish` arg + dish-match scoring (~25 lines)
-- `src/pages/Index.tsx` — pass `intent.filters.dish` into `scoreRestaurants`, add empty-state banner (~10 lines)
-
-## Out of scope
-- No DB / migration changes.
-- No edge-function changes (parser is already correct).
-- No UI redesign — same hero/alternates layout, just ranked correctly.
-
-Approve and I'll implement.
+### Done
+- ROE-013 Ask intent chips (PR #27)
+- ROE-011 fulfillment order copy (PR #25); ROE-012 folded
+- ROE-010 delivery handoff URLs (PR #23)
+- ROE-009 fulfillment contacts (PR #21)
+- ROE-006 GL lens UX (PR #7)
+- ROE-005 A Mythaai removed (PR #6)
+- ROE-004 Mylapore / South Indian (PR #5)
+- ROE-003 Feeling/mood plates (PR #4)
+- ROE-002 Gemini rate-limit (PR #3)
+- ROE-001 sweet/dessert (PR #2)
+- CRS-003 oceany (PR #1)

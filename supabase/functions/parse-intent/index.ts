@@ -2,12 +2,32 @@
 // Uses native Google Gemini API with tool-calling for reliable structured output.
 
 import { DEFAULT_GEMINI_MODEL, geminiToolCall } from "../_shared/ai-client.ts";
-import { DIETARY_INTENT_SLUGS, isDietaryIntent } from "../_shared/dietary.ts";
+import { DIETARY_INTENT_SLUGS } from "../_shared/dietary.ts";
+import {
+  applySituationalDials,
+  buildRestatedIntent,
+  extractCuisineFromTranscript,
+  extractDishFromTranscript,
+  isCarrierOnlyDish,
+  isCelebratoryMoodIntent,
+  isSweetCravingTranscript,
+  mergeBloodSugarLens,
+  mergeDietary,
+  mergeSituationalLayers,
+  wellnessTagsForHealth,
+  AGE_GROUP_SLUGS,
+  HEALTH_FITNESS_SLUGS,
+  MOOD_SLUGS,
+  OCCASION_SLUGS,
+  type SituationalLayers,
+  type StrictDietary,
+} from "../_shared/intent-sanitize.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 const SYSTEM_PROMPT = `You are Veda, the reasoning engine for Rasaoi — a premium "System of Outcome" for dining.
@@ -22,11 +42,12 @@ DIAL SCALE (each 0-100):
 MAPPING RULES:
 - "not feeling good", "tired", "off", "sick", "exhausted", "low energy" → energy 10-25, purity 75-90 (lean clean & restorative)
 - "great", "energized", "peak", "after workout" → energy 75-95
-- "date night", "celebrating", "anniversary", "family dinner" → context 80-95
+- "date night", "celebrating", "anniversary", "family dinner", "with friends", "party mood", "celebrating mood" → context 80-95; energy 55-75; purity 60-75. Omit filters.dish unless a specific food was named. NEVER invent roti, naan, bread, or paratha as the dish for a mood-only ask.
 - "quick", "alone", "grab something", "in a rush" → context 5-20
-- "healthy", "clean", "good for me", "organic" → purity 75-90
+- "healthy", "clean", "good for me", "organic" → purity 75-90. NEVER set filters.cuisine to "Healthy" from the word healthy alone (purity-only).
 - "indulgent", "treat", "comfort food" → purity 20-40
-- "diabetic", "diabetes", "low sugar", "low carb", "blood sugar", "no rice", "no bread", "no naan", "keto" → set lens="blood_sugar"
+- "sweet", "something sweet", "dessert", "mithai", "gulab jamun", "kheer" → purity 25-45 (treat band); set filters.dish to "dessert" or the named sweet. NEVER invent a savory dish. Do not treat "sweet potato" as dessert.
+- "diabetic", "diabetes", "low sugar", "low carb", "blood sugar", "keto" → set lens="blood_sugar". Prefer explicit metabolic language; bare "no bread/naan" alone is not enough.
 - Explicit dollar amounts: $25 → budget 0, $35 → budget 25, $50 → budget 50, $75 → budget 70, $100+ → budget 85+
 - No budget mentioned → budget 50 (neutral)
 - No energy mentioned → energy 50
@@ -58,16 +79,30 @@ STRICT DIETARY RULES (HIGHEST PRIORITY — zero tolerance):
 - Extract religious/lifestyle dietary requirements into filters.dietary using ONLY: "jain", "vegan", "vegetarian", "eggetarian", "halal", "jhatka", "kosher", "non_veg".
 - "pure veg" / "vegetarian only" / "no meat" → vegetarian. "eggs ok" / "eggetarian" → eggetarian. "non veg" / "meat only" → non_veg.
 - If the user mentions a strict restriction (e.g. "my friend is a Jain", "Jain food", "vegan only", "halal", "kosher"), you MUST set filters.dietary.
-- Event/social keywords ("birthday", "celebration", "anniversary", "party") affect dials.context ONLY — they must NEVER override or erase filters.dietary.
+- Event/social keywords ("birthday", "celebration", "anniversary", "party") affect dials.context and occasion — they must NEVER override or erase filters.dietary.
 - When filters.dietary is set, omit filters.dish if it would violate that diet (e.g. never set dish="Tandoori Chicken" when dietary="jain").
 - Jain means: no meat, poultry, seafood, eggs; no root vegetables (onion, garlic, potato, carrot, etc.).
 - Standard dishes like "Dal Tadka" or "Paneer Tikka" are NOT Jain unless explicitly prefixed "Jain" — never suggest them for Jain diners.
 - filters.dietary must flow to ALL recommendation slots (hero + alternates + nested dish arrays), not just the headline title.
 - Include dietary in restated_intent when present (e.g. "Jain · birthday · celebratory").
 
+SITUATIONAL LAYERS (ROE-014 — closed enums, NOT dishes):
+- mood: restorative | peak | comfort | celebratory | romantic | treat | neutral
+- occasion: solo_quick | casual | date_night | friends | family | birthday | anniversary | work | festival | kids_meal | unspecified
+- age_group: toddler | child | teen | adult | senior | pregnancy | unspecified
+- health_fitness: unspecified | clean | athletic | metabolic | digestive | recovery | light
+- Emit these as top-level fields (not inside filters). Defaults: mood=neutral, others=unspecified.
+- health_fitness=metabolic ALSO set lens=blood_sugar. health_fitness=clean NEVER sets cuisine=Healthy.
+- Mood/occasion/age/health must NEVER invent filters.dish (especially not roti/naan/bread).
+- Kids / toddler / kids_meal → age_group + occasion; prefer mild plates downstream (no dish invent).
+- post-workout / gym / protein fuel → health_fitness=athletic, mood=peak when clear.
+- gut / probiotic / fermented → health_fitness=digestive (+ wellness_tags).
+- sick / hangover / not feeling good → health_fitness=recovery, mood=restorative.
+
 FILTER EXTRACTION (CRITICAL — read carefully):
 - filters.cuisine: ONLY when the diner explicitly names a cuisine type (e.g. "Thai", "Indian", "Italian"). Use canonical Title Case ("Thai", not "thai food").
 - filters.dish: ONLY when the diner names a specific dish or food item (e.g. "pad thai", "shrimp curry", "tonkotsu ramen"). Do NOT put a cuisine label in filters.dish.
+- Mood / feeling phrases ("celebrating", "mood with friends", "party") are NOT dishes — never set filters.dish to roti/naan/bread from mood alone.
 - If a specific cuisine OR dish is requested, DO NOT populate unrelated cuisines or fallback/example dishes in the filters payload.
 - NEVER default to Indian, Tandoori, Biryani, or any cuisine/dish the user did not say. Empty filters fields are correct when unknown.
 - Relative/social phrases ("for my partner", "for my wife", "something nearby", "date night") affect dials/context — they must NOT block or replace an explicit food/cuisine keyword in the same utterance.
@@ -75,8 +110,10 @@ FILTER EXTRACTION (CRITICAL — read carefully):
 - Example: "Low energy, $35, something healthy" → filters.cuisine omitted, filters.dish omitted.
 
 RESTATED INTENT: A short, warm, human phrase that confirms what you heard.
-Format like: "Low energy · ~$35 · clean & nearby" or "Thai · date night · nearby".
+Format like: "Low energy · ~$35 · clean & nearby" or "Thai · date night · nearby" or "Sweet · dessert / mithai · treat".
 Use middle-dot separators. Max 60 chars. If a cuisine was requested, include it in restated_intent.
+If the user asked for something sweet/dessert/mithai, restated_intent MUST include Sweet or dessert.
+If the user asked for celebrating / with friends / date night (mood-only), restated_intent MUST include Celebratory (e.g. "Celebratory · with friends").
 
 CONFIDENCE:
 - "high" if multiple clear signals
@@ -152,6 +189,27 @@ const TOOL_SCHEMA = {
           description:
             "Set to 'blood_sugar' if the diner mentions diabetes, low sugar, low carb, blood sugar control, or asks to avoid rice/bread/naan.",
         },
+        mood: {
+          type: "string",
+          enum: [...MOOD_SLUGS],
+          description: "Feeling profile. Default neutral. Never invent a dish from mood.",
+        },
+        occasion: {
+          type: "string",
+          enum: [...OCCASION_SLUGS],
+          description: "Dining occasion. Default unspecified.",
+        },
+        age_group: {
+          type: "string",
+          enum: [...AGE_GROUP_SLUGS],
+          description: "Age / life stage if stated. Default unspecified.",
+        },
+        health_fitness: {
+          type: "string",
+          enum: [...HEALTH_FITNESS_SLUGS],
+          description:
+            "Health/fitness profile. metabolic→also set lens=blood_sugar. clean≠Healthy cuisine. Default unspecified.",
+        },
       },
       required: ["restated_intent", "dials", "filters", "confidence"],
       additionalProperties: false,
@@ -183,13 +241,6 @@ function isWellnessTag(v: unknown): v is WellnessTag {
   return typeof v === "string" && (WELLNESS_TAG_SLUGS as readonly string[]).includes(v);
 }
 
-const DIETARY_SLUGS = DIETARY_INTENT_SLUGS;
-type StrictDietary = (typeof DIETARY_SLUGS)[number];
-
-function isStrictDietary(v: unknown): v is StrictDietary {
-  return isDietaryIntent(v);
-}
-
 interface FilterPayload {
   cuisine?: string;
   dish?: string;
@@ -207,20 +258,11 @@ interface ParsedPayload {
   filters: FilterPayload;
   confidence: "high" | "medium" | "low";
   lens?: "blood_sugar";
+  mood: SituationalLayers["mood"];
+  occasion: SituationalLayers["occasion"];
+  age_group: SituationalLayers["age_group"];
+  health_fitness: SituationalLayers["health_fitness"];
 }
-
-/** Ordered: first match wins when multiple cuisines appear in transcript. */
-const TRANSCRIPT_CUISINE_PATTERNS: { canonical: string; pattern: RegExp }[] = [
-  { canonical: "Thai", pattern: /\bthai\b|pad thai|tom yum|panang|massaman|larb\b/i },
-  { canonical: "Japanese", pattern: /\bjapanese\b|sushi|ramen|izakaya|sashimi|teriyaki/i },
-  { canonical: "Mexican", pattern: /\bmexican\b|taco|burrito|taqueria|enchilada|mole\b/i },
-  { canonical: "Italian", pattern: /\bitalian\b|pasta|pizza|risotto|trattoria/i },
-  { canonical: "Mediterranean", pattern: /\bmediterranean\b|greek\b|hummus|falafel|gyro/i },
-  { canonical: "Indian", pattern: /\bindian\b|tandoori|biryani\b|tikka masala|naan\b|dal\b/i },
-  { canonical: "Indian", pattern: /\bdesi\b|desi food|homestyle indian|indian home\b/i },
-  { canonical: "Healthy", pattern: /\bhealthy\b|salad bowl|grain bowl|poke\b/i },
-  { canonical: "American", pattern: /\bamerican\b|burger\b|bbq\b|steakhouse/i },
-];
 
 const INDIAN_DISH_MARKERS = /\b(tandoori|biryani|naan|dal\b|tikka masala|butter chicken|rogan josh)\b/i;
 
@@ -233,7 +275,8 @@ const TRANSCRIPT_WELLNESS_PATTERNS: { tag: WellnessTag; pattern: RegExp }[] = [
     pattern: /gut[- ]?friendly|digestive health|good for (my )?gut|microbiome/i,
   },
   { tag: "probiotic", pattern: /\bprobiotic\b|\bfermented\b|kanji\b|kimchi\b/i },
-  { tag: "light", pattern: /\blight\b|low[- ]?oil|not heavy|lightly cooked/i },
+  // “light” without auto-including low-oil (low_oil has its own pattern)
+  { tag: "light", pattern: /\blight\b|not heavy|lightly cooked/i },
   { tag: "low_oil", pattern: /low[- ]?oil|minimal oil|less oil/i },
 ];
 
@@ -244,17 +287,6 @@ const CULTURE_TAG_PATTERNS: { tag: string; cuisine?: string; pattern: RegExp }[]
 
 const DEFAULT_HEAVY_DISH_INVENTIONS =
   /\b(tandoori chicken|chicken tikka|navratan korma|butter chicken|biryani)\b/i;
-
-const TRANSCRIPT_DIETARY_PATTERNS: { dietary: StrictDietary; pattern: RegExp }[] = [
-  { dietary: "jain", pattern: /\bjain\b|jain diet|jain food|jain vegetarian|ahimsa\b/i },
-  { dietary: "vegan", pattern: /\bvegan\b|plant[- ]only|no dairy\b/i },
-  { dietary: "vegetarian", pattern: /\bvegetarian\b|pure veg\b|eggless\b|no meat\b|no eggs?\b/i },
-  { dietary: "eggetarian", pattern: /\beggetarian\b|eggs? (are )?ok\b|ovo[- ]vegetarian\b/i },
-  { dietary: "halal", pattern: /\bhalal\b/i },
-  { dietary: "jhatka", pattern: /\bjhatka\b|jatka\b/i },
-  { dietary: "kosher", pattern: /\bkosher\b/i },
-  { dietary: "non_veg", pattern: /\bnon[- ]?veg\b|meat only\b|chicken only\b/i },
-];
 
 const MEAT_OR_NON_JAIN_DISH =
   /\b(chicken|tandoori|mutton|lamb|beef|pork|fish|seafood|shrimp|prawn|egg|eggs|biryani|tikka|kebab|bacon|ham|sausage|turkey|duck|crab|lobster)\b/i;
@@ -277,13 +309,6 @@ function cuisinesEquivalent(a: string, b: string): boolean {
   return x === y || x.includes(y) || y.includes(x);
 }
 
-function extractCuisineFromTranscript(transcript: string): string | undefined {
-  for (const { canonical, pattern } of TRANSCRIPT_CUISINE_PATTERNS) {
-    if (pattern.test(transcript)) return canonical;
-  }
-  return undefined;
-}
-
 function extractWellnessFromTranscript(transcript: string): WellnessTag[] {
   const found = new Set<WellnessTag>();
   for (const { tag, pattern } of TRANSCRIPT_WELLNESS_PATTERNS) {
@@ -303,7 +328,11 @@ function extractCultureFromTranscript(transcript: string): { culture_tag?: strin
   return {};
 }
 
-function mergeWellnessTags(modelTags: unknown, transcript: string): WellnessTag[] {
+function mergeWellnessTags(
+  modelTags: unknown,
+  transcript: string,
+  health?: SituationalLayers["health_fitness"],
+): WellnessTag[] {
   const merged = new Set<WellnessTag>();
   if (Array.isArray(modelTags)) {
     for (const t of modelTags) {
@@ -311,49 +340,28 @@ function mergeWellnessTags(modelTags: unknown, transcript: string): WellnessTag[
     }
   }
   for (const t of extractWellnessFromTranscript(transcript)) merged.add(t);
+  if (health) {
+    for (const t of wellnessTagsForHealth(health)) merged.add(t);
+  }
   return WELLNESS_TAG_SLUGS.filter((t) => merged.has(t));
 }
 
-function extractDietaryFromTranscript(transcript: string): StrictDietary | undefined {
-  for (const { dietary, pattern } of TRANSCRIPT_DIETARY_PATTERNS) {
-    if (pattern.test(transcript)) return dietary;
-  }
-  return undefined;
-}
-
-function mergeDietary(modelDietary: unknown, transcript: string): StrictDietary | undefined {
-  const fromTranscript = extractDietaryFromTranscript(transcript);
-  if (fromTranscript) return fromTranscript;
-  if (isStrictDietary(modelDietary)) return modelDietary;
-  return undefined;
-}
-
-function extractDishFromTranscript(transcript: string): string | undefined {
-  const t = transcript.trim();
-  if (extractDietaryFromTranscript(t)) return undefined;
-  if (THAI_DISH_MARKERS.test(t)) {
-    const m = t.match(THAI_DISH_MARKERS);
-    if (m) return m[0];
-  }
-  if (INDIAN_DISH_MARKERS.test(t)) {
-    const m = t.match(INDIAN_DISH_MARKERS);
-    if (m) return m[0];
-  }
-  return undefined;
-}
-
-function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
+function sanitizeFilters(
+  filters: unknown,
+  transcript: string,
+  health?: SituationalLayers["health_fitness"],
+): FilterPayload {
   const raw = filters && typeof filters === "object" ? (filters as Record<string, unknown>) : {};
   const transcriptCuisine = extractCuisineFromTranscript(transcript);
   const transcriptDish = extractDishFromTranscript(transcript);
   const transcriptCulture = extractCultureFromTranscript(transcript);
-  const wellness_tags = mergeWellnessTags(raw.wellness_tags, transcript);
+  const wellness_tags = mergeWellnessTags(raw.wellness_tags, transcript, health);
   const dietary = mergeDietary(raw.dietary, transcript);
 
   let cuisine =
     typeof raw.cuisine === "string" && raw.cuisine.trim() ? normalizeCuisineLabel(raw.cuisine) : undefined;
   let dish = typeof raw.dish === "string" && raw.dish.trim() ? raw.dish.trim() : undefined;
-  let culture_tag =
+  const culture_tag =
     typeof raw.culture_tag === "string" && raw.culture_tag.trim()
       ? raw.culture_tag.trim().toLowerCase()
       : transcriptCulture.culture_tag;
@@ -380,6 +388,11 @@ function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
     if (!cuisine || !cuisinesEquivalent(cuisine, transcriptCuisine)) {
       cuisine = transcriptCuisine;
     }
+  }
+
+  // [ROE-007] (IP-FIX-001): never keep model-invented "Healthy" cuisine (purity adjective ≠ cuisine).
+  if (cuisine && /^healthy$/i.test(cuisine.trim())) {
+    cuisine = undefined;
   }
 
   // Strict dietary: strip violative invented dishes (e.g. Tandoori when Jain).
@@ -419,6 +432,14 @@ function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
     if (!dishCore) dish = undefined;
   }
 
+  // ROE-003: never keep carrier-only dish from mood / model invention
+  if (dish && isCarrierOnlyDish(dish)) {
+    const askedForBread = /\b(roti|naan|paratha|chapati|phulka|kulcha|bread|bhatura|poori|puri)\b/i.test(transcript);
+    if (!askedForBread || isCelebratoryMoodIntent(transcript)) {
+      dish = undefined;
+    }
+  }
+
   const out: FilterPayload = {};
   if (cuisine) out.cuisine = cuisine;
   if (dish) out.dish = dish;
@@ -435,19 +456,52 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
   const obj = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const dialsRaw = obj.dials && typeof obj.dials === "object" ? (obj.dials as Record<string, unknown>) : {};
 
-  const dials: DialPayload = {
+  let dials: DialPayload = {
     energy: clampDial(dialsRaw.energy, 50),
     context: clampDial(dialsRaw.context, 40),
     budget: clampDial(dialsRaw.budget, 50),
     purity: clampDial(dialsRaw.purity, 70),
   };
 
-  const filters = sanitizeFilters(obj.filters, transcript);
+  const situational = mergeSituationalLayers(
+    {
+      mood: obj.mood,
+      occasion: obj.occasion,
+      age_group: obj.age_group,
+      health_fitness: obj.health_fitness,
+    },
+    transcript,
+  );
 
-  // Wellness modifiers imply higher purity intent unless user asked for indulgence.
+  const filters = sanitizeFilters(obj.filters, transcript, situational.health_fitness);
+
+  const transcriptLower = transcript.toLowerCase();
+  const sweetCraving = isSweetCravingTranscript(transcript);
+  const indulgent =
+    /\bindulgent\b|comfort food|treat\b|heavy meal/i.test(transcriptLower) || sweetCraving;
+
+  // ROE-001: sweet → treat-band purity (25–45)
+  if (sweetCraving) {
+    if (dials.purity > 45 || dials.purity < 20) {
+      dials.purity = clampDial(35, 35);
+    }
+    if (!filters.dish) filters.dish = "dessert";
+  }
+
+  // ROE-014: project mood/occasion/age/health onto dial bands
+  dials = applySituationalDials(dials, situational);
+
+  // ROE-003: never invent carrier-only dish for celebratory / social mood
+  const celebratoryMood =
+    situational.mood === "celebratory" || isCelebratoryMoodIntent(transcript);
+  if (celebratoryMood || situational.occasion === "date_night") {
+    if (filters.dish && isCarrierOnlyDish(filters.dish)) {
+      delete filters.dish;
+    }
+  }
+
+  // Wellness modifiers imply higher purity intent unless user asked for indulgence / sweet.
   if (filters.wellness_tags?.length) {
-    const transcriptLower = transcript.toLowerCase();
-    const indulgent = /\bindulgent\b|comfort food|treat\b|heavy meal/i.test(transcriptLower);
     if (!indulgent && dials.purity < 78) {
       dials.purity = Math.min(92, dials.purity + 12);
     }
@@ -458,37 +512,60 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
       ? obj.confidence
       : "medium";
 
-  let restated =
+  const modelRestated =
     typeof obj.restated_intent === "string" && obj.restated_intent.trim()
-      ? obj.restated_intent.trim().slice(0, 60)
-      : "Your request";
+      ? obj.restated_intent.trim()
+      : undefined;
 
-  if (filters.culture_tag && !restated.toLowerCase().includes(filters.culture_tag)) {
-    restated = `${filters.culture_tag} · ${restated}`.slice(0, 60);
-  } else if (filters.cuisine && !restated.toLowerCase().includes(filters.cuisine.toLowerCase())) {
-    restated = `${filters.cuisine} · ${restated}`.slice(0, 60);
-  }
-  if (filters.wellness_tags?.length) {
-    const wellnessLabel = filters.wellness_tags.slice(0, 2).join(" · ").replace(/_/g, " ");
-    if (!restated.toLowerCase().includes(wellnessLabel.split(" · ")[0])) {
-      restated = `${wellnessLabel} · ${restated}`.slice(0, 60);
-    }
-  }
-  if (filters.dietary && !restated.toLowerCase().includes(filters.dietary)) {
-    const label = filters.dietary.charAt(0).toUpperCase() + filters.dietary.slice(1);
-    restated = `${label} · ${restated}`.slice(0, 60);
-  }
+  // [ROE-008] / [ROE-014]: priority segment assembly (dietary first; ≤60)
+  const restated = buildRestatedIntent({
+    modelRestated,
+    dietary: filters.dietary,
+    sweetCraving,
+    celebratoryMood,
+    situational,
+    transcript,
+    culture_tag: filters.culture_tag,
+    cuisine: filters.cuisine,
+    wellness_tags: filters.wellness_tags,
+  });
 
-  const payload: ParsedPayload = { restated_intent: restated, dials, filters, confidence };
-  if (obj.lens === "blood_sugar") payload.lens = "blood_sugar";
+  const payload: ParsedPayload = {
+    restated_intent: restated,
+    dials,
+    filters,
+    confidence,
+    mood: situational.mood,
+    occasion: situational.occasion,
+    age_group: situational.age_group,
+    health_fitness: situational.health_fitness,
+  };
+  let lens = mergeBloodSugarLens(obj.lens, transcript);
+  if (situational.health_fitness === "metabolic") lens = "blood_sugar";
+  if (lens) payload.lens = lens;
   return payload;
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
 
   try {
-    const { transcript } = await req.json();
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const transcript =
+      body && typeof body === "object" && "transcript" in body
+        ? (body as { transcript?: unknown }).transcript
+        : undefined;
     if (typeof transcript !== "string" || !transcript.trim()) {
       return new Response(JSON.stringify({ error: "transcript required" }), {
         status: 400,
@@ -500,7 +577,7 @@ Deno.serve(async (req) => {
 
     let parsed: unknown;
     try {
-      const argsJson = await geminiToolCall(
+      parsed = await geminiToolCall(
         DEFAULT_GEMINI_MODEL,
         SYSTEM_PROMPT,
         trimmedTranscript,
@@ -510,14 +587,20 @@ Deno.serve(async (req) => {
           parameters: TOOL_SCHEMA.function.parameters as Record<string, unknown>,
         },
       );
-      parsed = JSON.parse(argsJson);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (/429|rate limit|quota/i.test(msg)) {
-        return new Response(JSON.stringify({ error: "Rate limit reached. Please wait a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            error: "Veda is busy (AI rate limit). Wait a moment, then try again.",
+            code: "rate_limit",
+            retry_after_ms: 8000,
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
       console.error("parse-intent Gemini error:", msg);
       return new Response(JSON.stringify({ error: "Veda could not interpret that." }), {
@@ -528,6 +611,7 @@ Deno.serve(async (req) => {
 
     const sanitized = validateAndSanitize(parsed, trimmedTranscript);
     return new Response(JSON.stringify(sanitized), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

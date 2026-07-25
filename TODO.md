@@ -9,6 +9,222 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-014] Layered situational intent (mood / age / occasion / health) — shipping
+
+Impact: `docs/ROE-014-intent-situational-layers-impact-analysis.md`
+
+- [x] Impact analysis
+- [x] First-class enums `mood` / `occasion` / `age_group` / `health_fitness` on parse payload
+- [x] Sanitize heuristics + dial projection + offline 429 (sync pair)
+- [x] `veda` ranking + `pairings` IntentHint plate bias
+- [x] Vitest (sanitize / intent / pairings)
+- [ ] PR → develop; redeploy `parse-intent`
+
+**Queue note:** Next free / queued: **[ROE-015] (ASK-002)** Ask situational label chips — teach mood/age/occasion/health enums from ROE-014 (not in ROE-014 scope).
+
+---
+
+## [ROE-015] Ask situational label chips (ASK-002) — queued
+
+Impact: write `docs/ROE-015-ask-situational-chips-impact-analysis.md` before implement.
+
+**Why:** ROE-014 engine enums exist; Ask “Or try” chips still under-teach kids / athletic / recovery / senior / digestive / light layers (ROE-013 chips only cover pre-014 situations).
+
+- [ ] Impact analysis (sample chips + expected enum signals)
+- [ ] Expand/replace `Ask.tsx` EXAMPLES to surface ROE-014 layers (kids_meal, post-workout, hangover/recovery, senior, gut/digestive, light meal — keep ROE-007/008-safe strings)
+- [ ] Align placeholder if needed; mobile chip scroll
+- [ ] Manual smoke: chip → parse → restated shows situational chip; no invented dish
+- [ ] Docs sync; next-free bump after land
+
+**Depends on:** ROE-014 merged + `parse-intent` redeployed.
+
+---
+
+## [ROE-013] Ask intent chips (ASK-001) — merged
+
+Impact: `docs/ROE-013-ask-intent-chips-impact-analysis.md`
+
+- [x] Expand `Ask.tsx` EXAMPLES to 10 (sweet, celebration, Jain+birthday, Thai, wellness, family)
+- [x] Align placeholder; mobile chip scroll
+- [x] Merged PR #27
+
+**Queue note (2026-07-24):** Dual-audit fulfillment + Ask (**ROE-009…013**) marked **done for now**.
+
+---
+
+## [ROE-011] Fulfillment order copy (FUL-003+004) — merged
+
+Impact: `docs/ROE-011-fulfillment-order-copy-impact-analysis.md`  
+**ROE-012** folded into this ticket (do not open separately).
+
+- [x] Pass dish-only (not `Dish + carrier`) into `FulfillmentSheet`
+- [x] Refresh pickup draft on open / dish change (respect dirty edit)
+- [x] Align delivery clipboard + toast; Vitest `buildPickupMessage`
+- [x] Merged PR #25
+
+---
+
+## [ROE-010] Delivery handoff URLs (FUL-002) — merged
+
+Impact: `docs/ROE-010-delivery-handoff-urls-impact-analysis.md`
+
+- [x] `resolveDeliveryUrl` in `lib/fulfillment` (catalog URL or DD/UE search)
+- [x] Wire `FulfillmentSheet` + `RestaurantCard`
+- [x] Personal backfill SQL `scripts/personal/backfill-delivery-urls.sql`
+- [x] Vitest
+- [ ] Optional: run delivery URL backfill on linked project
+
+---
+
+## [ROE-009] Fulfillment venue contacts (FUL-001) — merged
+
+Impact: `docs/ROE-009-fulfillment-contacts-impact-analysis.md`
+
+- [x] Migration: `restaurants.phone`, `restaurants.address`
+- [x] Types + Folsom/EDH backfill SQL (`scripts/personal/backfill-restaurant-contacts.sql`)
+- [x] FulfillmentSheet null-safe SMS/Call/Directions (`lib/fulfillment`)
+- [x] Vitest for fulfillment helpers
+- [ ] **Ops:** `db push` + run personal contact backfill on linked project
+
+Related: **ROE-010** delivery URLs — merged PR #23
+
+---
+
+## [ROE-008] Intent parser hardening (IP-FIX-002)
+
+- [x] Client `normalizeParsedIntent` (missing dials / bad enums)
+- [x] Celebratory + carrier helpers in `intentSanitize` sync pair (dishIntent re-exports)
+- [x] Priority `buildRestatedIntent` (≤60; dietary first)
+- [x] Unit tests (`intentSanitize` + `intent`)
+- [x] Merged; `parse-intent` redeployed (board QA Pass pending)
+
+---
+
+## [ROE-007] Intent sanitizer false-positives (IP-FIX-001)
+
+- [x] Impact notes in agent audit canvas (`intent-parser-audit`)
+- [x] Sync pair `src/lib/intentSanitize.ts` ↔ `_shared/intent-sanitize.ts`
+- [x] No `Healthy` cuisine from word “healthy”; strip model `Healthy`
+- [x] Transcript-ground `lens=blood_sugar` (diabetes / low sugar / keto — not bare no-bread)
+- [x] Negation-aware dietary extract; eggetarian before vegetarian
+- [x] Tighten sweet craving (not sweet potato); allow dish extract with dietary present
+- [x] Unit tests `intentSanitize.test.ts`
+- [x] Merged PR #16 (`feature/IP-FIX-intent-sanitize` → prefer `feature/ROE-007-*` going forward); `parse-intent` redeployed
+
+---
+
+## CRS-003: “Oceany” reading QA (2026-07-23) — address one-by-one
+
+Evidence: `Source of Knowledge/issue-docs/rasaoi.pdf` (Ask: *“I want something Oceany”* → VEDA HEARD: *Oceany seafood · fresh & coastal*).
+Partial fix already shipped (`86f2437`): stopped inventing the same synthetic dish on every alternate.
+
+### On-screen inconsistencies (inventory)
+
+| # | Area | What’s wrong |
+|---|------|----------------|
+| 1 | Intent vs plates | Heard seafood/coastal, but alternates’ **Best Match** is Idli / Tandoori Chicken / Mini Idli — zero ocean signal |
+| 2 | Hero Clean & Vital | **Vegetable Samosa + Garlic Naan** labeled clean/lighter — fried + refined carb, not coastal |
+| 3 | Hero Heritage | **Tandoori Chicken** under an oceany reading; why/CTA still talk about **Tandoori Seafood Platter** (selected slot ≠ visible heritage title) |
+| 4 | Carrier blanket | Matrix `accompaniment_base` forced on **every** slot (Garlic Naan / Basmati&Naan / Chana+Bhatura) even for idli, salad, samosa |
+| 5 | Why ↔ carrier mismatch | Mantra Best: carrier is “Chana Masala, Puffy Deep-Fried Bread” but why still says “eaten with **naan**…” |
+| 6 | Duplicate why copy | Same why reused across Clean↔Heritage and across Mythai↔Mylapore |
+| 7 | Ranking depth | Taj Grill wins on seafood platter, but #2–#4 are high-purity Indian venues with **no** seafood menu match |
+| 8 | Cuisine chips | “Showing all cuisines” yet only **ALL / INDIAN** — no seafood/coastal chip reflecting intent |
+| 9 | Dial story | Energy/Context/Budget look near-default for a coastal craving; purity↑ alone doesn’t explain ocean theme |
+| 10 | Purity tag UX | **SOVEREIGN** repeated on every dish line (restaurant-tier tag, reads as dish attribute) |
+| 11 | Vitality Twin | “**0 OUTCOMES**” next to LOCKED Health Sync — confusable with restaurant outcome count |
+| 12 | Pairing sense | Idli + Basmati & Naan; Cucumber Salad + Chana/Bhatura; Samosa + Garlic Naan — culturally/nutritionally odd |
+
+### Work queue (do in order)
+
+- [x] **CRS-003a — Intent-aware Best Match on alternates**  
+  When `filters.dish` / coastal tokens exist, prefer menu/matrix ocean matches for slot 1; never promote idli/chicken as Best for oceany. Soft-boost restaurants with seafood hits further down the list (`veda.ts` dish-match weight + empty-match banner).
+- [x] **CRS-003b — Triple-slot coherence with intent**  
+  Clean & Vital / Heritage must stay **compatible** with dish/wellness intent (no fried samosa as “clean”; heritage prefers coastal classic when available, else honest “kitchen signature” without pretending ocean).
+- [x] **CRS-003c — Carrier per dish, not per venue**  
+  Stop applying one matrix `accompaniment_base` to all three slots. Carrier from dish type + cuisine rules; matrix accompaniment only when plate needs a starch and item isn’t already a starch/complete plate.
+- [x] **CRS-003d — Why text grounded in chosen carrier**  
+  `whyFor` must reference the **actual** `carrierName`; unique copy per slot (no Clean≡Heritage paste).
+- [x] **CRS-003e — Hero selection clarity**  
+  Insight + CTA always match the **selected** outcome; if heritage is visible but Best is selected, don’t let titles fight the CTA (sticky selected summary / highlight selected row).
+- [x] **CRS-003f — Cuisine / wellness UI reflection**  
+  Surface intent cuisine + wellness chips (seafood/coastal/fresh) in `CuisineFilter` / IntentPill; don’t imply “all cuisines” when catalog is Indian-heavy.
+- [x] **CRS-003g — Twin copy**  
+  Rename Vitality Twin “0 OUTCOMES” to something like “0 syncs” / “Twin inactive” so it isn’t read as zero restaurant outcomes.
+- [x] **CRS-003h — Tests + handover**  
+  Vitest: oceany/seafood intent → hero+alternates Best Match ocean-capable when menu has it; no venue-wide carrier on idli/salad. Impact analysis in `Docs/CRS-003-oceany-impact-analysis.md` (CRS report append optional follow-up).
+
+---
+
+## ROE-002: Gemini rate-limit resilience
+
+- [x] Impact analysis `docs/ROE-002-gemini-rate-limit-impact-analysis.md`
+- [x] Client parse cache (90s) + RateLimitError + retries
+- [x] Ask toast for rate limits; glycemic soft-fail on 429
+- [x] Edge structured `{ code: "rate_limit", retry_after_ms }`
+- [x] Unit tests `intent.test.ts`
+- [x] **After merge:** redeploy `parse-intent` + `estimate-glycemic`
+
+---
+
+## ROE-003: Feeling / mood plates (celebration ≠ roti)
+
+- [x] Impact analysis `docs/ROE-003-mood-feeling-plates-impact-analysis.md`
+- [x] `isCarrierOnlyDish` + celebratory mood helpers in `dishIntent.ts`
+- [x] Triple Outcome hard-skip carrier-only; shareable boost under high context
+- [x] `parse-intent` sanitize + prompt (mood ≠ dish; strip roti/naan)
+- [x] Offline celebratory dials on exhausted Gemini 429
+- [x] Unit tests (`dishIntent`, `pairings`, `intent`)
+- [x] **After merge:** redeploy `parse-intent`
+
+---
+
+## ROE-004: Mylapore / South Indian plate integrity
+
+- [x] Impact analysis `docs/ROE-004-mylapore-south-indian-impact-analysis.md`
+- [x] `isSouthIndianKitchen` + `Indian-South` cuisine bank
+- [x] Hard-ban North inventions (Dal Tadka, Butter Chicken, …) on South kitchens
+- [x] scoreClean / Clean override: dosa/idli not demoted to bank dal
+- [x] `isDessertDish` savory-name guard (samosa ≠ pastry dessert)
+- [x] Unit tests (`pairings`, `dishIntent`)
+- [x] **After merge:** frontend auto-deploy (no edge redeploy)
+
+---
+
+## ROE-005 A: Mythaai catalog — remove demo venue
+
+- [x] Impact analysis `docs/ROE-005-mythaai-catalog-impact-analysis.md` (option A)
+- [x] Migration `20260724120000_roe005_remove_mythaai.sql`
+- [x] Personal `remove-mythaai.sql`; stop seeding / venues / index alias
+- [x] `Index.tsx` client filter until DB migrated
+- [x] Tests fixture renamed off catalog name
+- [ ] **After merge:** `npx supabase db push` (or run personal SQL) on linked project
+
+---
+
+## ROE-006: Blood-sugar / GL lens discoverability
+
+- [x] Impact analysis `docs/ROE-006-gl-lens-ux-impact-analysis.md`
+- [x] Reading chrome: **Blood sugar · On** chip + Turn off; hint when off → Refine
+- [x] Refine copy names glycemic load (GL); **Turn on** / **Turn off**
+- [x] Turning lens on keeps Refine open
+- [ ] Optional later: matrix-first skip of `estimate-glycemic` (+perf)
+- [ ] **After merge:** frontend auto-deploy; manual smoke on `/reading`
+
+---
+
+## ROE-001: Sweet / dessert craving mode
+
+- [x] Impact analysis `docs/ROE-001-sweet-dessert-impact-analysis.md`
+- [x] parse-intent: sweet → treat purity + `filters.dish=dessert` + restated intent
+- [x] `dishIntent` dessert synonyms; remove `sweet` stop-word
+- [x] `pairings` Best/Clean/Heritage dessert preference; no carrier on mithai
+- [x] `vedaDishes.cravingSweet` option
+- [x] Unit tests (dishIntent + pairings)
+- [ ] **After merge:** redeploy `parse-intent` edge function; verify Ask “I want something sweet” on prod
+
+---
+
 ## 0. Bugfix — Cuisine / dish intent routing (Thai → Indian mis-route)
 
 - [x] Tighten `parse-intent` SYSTEM_PROMPT: no hallucinated cuisines/dishes; relative phrases must not block food keywords

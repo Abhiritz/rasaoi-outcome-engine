@@ -1,6 +1,8 @@
 // Blood-sugar lens client lib. Estimates glycemic load via edge function,
-// caches per-dish in localStorage, and exposes carrier-swap helpers.
+// caches per-dish in localStorage, and prefers culinary-matrix heuristics
+// before calling Gemini (rate-limit shield).
 import { supabase } from "@/integrations/supabase/client";
+import { lookupDish, type CulinaryDishFallback, type CulinaryDishMeta } from "./culinaryIndex";
 
 export type GLLevel = "low" | "med" | "high";
 
@@ -16,6 +18,8 @@ export interface GLEstimate {
 
 const CACHE_KEY = "rasaoi.gl_cache.v1";
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/** Max dishes sent to estimate-glycemic per call (Reading already uses top-8). */
+export const GL_AI_BATCH_CAP = 8;
 
 interface CacheEntry { ts: number; value: GLEstimate }
 
@@ -39,36 +43,125 @@ function cacheKey(name: string, carrier?: string): string {
   return (name + "|" + (carrier ?? "")).toLowerCase().trim();
 }
 
+function normalizeGiBand(band?: string | null): GLLevel | null {
+  if (!band) return null;
+  const b = band.toLowerCase();
+  if (b === "low" || b === "med" || b === "medium" || b === "high") {
+    return b === "medium" ? "med" : (b as GLLevel);
+  }
+  return null;
+}
+
+/**
+ * Derive a GL estimate from culinary-index dish_type + macros (no AI).
+ * Returns null when the dish is unknown to the index.
+ */
+export function glFromCulinary(
+  name: string,
+  restaurantName?: string,
+): GLEstimate | null {
+  const meta = lookupDish(name, restaurantName) as
+    | CulinaryDishMeta
+    | CulinaryDishFallback
+    | null;
+  if (!meta) return null;
+
+  const dishType = meta.dish_type ?? "";
+  const fiber = meta.fiber_g ?? 0;
+  const protein = meta.protein_g ?? 0;
+  const paired = fiber >= 4 && protein >= 10;
+
+  let level = normalizeGiBand("gi_band" in meta ? meta.gi_band : null);
+
+  if (!level) {
+    if (/fried_appetizer|biryani|pizza|wings|dessert|drink|flatbread/.test(dishType)) {
+      level = "high";
+    } else if (/salad|steamed_tiffin|dip_sauce/.test(dishType)) {
+      level = "low";
+    } else if (/curry_gravy|tandoori|dosa/.test(dishType)) {
+      level = paired ? "low" : "med";
+    } else if (fiber >= 6 && protein >= 12) {
+      level = "low";
+    } else if ((meta.calories_kcal ?? 0) > 650) {
+      level = "high";
+    } else {
+      // Known to index but no type/macros strong enough — still skip AI with med default
+      level = "med";
+    }
+  }
+
+  const carbsGuess =
+    level === "high" ? 55 : level === "med" ? 35 : 18;
+
+  return {
+    name,
+    carbs_g: carbsGuess,
+    glycemic_load: level,
+    added_sugar: /dessert|drink|pizza/.test(dishType),
+    fiber_protein_paired: paired,
+    swap_suggestion: level === "high"
+      ? "Pair with dal or salad; skip refined carriers"
+      : level === "med"
+        ? "Add fiber side (raita / greens) if available"
+        : "Keep the current plate — already fiber/protein balanced",
+    why: dishType
+      ? `Matrix heuristic from dish_type=${dishType}`
+      : "Matrix heuristic from macros / index entry",
+  };
+}
+
 export async function estimateGlycemic(
-  dishes: { name: string; cuisine?: string; carrier?: string }[],
+  dishes: { name: string; cuisine?: string; carrier?: string; restaurant?: string }[],
 ): Promise<Record<string, GLEstimate>> {
   if (!dishes.length) return {};
 
   const cache = loadCache();
   const now = Date.now();
   const result: Record<string, GLEstimate> = {};
-  const need: typeof dishes = [];
+  const needAi: typeof dishes = [];
 
   for (const d of dishes) {
     const k = cacheKey(d.name, d.carrier);
     const hit = cache[k];
     if (hit && now - hit.ts < CACHE_TTL_MS) {
       result[k] = hit.value;
-    } else {
-      need.push(d);
+      continue;
     }
+
+    const fromMatrix = glFromCulinary(d.name, d.restaurant);
+    if (fromMatrix) {
+      result[k] = fromMatrix;
+      cache[k] = { ts: now, value: fromMatrix };
+      continue;
+    }
+
+    needAi.push(d);
   }
 
-  if (need.length) {
+  saveCache(cache);
+
+  const batch = needAi.slice(0, GL_AI_BATCH_CAP);
+  if (batch.length) {
     try {
       const { data, error } = await supabase.functions.invoke("estimate-glycemic", {
-        body: { dishes: need },
+        body: { dishes: batch },
       });
-      if (error) throw error;
+      if (error) {
+        const status = (error as { context?: Response }).context?.status;
+        const msg = error.message || "";
+        if (status === 429 || /429|rate limit|quota/i.test(msg)) {
+          // ROE-002: keep matrix/heuristic results; do not throw — Reading stays usable.
+          console.warn("estimateGlycemic rate-limited; returning heuristic/partial map");
+          return result;
+        }
+        throw error;
+      }
+      if (data && typeof data === "object" && (data as { code?: string }).code === "rate_limit") {
+        console.warn("estimateGlycemic rate-limited body; returning heuristic/partial map");
+        return result;
+      }
       const estimates = (data?.estimates ?? []) as GLEstimate[];
-      // Match estimates back to requested dishes by order (model preserves order),
-      // falling back to fuzzy name match.
-      need.forEach((d, i) => {
+      batch.forEach((d, i) => {
         const est =
           estimates[i] ??
           estimates.find((e) => e.name?.toLowerCase().includes(d.name.toLowerCase()));
@@ -80,6 +173,7 @@ export async function estimateGlycemic(
       saveCache(cache);
     } catch (e) {
       console.error("estimateGlycemic failed:", e);
+      // Soft-fail: Reading continues with whatever heuristics we already filled.
     }
   }
   return result;

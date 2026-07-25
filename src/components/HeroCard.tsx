@@ -84,9 +84,6 @@ export const HeroCard = ({ item, dials, vitality, intent, gl }: { item: ScoredRe
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const selected = picks[selectedIdx] ?? picks[0];
-  const dishLabel = selected
-    ? selected.carrier ? `${selected.dish} + ${selected.carrier}` : selected.dish
-    : r.signature_dish;
   const swap = gl && (gl.glycemic_load === "med" || gl.glycemic_load === "high")
     ? (suggestCarrierSwap(selected?.carrier) ?? (gl.swap_suggestion ? { replacement: gl.swap_suggestion, rationale: "lower glycemic load" } : null))
     : null;
@@ -159,10 +156,23 @@ export const HeroCard = ({ item, dials, vitality, intent, gl }: { item: ScoredRe
         )}
       </div>
 
-      {/* Short & crisp insight */}
-      <p className="text-sm text-foreground/85 leading-relaxed mb-5 italic">
+      {/* Short & crisp insight — always for the Chosen row */}
+      <p className="text-sm text-foreground/85 leading-relaxed mb-3 italic">
         {buildShortInsight(item, dials, selected?.dish, intent?.dietary)}
       </p>
+
+      {/* CRS-003e: sticky summary so CTA never fights a non-selected heritage title */}
+      <div className="mb-5 rounded-sm border border-gold/40 bg-gold-soft/25 px-3 py-2.5">
+        <div className="text-[9px] uppercase tracking-[0.2em] text-gold font-semibold mb-0.5">
+          Your pick
+        </div>
+        <div className="serif text-lg text-primary leading-tight">
+          {selected?.dish}
+          {selected?.carrier ? (
+            <span className="text-base text-primary/80 italic"> + {selected.carrier}</span>
+          ) : null}
+        </div>
+      </div>
 
       {plate?.integrityNote && (
         <p className="text-[10px] text-muted-foreground/80 italic mb-4">
@@ -202,7 +212,7 @@ export const HeroCard = ({ item, dials, vitality, intent, gl }: { item: ScoredRe
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         item={item}
-        dish={dishLabel ?? r.signature_dish}
+        dish={selected?.dish ?? r.signature_dish}
         rank={selectedIdx + 1}
         dials={dials}
         vitality={vitality}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,11 +6,23 @@ import { toast } from "sonner";
 import { ExternalLink, MapPin, Phone, MessageSquare, Sparkles, Copy } from "lucide-react";
 import type { ScoredRestaurant, DialState } from "@/lib/veda";
 import { recordSelection, type Path, type Carrier } from "@/lib/outcomes";
+import {
+  buildDeliveryClipboardTag,
+  buildDirectionsUrl,
+  buildPhoneSearchUrl,
+  buildPickupMessage,
+  buildSmsHref,
+  buildTelHref,
+  resolveDeliveryUrl,
+  venueAddress,
+  venuePhone,
+} from "@/lib/fulfillment";
 
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   item: ScoredRestaurant;
+  /** Menu dish only — never `Dish + food-carrier` (ROE-011). */
   dish: string;
   rank: number;
   dials: DialState;
@@ -24,10 +36,27 @@ export const FulfillmentSheet = ({
 }: Props) => {
   const r = item.restaurant;
   const [step, setStep] = useState<Step>("choose");
-  const address = (r as { address?: string; location_neighborhood?: string }).address
-    ?? (r as { location_neighborhood?: string }).location_neighborhood
-    ?? "";
-  const phone = (r as { phone?: string }).phone ?? "";
+  const [pickupMsg, setPickupMsg] = useState(() => buildPickupMessage(dish));
+  const [pickupDirty, setPickupDirty] = useState(false);
+  const address = venueAddress(r);
+  const phone = venuePhone(r);
+
+  // Fresh template on open; refresh when dish changes unless user edited (ROE-011).
+  useEffect(() => {
+    if (!open) {
+      setStep("choose");
+      setPickupDirty(false);
+      return;
+    }
+    setPickupMsg(buildPickupMessage(dish));
+    setPickupDirty(false);
+    setStep("choose");
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps -- intentional: reopen resets
+
+  useEffect(() => {
+    if (!open || pickupDirty) return;
+    setPickupMsg(buildPickupMessage(dish));
+  }, [dish, open, pickupDirty]);
 
   const log = async (path: Path, carrier: Carrier) => {
     await recordSelection({
@@ -47,30 +76,30 @@ export const FulfillmentSheet = ({
     onOpenChange(false);
   };
 
-  const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${r.name} ${address}`)}`;
-
-  // ---- Pickup composer ----
-  const defaultMessage = `Hi, I'd like to place a pickup order:
-
-• ${dish}
-
-Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
-  const [pickupMsg, setPickupMsg] = useState(defaultMessage);
+  const directionsUrl = buildDirectionsUrl(r.name, address);
 
   const sendSms = () => {
+    const href = buildSmsHref(phone, pickupMsg);
+    if (!href) {
+      toast("Number unavailable", {
+        description: `No phone on file for ${r.name}. Copy the order and call via search.`,
+      });
+      return;
+    }
     log("pickup", "self");
-    const sms = `sms:${phone || ""}?&body=${encodeURIComponent(pickupMsg)}`;
-    window.location.href = sms;
+    window.location.href = href;
     toast("Pickup order ready", { description: `Message drafted for ${r.name}.` });
     reset();
   };
 
   const callRestaurant = () => {
     log("pickup", "self");
-    if (phone) window.location.href = `tel:${phone}`;
-    else {
+    const tel = buildTelHref(phone);
+    if (tel) {
+      window.location.href = tel;
+    } else {
       navigator.clipboard?.writeText(pickupMsg);
-      window.open(`https://www.google.com/search?q=${encodeURIComponent(r.name + " phone")}`, "_blank");
+      window.open(buildPhoneSearchUrl(r.name), "_blank");
       toast("Order copied", { description: "Find the restaurant's number and call to place this order." });
     }
     reset();
@@ -81,21 +110,21 @@ Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
     toast("Order copied to clipboard");
   };
 
-  // ---- Delivery handoff ----
-  const handoffDelivery = (carrier: "doordash" | "ubereats", url: string | null) => {
+  const handoffDelivery = (carrier: "doordash" | "ubereats") => {
+    const url = resolveDeliveryUrl(carrier, carrier === "doordash" ? r.doordash_url : r.ubereats_url, r.name, address);
     log("delivery", carrier);
-    const tag = `${dish} at ${r.name}`;
+    const tag = buildDeliveryClipboardTag(dish, r.name);
     navigator.clipboard?.writeText(tag).catch(() => {});
     toast("Leaving Rasaoi — Restaurant / Platform terms now apply.", {
       description: `${dish} copied. Paste in ${carrier === "doordash" ? "DoorDash" : "Uber Eats"} search if needed.`,
     });
     setTimeout(() => {
       if (url) window.open(url, "_blank", "noopener,noreferrer");
+      else toast("Could not open delivery", { description: "Restaurant name missing — try again from Reading." });
       reset();
     }, 700);
   };
 
-  // ---- Dine-in flow ----
   const goDineIn = () => {
     log("dine_in", null);
     window.open(directionsUrl, "_blank", "noopener,noreferrer");
@@ -151,7 +180,13 @@ Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
               {phone && (
                 <Button
                   variant="outline"
-                  onClick={() => { log("dine_in", null); window.location.href = `tel:${phone}`; reset(); }}
+                  onClick={() => {
+                    const tel = buildTelHref(phone);
+                    if (!tel) return;
+                    log("dine_in", null);
+                    window.location.href = tel;
+                    reset();
+                  }}
                   className="rounded-sm border-primary/30"
                 >
                   <Phone className="w-3.5 h-3.5 mr-2" /> Reserve
@@ -169,12 +204,25 @@ Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
             </p>
             <Textarea
               value={pickupMsg}
-              onChange={(e) => setPickupMsg(e.target.value)}
+              onChange={(e) => {
+                setPickupDirty(true);
+                setPickupMsg(e.target.value);
+              }}
               rows={7}
               className="text-sm rounded-sm font-mono"
             />
+            {!phone && (
+              <p className="text-[11px] text-muted-foreground">
+                Number unavailable for {r.name}. Use Call (search) or copy the order text.
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-2">
-              <Button onClick={sendSms} className="rounded-sm bg-primary">
+              <Button
+                onClick={sendSms}
+                disabled={!phone}
+                className="rounded-sm bg-primary"
+                title={!phone ? "Number unavailable" : undefined}
+              >
                 <MessageSquare className="w-3.5 h-3.5 mr-2" /> Send SMS
               </Button>
               <Button onClick={callRestaurant} variant="outline" className="rounded-sm border-primary/30">
@@ -194,10 +242,10 @@ Pickup in about 25 minutes, paying at counter. Thank you — sent via Rasaoi.`;
               We'll copy <em>"{dish}"</em> to your clipboard and open the platform.
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <Button onClick={() => handoffDelivery("doordash", r.doordash_url)} className="rounded-sm bg-primary">
+              <Button onClick={() => handoffDelivery("doordash")} className="rounded-sm bg-primary">
                 DoorDash <ExternalLink className="w-3 h-3 ml-2" />
               </Button>
-              <Button onClick={() => handoffDelivery("ubereats", r.ubereats_url)} variant="outline" className="rounded-sm border-primary/30">
+              <Button onClick={() => handoffDelivery("ubereats")} variant="outline" className="rounded-sm border-primary/30">
                 Uber Eats <ExternalLink className="w-3 h-3 ml-2" />
               </Button>
             </div>

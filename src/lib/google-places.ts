@@ -272,6 +272,8 @@ function normalizeMockPlace(place: GooglePlaceResource): Restaurant {
     doordash_url: `https://www.doordash.com/search/store/${queryEnc}/`,
     ubereats_url: `https://www.ubereats.com/search?q=${queryEnc}`,
     location_neighborhood: place.formattedAddress?.split(",")[1]?.trim() ?? null,
+    address: place.formattedAddress ?? null,
+    phone: place.nationalPhoneNumber ?? place.internationalPhoneNumber ?? null,
     created_at: new Date().toISOString(),
   } as Restaurant;
 }

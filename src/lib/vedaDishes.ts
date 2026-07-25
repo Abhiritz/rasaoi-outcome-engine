@@ -1,6 +1,11 @@
 import type { Tables } from "@/integrations/supabase/types";
 import type { DialState, VitalityTwin } from "./veda";
 import { passesDietaryGate, type DietaryIntent } from "./dietary";
+import {
+  isHeavyDishType,
+  isLightDishType,
+  lookupDish,
+} from "./culinaryIndex";
 
 export type Dish = Tables<"dishes">;
 
@@ -40,6 +45,8 @@ const FOOD_CATEGORIES = new Set([
 export interface ScoreOptions {
   /** Include drinks & desserts in the ranked list. Default false. */
   includeNonFood?: boolean;
+  /** ROE-001: include desserts and boost sweet category. */
+  cravingSweet?: boolean;
   /** Restrict to a specific category. */
   categoryFilter?: string;
   /** Strict dietary filter (DIET-001). */
@@ -57,14 +64,18 @@ export function scoreDishes(
   const vitality = twin?.last_vitality_score ?? dials.energy;
   const lowRecovery = eState === "low-recovery" || vitality < 40;
   const targetTier = 1 + (dials.budget / 100) * 2;
+  const includeDessert = !!opts.includeNonFood || !!opts.cravingSweet || opts.categoryFilter === "Dessert";
 
   return dishes
     .filter((d) => {
       if (opts.dietaryFilter && !passesDietaryGate(d, opts.dietaryFilter)) return false;
       if (opts.categoryFilter && d.category !== opts.categoryFilter) return false;
       // Hide drinks & desserts from main recommendations by default
-      if (!opts.includeNonFood) {
+      if (!includeDessert) {
         if (d.category === "Drink" || d.category === "Dessert") return false;
+      } else if (opts.cravingSweet && !opts.includeNonFood && opts.categoryFilter !== "Dessert") {
+        // Sweet craving: keep desserts + food; still hide drinks unless includeNonFood
+        if (d.category === "Drink") return false;
       }
       // Sovereign gate: tier-based AND oil-based, so mis-tagged items can't slip through
       if (dials.purity > 80) {
@@ -87,6 +98,12 @@ export function scoreDishes(
         breakdown.push({ label, delta });
         if (tag) tags.push(tag);
       };
+
+      if (opts.cravingSweet && d.category === "Dessert") {
+        add(28, "Sweet craving · dessert", "Dessert");
+      } else if (opts.cravingSweet && d.category && d.category !== "Dessert") {
+        add(-12, "Not a dessert");
+      }
 
       // Purity alignment
       const userPurity = dials.purity;
@@ -144,6 +161,39 @@ export function scoreDishes(
         const priceTier = d.price < 12 ? 1 : d.price < 22 ? 2 : 3;
         add((3 - Math.abs(priceTier - targetTier)) * 3, "Budget fit");
         if (priceTier > targetTier + 0.6 && dials.budget < 40) add(-12, "Over budget");
+      }
+
+      // Culinary matrix macros / dish_type (offline)
+      const mxDish = lookupDish(d.name);
+      if (mxDish) {
+        const price =
+          "priceUsd" in mxDish && typeof mxDish.priceUsd === "number"
+            ? mxDish.priceUsd
+            : "medianPriceUsd" in mxDish
+              ? mxDish.medianPriceUsd
+              : undefined;
+        if (d.price == null && price != null) {
+          const priceTier = price < 12 ? 1 : price < 22 ? 2 : 3;
+          add((3 - Math.abs(priceTier - targetTier)) * 3, "Matrix budget");
+        }
+        const dtype = mxDish.dish_type;
+        if (lowRecovery) {
+          if (isHeavyDishType(dtype) || (mxDish.calories_kcal ?? 0) > 700) {
+            add(-10, "Matrix heavy (low recovery)", "Matrix heavy");
+          }
+          if (
+            isLightDishType(dtype) ||
+            ((mxDish.protein_g ?? 0) >= 15 && (mxDish.fiber_g ?? 0) >= 5)
+          ) {
+            add(10, "Matrix macros", "Matrix macros");
+          }
+        }
+        if (eState === "peak" && isLightDishType(dtype)) {
+          add(6, "Matrix light peak", "Matrix light");
+        }
+        if (dtype === "fried_appetizer" && dials.purity > 70) {
+          add(-6, "Fried vs purity dial");
+        }
       }
 
       // Dosha hint (very light touch)

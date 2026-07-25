@@ -47,9 +47,39 @@ Re-tag curated JSON from taxonomy module:
 $env:RETAG="1"; npm test -- scripts/personal/retag-dish-data.test.ts
 ```
 
+## 4. Sync local_indian_dishes.csv
+
+Bulk import from repo-root `local_indian_dishes.csv` (skips existing dishes, creates missing restaurants):
+
+```powershell
+npx supabase db query --linked -f scripts/personal/seed-csv-restaurants.sql
+node scripts/personal/sync-csv-dishes.mjs
+```
+
+Dry-run preview:
+
+```powershell
+$env:DRY_RUN="1"; node scripts/personal/sync-csv-dishes.mjs
+```
+
+New restaurants require `SUPABASE_SERVICE_ROLE_KEY` in `.env` **or** run `seed-csv-restaurants.sql` first (recommended).
+
+## 5. Build culinary index (Veda — no AI)
+
+Compiles `el_dorado_folsom_culinary_matrix.json` + EDH/Folsom slice of `dish_registry.json` into a slim client asset:
+
+```powershell
+node scripts/personal/build-culinary-index.mjs
+```
+
+Output: [`src/data/culinary-index.json`](../../src/data/culinary-index.json) — used by `src/lib/culinaryIndex.ts` for deterministic ranking, plates, and glycemic heuristics (avoids Gemini rate limits). Re-run when the source JSON files change.
+
 ## Venues covered
 
-Folsom: Mythaai, Taj Grill, Sanskrit, Mantra, Ruchi, Mylapore  
-El Dorado Hills: India Oven, Bawarchi
+Folsom: Taj Grill, Sanskrit, Mantra, Ruchi, Mylapore  
+El Dorado Hills: India Oven, Bawarchi  
+
+**ROE-005:** Mythaai (demo sovereign seed) was **removed** from the catalog — not a verified Folsom/EDH restaurant.  
+To clean a personal DB: [`remove-mythaai.sql`](remove-mythaai.sql) (or apply migration `20260724120000_roe005_remove_mythaai.sql`).
 
 Menu URLs are documented in [`venues.json`](venues.json).

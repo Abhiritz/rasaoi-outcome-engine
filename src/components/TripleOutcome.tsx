@@ -46,8 +46,8 @@ export const TripleOutcome = ({
             onClick={interactive ? () => onSelect?.(i) : undefined}
             className={`block w-full text-left transition-elegant rounded-sm ${
               isSelected
-                ? "border-l-2 border-gold pl-3 py-1.5 bg-gold-soft/30"
-                : `border-l border-border/60 pl-3 py-1 ${interactive ? "hover:bg-secondary/60 hover:border-gold/60" : "opacity-95"}`
+                ? "border-l-2 border-gold pl-3 py-2 bg-gold-soft/40 ring-1 ring-gold/30"
+                : `border-l border-border/60 pl-3 py-1 ${interactive ? "hover:bg-secondary/60 hover:border-gold/60 opacity-80" : "opacity-95"}`
             }`}
           >
             <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] font-semibold text-gold/90 mb-0.5">

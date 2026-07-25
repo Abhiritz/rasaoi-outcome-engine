@@ -22,7 +22,13 @@ export const CuisineFilter = ({ value, options, onChange }: Props) => {
           Cuisine
         </label>
         <span className="text-[10px] text-muted-foreground italic">
-          {value ? `Filtering · ${value}` : "Showing all cuisines"}
+          {value
+            ? `Filtering · ${value}`
+            : options.length <= 1
+              ? options[0]
+                ? `Catalog · ${options[0]} nearby`
+                : "No cuisine chips in this catalog yet"
+              : "Showing all cuisines in catalog"}
         </span>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 snap-x">

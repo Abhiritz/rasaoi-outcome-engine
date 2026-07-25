@@ -1,0 +1,30 @@
+---
+description: Frontend conventions for src/ — React, Vite, shadcn, Supabase client
+globs: src/**
+alwaysApply: false
+---
+
+# Rasaoi Frontend Rules
+
+Read `src/CURSOR.md` and `.cursor/CONTEXT_PLAN.md` before editing.
+
+## Conventions
+
+- `@/` import alias maps to `src/`
+- Domain components in `components/`; shadcn primitives in `components/ui/` — extend, don't replace
+- Brand tokens in `index.css`; use `cn()` from `lib/utils.ts`
+- Functional components + hooks only — no global state store
+
+## Patterns
+
+- Pages orchestrate; `lib/` scores/filters; components render
+- Edge calls wrapped in `src/lib/*.ts` via `supabase.functions.invoke()`
+- State via `useState`/`useEffect` + localStorage/sessionStorage helpers — not React Query
+- New routes in `App.tsx` above the `*` catch-all
+
+## Required Sync on Change
+
+- Dietary logic → also update `supabase/functions/_shared/dietary.ts`
+- Intent sanitizer → also update `supabase/functions/_shared/intent-sanitize.ts`
+- Scoring → add regression in `src/lib/*.test.ts`
+- Mock fixtures → sync edge fixture in `places-search/fixtures/`
