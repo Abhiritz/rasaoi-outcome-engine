@@ -146,7 +146,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 
 Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
-1. Audit → 2. Impact doc `docs/ROE-NNN-*-impact-analysis.md` → 3. User approval → 4. Branch from `origin/develop` → 5. Implement + Vitest → 6. Update plan/TODO/CONTEXT/CURSOR → 7. Commit / push / PR / board → 8. Ops redeploy if needed → QA Pass → Done
+1. Audit → 2. Impact doc → 3. User approval → 4. Branch from `origin/develop` → 5. Implement + Vitest → 6. **Ask label chips** (update `Ask.tsx` EXAMPLES or queue follow-up ROE) → 7. Docs sync (TODO/plan/CONTEXT/CURSOR) → 8. Commit / push / PR / board → 9. **Ops deploy** (edge redeploy / `db push` / index rebuild as noted in PR) → 10. QA Pass → Done
 
 ### Queue
 

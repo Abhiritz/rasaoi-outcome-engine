@@ -256,7 +256,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next queued: **ROE-015** (ASK-002 Ask situational label chips). Dual-audit fulfillment + Ask queue (ROE-009…013) done for now.
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact → approve → branch → implement + tests → **Ask label chips (or queue follow-up)** → sync plan/TODO/CONTEXT/CURSOR → PR/board → **ops deploy** (edge / db / culinary index) → QA. Naming in `project.md`. Next queued: **ROE-015** (ASK-002 Ask situational label chips). Dual-audit fulfillment + Ask queue (ROE-009…013) done for now.
 
 | Trigger | Action |
 |---------|--------|
