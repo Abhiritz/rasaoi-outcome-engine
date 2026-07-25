@@ -23,7 +23,7 @@ Rules:
 3. Issue and PR titles use the **same** format.
 4. Commit subject: dual tags then a short imperative phrase.
 
-**Standing flow:** `.cursor/rules/roe-ticket-flow.mdc` + `project.md` (includes Ask label-chips gate + ops deploy checklist).
+**Standing flow:** `.cursor/rules/roe-ticket-flow.mdc` + `project.md` + `.github/PROJECT_BOARD.md` (Ask EXAMPLES gate, **GitHub Labels** on Issue/PR, ops deploy).
 
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`
 

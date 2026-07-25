@@ -23,17 +23,24 @@ Agents follow this sequence for every new ROE ticket **without the user restatin
 2. **Impact analysis** — Write `docs/ROE-NNN-*-impact-analysis.md` (problem, acceptance, scope, files, test plan, **deploy/ops**). Await user approval before coding unless they already said “implement”.
 3. **Branch** — `git fetch origin develop && git checkout -b feature/ROE-NNN-… origin/develop`
 4. **Implement** — Minimal diff; honor sync pairs; add/adjust Vitest for scoring/dietary/intent/pairings.
-5. **Ask label chips (when applicable)** — If the ticket adds or changes **user-discoverable Ask capability** (new intent enums, situational modes, dietary/wellness/lens paths, cuisine modes, etc.), either:
-   - **Same PR:** update `src/pages/Ask.tsx` `EXAMPLES` (“Or try” chips) + placeholder so chips teach the new capability, **or**
-   - **Explicit follow-up:** queue the next ROE (e.g. ASK-00N) in `TODO.md` / `.lovable/plan.md` / impact §Out of scope — do **not** silently ship engine-only discovery gaps.
+5. **Ask EXAMPLES chips (when applicable)** — If the ticket adds or changes **user-discoverable Ask capability** (new intent enums, situational modes, dietary/wellness/lens paths, cuisine modes, etc.), either update `src/pages/Ask.tsx` `EXAMPLES` in the same PR **or** queue an explicit follow-up ROE in TODO/plan — do not silently ship engine-only discovery gaps. *(This is UI “Or try” chips — not GitHub Labels.)*
 6. **Docs sync** — Same PR: `TODO.md`, `.lovable/plan.md`, `.cursor/CONTEXT_PLAN.md`, relevant CURSOR.md, next-free ROE bump.
-7. **Ship** — Commit → push → `gh pr create` (title matches issue) → add to Rasaoi QA Board → set **In progress**.
-8. **Ops / deploy** — In the PR body, state exactly what is required after merge:
+7. **Ship** — Commit → push → `gh pr create` (title matches issue) → ensure a tracking **Issue** exists with the same title → add Issue + PR to Rasaoi QA Board → set Status **In progress**.
+8. **GitHub Labels (required on Issue + PR)** — Never leave Labels empty on board items. Apply the repo taxonomy (see `.github/PROJECT_BOARD.md`):
+   - **type:** `type:feature` | `type:bug` | `type:qa` (add `type:qa` when Status moves to QA / needs stakeholder Pass)
+   - **priority:** exactly one of `priority:P0` | `priority:P1` | `priority:P2` | `priority:P3` (drives board Priority via `project-board.yml`)
+   - **area:** one or more of `area:ask` | `area:reading` | `area:lab` | `area:catalog`
+   - Optional: `blocked`, `needs-repro`
+   ```bash
+   gh issue edit <n> --add-label "type:feature,priority:P2,area:ask"
+   gh pr edit <n> --add-label "type:feature,priority:P2,area:ask"
+   ```
+9. **Ops / deploy** — In the PR body, state exactly what is required after merge:
    - Frontend: Vercel auto-deploy on `develop` / `main` (note if none).
-   - Edge: `npx supabase functions deploy <name> --no-verify-jwt` for each touched function (often `parse-intent`; also `estimate-glycemic` / others when changed). Prefer `npm run supabase:deploy:all` only when multiple functions need refresh.
-   - DB: `npm run supabase:db:push` (or documented migration apply) when migrations land; regenerate `src/integrations/supabase/types.ts` if schema changed.
-   - Culinary index: `node scripts/personal/build-culinary-index.mjs` when matrix/registry sources change (commit rebuilt `src/data/culinary-index.json` in that PR).
-9. **QA closeout** — After merge: run noted ops; board → **QA**; stakeholder Pass → **Done**.
+   - Edge: `npx supabase functions deploy <name> --no-verify-jwt` for each touched function (often `parse-intent`).
+   - DB: `npm run supabase:db:push` when migrations land; regenerate types if schema changed.
+   - Culinary index: `node scripts/personal/build-culinary-index.mjs` when matrix/registry sources change.
+10. **QA closeout** — After merge: run noted ops; ensure Issue+PR have `type:qa`; board Status → **QA**; stakeholder Pass → **Done**.
 
 ## Do not
 
@@ -41,4 +48,5 @@ Agents follow this sequence for every new ROE ticket **without the user restatin
 - Skip impact analysis for non-trivial product changes
 - Invent APIs/tables not in CONTEXT_PLAN without searching first
 - Use `IP-FIX` / `FUL` / `ASK` as the sole ID — always assign **ROE-NNN** and append alias
-- Ship new Ask-parse capability without either chip updates or a queued chip follow-up ROE
+- Ship new Ask-parse capability without either Ask EXAMPLES updates or a queued follow-up ROE
+- Leave Issue/PR **Labels** empty on the Rasaoi QA Board (Priority on the board will stay blank without `priority:P*`)

@@ -17,6 +17,26 @@ Status flow: **Inbox → Triaged → Ready → In progress → QA → Done**
 **ABC-NNN** = workstream alias when applicable (`IP-FIX-001`, `CRS-003`, …) — omit if none.  
 Issue and PR titles use the same string.
 
+## Required Labels (Issue + PR)
+
+Agents **must** set GitHub Labels when shipping — the board Priority field stays empty without `priority:P*`, and QA column sync uses `type:qa`.
+
+| Kind | Labels | Rule |
+|------|--------|------|
+| Type | `type:feature`, `type:bug`, `type:qa` | One primary type; add `type:qa` when Status is QA / Pass pending |
+| Priority | `priority:P0` … `priority:P3` | Exactly one — syncs Project **Priority** |
+| Area | `area:ask`, `area:reading`, `area:lab`, `area:catalog` | ≥1 matching surface |
+| Optional | `blocked`, `needs-repro` | As needed |
+
+```bash
+gh issue edit <n> --add-label "type:feature,priority:P2,area:ask"
+gh pr edit <n> --add-label "type:feature,priority:P2,area:ask"
+# when moving to QA:
+gh issue edit <n> --add-label "type:qa"
+```
+
+Standing sequence: `.cursor/rules/roe-ticket-flow.mdc` step **GitHub Labels**.
+
 ## What is automated
 | Event | Board Status |
 |-------|----------------|
