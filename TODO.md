@@ -9,13 +9,30 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
-## [ROE-013] Ask intent chips (ASK-001) — implementing
+## [ROE-014] Layered situational intent (mood / age / occasion / health) — shipping
+
+Impact: `docs/ROE-014-intent-situational-layers-impact-analysis.md`
+
+- [x] Impact analysis
+- [x] First-class enums `mood` / `occasion` / `age_group` / `health_fitness` on parse payload
+- [x] Sanitize heuristics + dial projection + offline 429 (sync pair)
+- [x] `veda` ranking + `pairings` IntentHint plate bias
+- [x] Vitest (sanitize / intent / pairings)
+- [ ] PR → develop; redeploy `parse-intent`
+
+**Queue note:** Next free serial **ROE-015**.
+
+---
+
+## [ROE-013] Ask intent chips (ASK-001) — merged
 
 Impact: `docs/ROE-013-ask-intent-chips-impact-analysis.md`
 
 - [x] Expand `Ask.tsx` EXAMPLES to 10 (sweet, celebration, Jain+birthday, Thai, wellness, family)
 - [x] Align placeholder; mobile chip scroll
-- [ ] Docs sync in PR
+- [x] Merged PR #27
+
+**Queue note (2026-07-24):** Dual-audit fulfillment + Ask (**ROE-009…013**) marked **done for now**.
 
 ---
 

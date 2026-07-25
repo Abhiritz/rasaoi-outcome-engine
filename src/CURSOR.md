@@ -155,14 +155,14 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 
 | File | Responsibility |
 |------|----------------|
-| `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters |
+| `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters; **ROE-014** situational ranking biases |
 | `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script) |
-| `dishIntent.ts` | Oceany/coastal + sweet/dessert + **carrier-only / celebratory mood** helpers (CRS-003, ROE-001, ROE-003) |
+| `dishIntent.ts` | Oceany/coastal + sweet/dessert + **carrier-only / celebratory mood** helpers (CRS-003, ROE-001, ROE-003); **ROE-014** mild/kid/shareable/protein synonyms |
 | `vedaDishes.ts` | Dish-level scoring; `cravingSweet` includes/boosts Dessert category |
 | `dietary.ts` | DIET-001 taxonomy (sync with `_shared/dietary.ts`) |
-| `pairings.ts` | Triple outcomes. Never invent dish from intent text. Coastal + sweet coherence; **never Best/Clean/Heritage = roti/naan alone** (ROE-003). **South Indian kitchens use Indian-South bank — never Dal Tadka** (ROE-004). Desserts get no rice/naan carrier. |
-| `intent.ts` | Intent client + 90s parse cache; RateLimitError + backoff (ROE-002); **celebratory offline dials on exhausted 429** (ROE-003); **`normalizeParsedIntent`** (ROE-008 / IP-FIX-002) |
-| `intentSanitize.ts` | Transcript grounding + celebratory/carrier + **`buildRestatedIntent`** **(SYNC PAIR** with `_shared/intent-sanitize.ts`) — ROE-007 / ROE-008 |
+| `pairings.ts` | Triple outcomes. Never invent dish from intent text. Coastal + sweet coherence; **never Best/Clean/Heritage = roti/naan alone** (ROE-003). **South Indian kitchens use Indian-South bank — never Dal Tadka** (ROE-004). Desserts get no rice/naan carrier. **ROE-014** IntentHint situational plate bias. |
+| `intent.ts` | Intent client + 90s parse cache; RateLimitError + backoff (ROE-002); **celebratory offline dials on exhausted 429** (ROE-003); **`normalizeParsedIntent`** (ROE-008 / IP-FIX-002); **ROE-014** situational enums + offline health/kids/recovery |
+| `intentSanitize.ts` | Transcript grounding + celebratory/carrier + **`buildRestatedIntent`** + **ROE-014 mood/occasion/age/health** **(SYNC PAIR** with `_shared/intent-sanitize.ts`) |
 | `google-places.ts` | Places search with mock interceptor |
 | `glycemic.ts` | Glycemic estimates + localStorage cache (matrix heuristics before edge, N≤8) |
 | `memory.ts` | Vitality Twin, consent, Mitra Pact — Twin counter is **twin syncs**, not restaurant outcomes |
@@ -185,6 +185,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - Blood-sugar / GL: Refine → **Blood sugar · glycemic load (GL)** Turn on/off; when on, chrome chip **Blood sugar · On** (ROE-006). Not a Low/Med/High dropdown.
 - **[ROE-007] (IP-FIX-001):** “something healthy” is purity-only (never cuisine Healthy); diabetic/low-sugar Ask grounds `lens=blood_sugar`; negated diets (“not vegetarian”) do not set `filters.dietary`.
 - **[ROE-008] (IP-FIX-002):** client normalizes parse payloads; restated_intent keeps dietary first within 60 chars; celebratory/carrier helpers live in `intentSanitize` (re-exported from `dishIntent`).
+- **[ROE-014]:** parse emits `mood` / `occasion` / `age_group` / `health_fitness`; dial projection + offline 429; `veda` + `pairings` bias by situational profile; `health_fitness` composes with `wellness_tags` + `lens` (never invents dishes).
 
 ---
 

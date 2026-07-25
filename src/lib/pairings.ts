@@ -35,6 +35,12 @@ import {
   needsPlateCarrier,
   STARCH_COMPLETE,
 } from "./dishIntent";
+import type {
+  AgeGroupSlug,
+  HealthFitnessSlug,
+  MoodSlug,
+  OccasionSlug,
+} from "./intentSanitize";
 
 export type DishRole = "Base" | "Booster" | "Carrier";
 
@@ -261,7 +267,12 @@ function carrierFor(baseName: string, cuisine: string): CarrierSpec | null {
 }
 
 // Score a candidate menu item for the current dial state. Higher = better fit.
-function scoreDishForDials(name: string, desc: string, dials: DialState): number {
+function scoreDishForDials(
+  name: string,
+  desc: string,
+  dials: DialState,
+  situational?: IntentHint,
+): number {
   const t = (name + " " + (desc ?? "")).toLowerCase();
   let s = 0;
 
@@ -290,6 +301,34 @@ function scoreDishForDials(name: string, desc: string, dials: DialState): number
     if (isCarrierOnlyDish(name, desc)) s -= 40;
   } else if (dials.context < 35) {
     if (/(bowl|wrap|taco|soup|noodle|sandwich|salad)/.test(t)) s += 3;
+  }
+
+  // ROE-014 situational plate biases
+  const mood = situational?.mood;
+  const occasion = situational?.occasion;
+  const age = situational?.age_group;
+  const health = situational?.health_fitness;
+  const kids =
+    occasion === "kids_meal" || age === "toddler" || age === "child";
+  if (kids) {
+    if (/\b(mild|kids|child|khichdi|khichri|idli|dosa|dal|yogurt|curd|plain|steamed)\b/.test(t)) s += 10;
+    if (/\b(vindaloo|extra spicy|ghost|phall|chili bomb|very spicy)\b/.test(t)) s -= 16;
+    if (isHeavyFriedDish(name, desc)) s -= 8;
+  }
+  if (health === "athletic") {
+    if (/\b(chicken|paneer|fish|shrimp|egg|protein|grill|tandoori|tikka)\b/.test(t)) s += 10;
+    if (isDessertDish(name, desc)) s -= 12;
+  }
+  if (health === "clean" || health === "light" || health === "recovery" || health === "digestive") {
+    if (/(salad|grilled|steamed|baked|roasted|dal|soup|broth|raita|sambar|rasam|idli)/.test(t)) s += 8;
+    if (isHeavyFriedDish(name, desc) || /(cream|butter chicken|malai|fried)/.test(t)) s -= 8;
+  }
+  if (health === "metabolic") {
+    if (/(grill|tandoori|salad|veg|dal|soup)/.test(t)) s += 6;
+    if (isDessertDish(name, desc) || /(gulab|jalebi|halwa|sweet|syrup|rice pudding)/.test(t)) s -= 14;
+  }
+  if (mood === "celebratory" || occasion === "friends" || occasion === "birthday") {
+    if (/(platter|biryani|thali|share|family|kebab|tikka)/.test(t)) s += 6;
   }
 
   return s;
@@ -659,20 +698,33 @@ function filterBankList(list: string[], dietary?: StrictDietaryTag): string[] {
   return list.filter((d) => dishPassesGate(d, "", dietary));
 }
 
-function pickBest(menu: MenuItem[], dials: DialState, sigName: string | undefined, exclude: Set<string>): MenuItem | undefined {
+function pickBest(
+  menu: MenuItem[],
+  dials: DialState,
+  sigName: string | undefined,
+  exclude: Set<string>,
+  situational?: IntentHint,
+): MenuItem | undefined {
   let best: MenuItem | undefined;
   let bestScore = -Infinity;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
     if (isCarrierOnlyDish(m.name, m.description ?? "")) continue; // ROE-003
     const isSig = sigName && m.name.toLowerCase() === sigName.toLowerCase();
-    const s = scoreDishForDials(m.name, m.description ?? "", dials) + (isSig ? 2 : 0);
+    const s =
+      scoreDishForDials(m.name, m.description ?? "", dials, situational) + (isSig ? 2 : 0);
     if (s > bestScore) { bestScore = s; best = m; }
   }
   return best;
 }
 
-function scoreClean(name: string, desc: string, coastal = false, sweet = false): number {
+function scoreClean(
+  name: string,
+  desc: string,
+  coastal = false,
+  sweet = false,
+  health?: HealthFitnessSlug,
+): number {
   const t = (name + " " + (desc ?? "")).toLowerCase();
   let s = 0;
   if (/(salad|sashimi|crudo|poke|grilled|steamed|baked|roasted|dal|saag|tikka|ceviche|soup|broth|kale|quinoa|greens|fish|salmon|seafood|shrimp|prawn|veg)/.test(t)) s += 6;
@@ -687,6 +739,11 @@ function scoreClean(name: string, desc: string, coastal = false, sweet = false):
   if (sweet && isLightSweetDish(name, desc)) s += 6;
   if (sweet && isHeavyFriedDish(name, desc) && !isDessertDish(name, desc)) s -= 12;
   if (sweet && !isDessertDish(name, desc) && /(chicken|tandoori|biryani|curry|dal tadka)/.test(t)) s -= 8;
+  if (health === "clean" || health === "light" || health === "recovery" || health === "digestive") {
+    if (/(salad|grilled|steamed|dal|soup|raita|sambar|rasam)/.test(t)) s += 6;
+    if (isHeavyFriedDish(name, desc)) s -= 8;
+  }
+  if (health === "metabolic" && isDessertDish(name, desc)) s -= 10;
   return s;
 }
 
@@ -695,6 +752,7 @@ function pickClean(
   exclude: Set<string>,
   coastal = false,
   sweet = false,
+  health?: HealthFitnessSlug,
 ): MenuItem | undefined {
   let best: MenuItem | undefined;
   let bestScore = -Infinity;
@@ -708,8 +766,11 @@ function pickClean(
     if (sweet && !isDessertDish(m.name, m.description ?? "") && best && isDessertDish(best.name)) {
       continue;
     }
-    const s = scoreClean(m.name, m.description ?? "", coastal, sweet);
-    if (s > bestScore) { bestScore = s; best = m; }
+    const s = scoreClean(m.name, m.description ?? "", coastal, sweet, health);
+    if (s > bestScore) {
+      bestScore = s;
+      best = m;
+    }
   }
   // Prefer any dessert over savory when sweet craving
   if (sweet) {
@@ -877,6 +938,11 @@ function whyFor(
 export interface IntentHint {
   dish?: string; // raw user phrase, e.g. "spicy shrimp curry with naan"
   dietary?: StrictDietaryTag;
+  /** ROE-014 situational layers */
+  mood?: MoodSlug;
+  occasion?: OccasionSlug;
+  age_group?: AgeGroupSlug;
+  health_fitness?: HealthFitnessSlug;
 }
 
 const STOP = new Set([
@@ -953,6 +1019,13 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const userCarrier = intentCarrierName(intent?.dish);
   const coastal = isCoastalDishIntent(intent?.dish);
   const sweet = isSweetDishIntent(intent?.dish);
+  const health = intent?.health_fitness;
+  const preferLightMatrix =
+    health === "clean" ||
+    health === "light" ||
+    health === "recovery" ||
+    health === "digestive" ||
+    health === "metabolic";
 
   // Helper: try menu first, then cuisine bank fallback (treated as "inferred")
   type Pick = {
@@ -1061,21 +1134,21 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     // Do NOT synthDishFromHint here — inventing "Seafood" on sparse kitchens / Mantra / Pizza
     // made every alternate card identical and wrong.
   }
-  if (!best) best = tryMenu(pickBest(menu, dials, sigName, used));
-  if (!best) best = tryMatrix("main_course");
+  if (!best) best = tryMenu(pickBest(menu, dials, sigName, used, intent));
+  if (!best) best = tryMatrix(preferLightMatrix ? "light" : "main_course");
   if (!best) best = trySignature();
   if (!best && bank) {
     const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
       .filter((d) => !used.has(d.toLowerCase()) && !isCarrierOnlyDish(d))
       .filter((d) => !(southKitchen && isNorthIndianInvention(d)))
-      .map((d) => ({ d, s: scoreDishForDials(d, "", dials) }))
+      .map((d) => ({ d, s: scoreDishForDials(d, "", dials, intent) }))
       .sort((a, b) => b.s - a.s);
     if (ranked[0]) best = { name: ranked[0].d, verified: false };
   }
   if (best) used.add(best.name.toLowerCase());
 
   // 2) CLEAN & VITAL — lighter; coastal skips fried; sweet prefers light dessert
-  let clean: Pick | null = tryMenu(pickClean(menu, used, coastal, sweet));
+  let clean: Pick | null = tryMenu(pickClean(menu, used, coastal, sweet, health));
   if (!clean) clean = tryMatrix("light");
   if (!clean && bank) clean = tryBank(bank.clean);
   // If menu pick exists but happens to NOT be lighter than the best, prefer bank
@@ -1084,7 +1157,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     clean &&
     best &&
     clean.verified &&
-    scoreClean(clean.name, clean.description ?? "", coastal, sweet) < 3 &&
+    scoreClean(clean.name, clean.description ?? "", coastal, sweet, health) < 3 &&
     bank &&
     !southKitchen &&
     !isSouthTiffinDish(clean.name, clean.description ?? "")

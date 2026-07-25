@@ -11,7 +11,11 @@ export {
   celebratoryRestatedIntent,
   isCarrierOnlyDish,
   isCelebratoryMoodIntent,
+  applySituationalDials,
+  extractSituationalFromTranscript,
+  hasStrongOfflineSituational,
   type DialStateLike,
+  type SituationalLayers,
 } from "./intentSanitize";
 
 /** Stop words — do NOT include craving modes (sweet) or they never expand. */
@@ -51,6 +55,14 @@ const DISH_SYNONYMS: Record<string, string[]> = {
   desserts: DESSERT_FAMILY,
   mithai: ["mithai", "gulab", "jamun", "kheer", "rasmalai", "ladoo", "laddu", "jalebi", "barfi", "halwa"],
   treat: ["dessert", "mithai", "sweet", ...DESSERT_FAMILY.slice(0, 12)],
+  // ROE-014 — situational synonym families (ranking tokens only; never invent dishes)
+  mild: ["mild", "kids", "child", "khichdi", "idli", "dosa", "dal", "steamed"],
+  kid: ["mild", "kids", "child", "khichdi", "idli", "dosa"],
+  kids: ["mild", "kids", "child", "khichdi", "idli", "dosa"],
+  shareable: ["platter", "thali", "biryani", "family", "share", "feast"],
+  platter: ["platter", "thali", "share", "family"],
+  protein: ["chicken", "paneer", "fish", "shrimp", "egg", "tandoori", "tikka", "grill"],
+  fuel: ["chicken", "paneer", "protein", "grill", "tandoori"],
 };
 
 const COASTAL_TOKEN = /^(oceany|ocean|coastal|seafood|fish|shrimp|prawn|prawns|crab|lobster|salmon)$/;

@@ -95,7 +95,31 @@ describe("parseIntent ROE-002 rate limit + cache", () => {
     expect(intent.restated_intent.toLowerCase()).toMatch(/celebrat/);
     expect(intent.dials.context).toBeGreaterThanOrEqual(80);
     expect(intent.filters.dish).toBeUndefined();
+    expect(intent.mood).toBe("celebratory");
     expect(invoke).toHaveBeenCalledTimes(3);
+  }, 15000);
+
+  it("uses offline health/metabolic path when rate-limited (ROE-014)", async () => {
+    invoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: "Edge Function returned a non-2xx status code",
+        context: {
+          status: 429,
+          json: async () => ({
+            error: "Rate limit",
+            code: "rate_limit",
+            retry_after_ms: 5,
+          }),
+        },
+      },
+    });
+
+    const intent = await parseIntent("Diabetic-friendly, low sugar, under $30");
+    expect(intent.confidence).toBe("low");
+    expect(intent.health_fitness).toBe("metabolic");
+    expect(intent.lens).toBe("blood_sugar");
+    expect(intent.filters.dish).toBeUndefined();
   }, 15000);
 });
 
@@ -119,6 +143,8 @@ describe("normalizeParsedIntent [ROE-008] (IP-FIX-002)", () => {
     expect(intent.confidence).toBe("medium");
     expect(intent.restated_intent).toBe("Your request");
     expect(intent.transcript).toBe("something raw and fresh");
+    expect(intent.mood).toBe("neutral");
+    expect(intent.health_fitness).toBe("unspecified");
   });
 
   it("normalizes malformed edge payloads on parseIntent", async () => {

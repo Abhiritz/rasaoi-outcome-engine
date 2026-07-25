@@ -251,6 +251,48 @@ describe("ROE-003 celebratory mood — never bread as Best", () => {
   });
 });
 
+describe("ROE-014 situational plate bias", () => {
+  const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 85 };
+
+  it("kids_meal prefers mild dal over vindaloo for Best", () => {
+    const r = mockRestaurant({
+      id: "kids1",
+      name: "Family Kitchen",
+      cuisine: "Indian",
+      signature_dish: "Dal Tadka",
+      menu_items: [
+        { name: "Extra Spicy Vindaloo", description: "very spicy pork curry" },
+        { name: "Mild Yellow Dal", description: "mild kids-friendly lentils" },
+        { name: "Garlic Naan", description: "bread" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, {
+      occasion: "kids_meal",
+      age_group: "child",
+    });
+    expect(picks[0].dish.toLowerCase()).toMatch(/dal|mild/);
+    expect(picks[0].dish.toLowerCase()).not.toMatch(/vindaloo|roti|naan/);
+  });
+
+  it("health clean leans Clean slot toward grilled/dal over fried", () => {
+    const r = mockRestaurant({
+      id: "clean1",
+      name: "Clean Kitchen",
+      cuisine: "Indian",
+      signature_dish: "Grilled Paneer Tikka",
+      menu_items: [
+        { name: "Samosa Platter", description: "deep fried appetizer" },
+        { name: "Grilled Paneer Tikka", description: "grilled cottage cheese" },
+        { name: "Steamed Dal", description: "light lentils" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, { health_fitness: "clean" });
+    const clean = picks.find((p) => /clean/i.test(p.label)) ?? picks[1];
+    expect(clean.dish.toLowerCase()).toMatch(/grill|dal|steamed|tikka/);
+    expect(clean.dish.toLowerCase()).not.toMatch(/samosa/);
+  });
+});
+
 describe("ROE-004 South Indian / Mylapore plate integrity", () => {
   const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 80 };
   const NORTH_BAN = /\b(dal tadka|butter chicken|tandoori chicken|rogan josh|saag paneer)\b/i;

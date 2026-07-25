@@ -15,8 +15,31 @@ import { scoreRestaurants, type DialState, type Restaurant, type Promo, type Sco
 import { loadTwin, getBloodSugarLens, setBloodSugarLens } from "@/lib/memory";
 import { loadIntent, clearIntent, findRestaurantByName, type ParsedIntent } from "@/lib/intent";
 import { estimateGlycemic, type GLEstimate } from "@/lib/glycemic";
+import type { IntentHint } from "@/lib/pairings";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ArrowLeft, Info, Droplet } from "lucide-react";
+
+/** ROE-014: filters + situational layers for plates / scoring. */
+function intentHintFromParsed(intent: ParsedIntent | null): IntentHint | undefined {
+  if (!intent) return undefined;
+  return {
+    ...intent.filters,
+    mood: intent.mood,
+    occasion: intent.occasion,
+    age_group: intent.age_group,
+    health_fitness: intent.health_fitness,
+  };
+}
+
+function situationalFromParsed(intent: ParsedIntent | null) {
+  if (!intent) return undefined;
+  return {
+    mood: intent.mood,
+    occasion: intent.occasion,
+    age_group: intent.age_group,
+    health_fitness: intent.health_fitness,
+  };
+}
 
 const Index = () => {
   const navigate = useNavigate();
@@ -180,6 +203,7 @@ const Index = () => {
       intent?.filters?.cuisine,
       intent?.filters?.wellness_tags,
       intent?.filters?.dietary,
+      situationalFromParsed(intent),
     );
     const filtered = cuisineFilter ? all.filter((s) => s.restaurant.cuisine === cuisineFilter) : all;
     const needsSort = (!cuisineFilter && intentCuisine) || lens;
@@ -201,7 +225,7 @@ const Index = () => {
       }
       return b.score - a.score;
     });
-  }, [restaurants, dials, promos, twin, cuisineFilter, intentCuisine, lens, glMap]);
+  }, [restaurants, dials, promos, twin, cuisineFilter, intentCuisine, lens, glMap, intent]);
 
   // When lens is on, estimate GL for top-N visible signature dishes.
   useEffect(() => {
@@ -215,6 +239,7 @@ const Index = () => {
       intent?.filters?.cuisine,
       intent?.filters?.wellness_tags,
       intent?.filters?.dietary,
+      situationalFromParsed(intent),
     );
     const topRestaurants = all.slice(0, 8).map((s) => s.restaurant);
     const dishes = topRestaurants
@@ -300,6 +325,7 @@ const Index = () => {
         intent?.filters?.cuisine,
         intent?.filters?.wellness_tags,
         intent?.filters?.dietary,
+        situationalFromParsed(intent),
       )[0];
       if (pinnedScored) hero = pinnedScored;
     }
@@ -450,7 +476,7 @@ const Index = () => {
                 item={hero}
                 dials={dials}
                 vitality={vitality}
-                intent={intent?.filters}
+                intent={intentHintFromParsed(intent)}
                 gl={lens ? glMap[hero.restaurant.signature_dish?.toLowerCase() ?? ""] : undefined}
               />
 
@@ -479,7 +505,7 @@ const Index = () => {
                           item={alt}
                           rank={i + 1}
                           dials={dials}
-                          intent={intent?.filters}
+                          intent={intentHintFromParsed(intent)}
                           gl={lens ? glMap[alt.restaurant.signature_dish?.toLowerCase() ?? ""] : undefined}
                           onPromote={() => setHeroIdOverride(alt.restaurant.id)}
                         />

@@ -138,7 +138,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-014**.
+1. **ROE-NNN** — global serial (never skip). Next free: **ROE-015** (unassigned).
 2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
@@ -152,14 +152,15 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
 | Ticket | Status | Impact |
 |--------|--------|--------|
-| **ROE-013** (ASK-001) Ask chips | Implementing | `docs/ROE-013-ask-intent-chips-impact-analysis.md` |
+| **ROE-014** situational layers | Shipping | `docs/ROE-014-intent-situational-layers-impact-analysis.md` |
+| Dual-audit fulfillment + Ask (**ROE-009…013**) | **Done for now** (2026-07-24) | — |
+| **ROE-015** | Unassigned | — |
+| **ROE-013** (ASK-001) Ask chips | Merged PR #27; QA | `docs/ROE-013-ask-intent-chips-impact-analysis.md` |
 | **ROE-012** | Superseded — folded into ROE-011 | — |
 | **ROE-011** (FUL-003+004) order copy | Merged PR #25; QA | `docs/ROE-011-fulfillment-order-copy-impact-analysis.md` |
 | **ROE-010** (FUL-002) delivery URLs | Merged PR #23; QA | `docs/ROE-010-delivery-handoff-urls-impact-analysis.md` |
 | **ROE-009** (FUL-001) contacts | Merged PR #21; ops + QA | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
 | ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
-
-Next free serial: **ROE-014**.
 
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-ask-audit` canvas.
 

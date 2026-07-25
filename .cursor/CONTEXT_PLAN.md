@@ -4,13 +4,14 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: 0fad25e
-last_verified_date: 2026-07-24
-branch: feature/ROE-013-ask-intent-chips
+last_verified_commit: pending-ROE-014
+last_verified_date: 2026-07-25
+branch: feature/ROE-014-intent-situational-layers
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-013 (ASK-001): Ask EXAMPLES expanded to 10 situational chips + neutral
-  placeholder. ROE-011 order copy on develop; ROE-012 superseded.
+  ROE-014: first-class mood/occasion/age_group/health_fitness enums on parse-intent
+  + sanitize dial projection + veda/pairings situational bias. Composes with
+  wellness_tags and lens=blood_sugar. Redeploy parse-intent after merge.
 ```
 
 ---
@@ -83,7 +84,7 @@ sequenceDiagram
 
 | Domain | Canonical files |
 |--------|-----------------|
-| Intent parsing | `src/lib/intent.ts`, `src/lib/intentSanitize.ts`, `supabase/functions/parse-intent/index.ts` |
+| Intent parsing | `src/lib/intent.ts`, `src/lib/intentSanitize.ts`, `supabase/functions/parse-intent/index.ts` — dials + filters + **ROE-014** `mood` / `occasion` / `age_group` / `health_fitness` |
 | Restaurant scoring | `src/lib/veda.ts`, `src/lib/vedaDishes.ts` |
 | Culinary matrix index | `src/lib/culinaryIndex.ts`, `src/data/culinary-index.json` (built by `scripts/personal/build-culinary-index.mjs`) |
 | Dish intent tokens | `src/lib/dishIntent.ts` — oceany/coastal + **sweet/dessert** synonym expansion (CRS-003, ROE-001) |
@@ -254,7 +255,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial after ROE-009…013 queue: **ROE-014**.
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-014** (unassigned). Dual-audit fulfillment + Ask queue (ROE-009…013) done for now.
 
 | Trigger | Action |
 |---------|--------|

@@ -1,9 +1,10 @@
-## Next up (awaiting approval)
+## Next up
 
 | Priority | Ticket | Status |
 |----------|--------|--------|
-| 1 | **[ROE-013] Ask intent chips (ASK-001)** | Implementing — PR incoming |
-| — | Optional: ROE-006 **+perf** (matrix-first GL) | Later |
+| 1 | **ROE-014** Layered situational intent | Shipping — `feature/ROE-014-intent-situational-layers` |
+| — | Optional: ROE-006 **+perf** (matrix-first GL) | Later / unscoped |
+| — | **ROE-015** | Next free serial — **unassigned** |
 
 **ROE-012** — superseded (folded into ROE-011).
 
@@ -16,8 +17,8 @@
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-013-ask-intent-chips` |
 
 Rules:
-1. **ROE-NNN** is the global serial — never skip. Next free after this queue: **ROE-014**.
-2. **ABC-NNN** is the workstream alias when one exists (`ASK-001`, …). Omit when none.
+1. **ROE-NNN** is the global serial — never skip. Next free: **ROE-015**.
+2. **ABC-NNN** is the workstream alias when one exists. Omit when none.
 3. Issue and PR titles use the **same** format.
 4. Commit subject: dual tags then a short imperative phrase.
 
@@ -26,16 +27,18 @@ Rules:
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`
 
 ### In progress / shipping
-- **[ROE-013] Ask intent chips (ASK-001)** — expand EXAMPLES to 10
+- **[ROE-014] Layered mood/age/occasion/health intent mapping** — implement + Vitest; redeploy `parse-intent` after merge
 
 ### Board QA
+- **[ROE-013] Ask intent chips (ASK-001)** — merged PR #27; Pass pending
 - **[ROE-011] Fulfillment order copy (FUL-003)** — merged PR #25; Pass pending
 - **[ROE-010] Delivery handoff URLs (FUL-002)** — merged PR #23; Pass pending
 - **[ROE-009] Fulfillment venue contacts (FUL-001)** — merged PR #21; ops + Pass pending
 - **[ROE-008] / [ROE-007]** — merged; Pass pending
 
 ### Done
-- ROE-011 fulfillment order copy (PR #25)
+- ROE-013 Ask intent chips (PR #27)
+- ROE-011 fulfillment order copy (PR #25); ROE-012 folded
 - ROE-010 delivery handoff URLs (PR #23)
 - ROE-009 fulfillment contacts (PR #21)
 - ROE-006 GL lens UX (PR #7)

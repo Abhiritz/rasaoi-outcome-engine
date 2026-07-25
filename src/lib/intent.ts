@@ -1,13 +1,27 @@
 import { searchPlaces } from "@/lib/google-places";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  celebratoryMoodDials,
-  celebratoryRestatedIntent,
+  applySituationalDials,
   clampDial,
+  DEFAULT_SITUATIONAL,
+  hasStrongOfflineSituational,
+  isAgeGroupSlug,
   isCelebratoryMoodIntent,
   isDietaryIntent,
+  isHealthFitnessSlug,
+  isMoodSlug,
+  isOccasionSlug,
+  isSweetCravingTranscript,
+  mergeSituationalLayers,
   RESTATED_MAX_CHARS,
+  situationalRestatedChip,
+  wellnessTagsForHealth,
   WELLNESS_TAG_SLUGS,
+  type AgeGroupSlug,
+  type HealthFitnessSlug,
+  type MoodSlug,
+  type OccasionSlug,
+  type SituationalLayers,
 } from "@/lib/intentSanitize";
 import type { DialState, Restaurant } from "./veda";
 
@@ -33,6 +47,11 @@ export interface ParsedIntent {
   };
   confidence: "high" | "medium" | "low";
   lens?: "blood_sugar";
+  /** ROE-014 situational layers */
+  mood: MoodSlug;
+  occasion: OccasionSlug;
+  age_group: AgeGroupSlug;
+  health_fitness: HealthFitnessSlug;
   transcript: string;
   ts: number;
 }
@@ -57,8 +76,8 @@ export const PARSE_CACHE_TTL_MS = 90_000;
 const MAX_RETRIES = 2;
 
 /**
- * [ROE-008] (IP-FIX-002): Normalize edge/cache payloads so Reading never sees
- * missing dials or unknown filter enums.
+ * [ROE-008] (IP-FIX-002) + [ROE-014]: Normalize edge/cache payloads so Reading never sees
+ * missing dials, situational enums, or unknown filter enums.
  */
 export function normalizeParsedIntent(raw: unknown, transcript: string): ParsedIntent {
   const obj = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
@@ -66,12 +85,32 @@ export function normalizeParsedIntent(raw: unknown, transcript: string): ParsedI
   const filtersRaw =
     obj.filters && typeof obj.filters === "object" ? (obj.filters as Record<string, unknown>) : {};
 
-  const dials: DialState = {
+  let dials: DialState = {
     energy: clampDial(dialsRaw.energy, 50),
     context: clampDial(dialsRaw.context, 40),
     budget: clampDial(dialsRaw.budget, 50),
     purity: clampDial(dialsRaw.purity, 70),
   };
+
+  const situational: SituationalLayers = mergeSituationalLayers(
+    {
+      mood: obj.mood,
+      occasion: obj.occasion,
+      age_group: obj.age_group,
+      health_fitness: obj.health_fitness,
+    },
+    transcript,
+  );
+  // Prefer explicit model enums when transcript is silent (merge already does this);
+  // still clamp unknown model values via is*Slug checks inside merge.
+  if (!isMoodSlug(situational.mood)) situational.mood = DEFAULT_SITUATIONAL.mood;
+  if (!isOccasionSlug(situational.occasion)) situational.occasion = DEFAULT_SITUATIONAL.occasion;
+  if (!isAgeGroupSlug(situational.age_group)) situational.age_group = DEFAULT_SITUATIONAL.age_group;
+  if (!isHealthFitnessSlug(situational.health_fitness)) {
+    situational.health_fitness = DEFAULT_SITUATIONAL.health_fitness;
+  }
+
+  dials = applySituationalDials(dials, situational) as DialState;
 
   const filters: ParsedIntent["filters"] = {};
   if (typeof filtersRaw.cuisine === "string" && filtersRaw.cuisine.trim()) {
@@ -95,12 +134,14 @@ export function normalizeParsedIntent(raw: unknown, transcript: string): ParsedI
   if (isDietaryIntent(filtersRaw.dietary)) {
     filters.dietary = filtersRaw.dietary;
   }
+  const wellness = new Set<(typeof WELLNESS_TAG_SLUGS)[number]>();
   if (Array.isArray(filtersRaw.wellness_tags)) {
-    const tags = WELLNESS_TAG_SLUGS.filter((t) =>
-      (filtersRaw.wellness_tags as unknown[]).includes(t),
-    );
-    if (tags.length) filters.wellness_tags = [...tags];
+    for (const t of WELLNESS_TAG_SLUGS) {
+      if ((filtersRaw.wellness_tags as unknown[]).includes(t)) wellness.add(t);
+    }
   }
+  for (const t of wellnessTagsForHealth(situational.health_fitness)) wellness.add(t);
+  if (wellness.size) filters.wellness_tags = WELLNESS_TAG_SLUGS.filter((t) => wellness.has(t));
 
   const confidence =
     obj.confidence === "high" || obj.confidence === "medium" || obj.confidence === "low"
@@ -110,7 +151,7 @@ export function normalizeParsedIntent(raw: unknown, transcript: string): ParsedI
   let restated =
     typeof obj.restated_intent === "string" && obj.restated_intent.trim()
       ? obj.restated_intent.trim()
-      : "Your request";
+      : situationalRestatedChip(situational, transcript) ?? "Your request";
   if (restated.length > RESTATED_MAX_CHARS) restated = restated.slice(0, RESTATED_MAX_CHARS);
 
   const intent: ParsedIntent = {
@@ -118,10 +159,19 @@ export function normalizeParsedIntent(raw: unknown, transcript: string): ParsedI
     dials,
     filters,
     confidence,
+    mood: situational.mood,
+    occasion: situational.occasion,
+    age_group: situational.age_group,
+    health_fitness: situational.health_fitness,
     transcript,
     ts: typeof obj.ts === "number" && Number.isFinite(obj.ts) ? obj.ts : Date.now(),
   };
-  if (obj.lens === "blood_sugar") intent.lens = "blood_sugar";
+  if (obj.lens === "blood_sugar" || situational.health_fitness === "metabolic") {
+    intent.lens = "blood_sugar";
+  }
+  if (isSweetCravingTranscript(transcript) && !filters.dish) {
+    filters.dish = "dessert";
+  }
   return intent;
 }
 
@@ -238,14 +288,27 @@ async function invokeParseOnce(transcript: string): Promise<ParsedIntent> {
   return normalizeParsedIntent(data, transcript);
 }
 
-function celebratoryOfflineIntent(transcript: string): ParsedIntent {
-  const dials = celebratoryMoodDials() as DialState;
+function situationalOfflineIntent(transcript: string): ParsedIntent {
+  const layers = mergeSituationalLayers(undefined, transcript);
+  const dials = applySituationalDials(
+    { energy: 50, context: 40, budget: 50, purity: 70 },
+    layers,
+  ) as DialState;
+  const filters: ParsedIntent["filters"] = {};
+  const wellness = wellnessTagsForHealth(layers.health_fitness);
+  if (wellness.length) filters.wellness_tags = [...wellness];
+  if (isSweetCravingTranscript(transcript)) filters.dish = "dessert";
   return normalizeParsedIntent(
     {
-      restated_intent: celebratoryRestatedIntent(transcript),
+      restated_intent: situationalRestatedChip(layers, transcript) ?? "Your request",
       dials,
-      filters: {},
+      filters,
       confidence: "low",
+      mood: layers.mood,
+      occasion: layers.occasion,
+      age_group: layers.age_group,
+      health_fitness: layers.health_fitness,
+      lens: layers.health_fitness === "metabolic" ? "blood_sugar" : undefined,
     },
     transcript,
   );
@@ -275,9 +338,9 @@ export async function parseIntent(transcript: string): Promise<ParsedIntent> {
         continue;
       }
       if (e instanceof RateLimitError) {
-        // ROE-003: mood-only celebration can proceed offline without inventing a dish
-        if (isCelebratoryMoodIntent(trimmed)) {
-          const offline = celebratoryOfflineIntent(trimmed);
+        // ROE-003 / ROE-014: strong situational phrases proceed offline without inventing a dish
+        if (hasStrongOfflineSituational(trimmed) || isCelebratoryMoodIntent(trimmed)) {
+          const offline = situationalOfflineIntent(trimmed);
           putCachedParse(offline);
           saveIntent(offline);
           return offline;

@@ -1,5 +1,7 @@
 import type { Tables } from "@/integrations/supabase/types";
 import { expandDishTokens } from "./dishIntent";
+import type { SituationalLayers } from "./intentSanitize";
+import { DEFAULT_SITUATIONAL } from "./intentSanitize";
 
 export type Restaurant = Tables<"restaurants">;
 export type Promo = Tables<"active_promos">;
@@ -323,6 +325,7 @@ export function scoreRestaurants(
   intentCuisine?: string,
   intentWellnessTags?: WellnessTag[] | unknown[],
   intentDietary?: StrictDietaryTag | unknown,
+  situational?: Partial<SituationalLayers> | null,
 ): ScoredRestaurant[] {
   const eState = energyState(dials.energy);
   const cState = contextState(dials.context);
@@ -331,6 +334,21 @@ export function scoreRestaurants(
   const cuisineIntent = intentCuisine?.trim();
   const wellnessTags = normalizeWellnessTags(intentWellnessTags);
   const strictDietary = normalizeDietaryIntent(intentDietary);
+  const sit: SituationalLayers = {
+    ...DEFAULT_SITUATIONAL,
+    ...(situational ?? {}),
+  };
+  const kidsLean =
+    sit.occasion === "kids_meal" ||
+    sit.age_group === "toddler" ||
+    sit.age_group === "child";
+  const healthLean = sit.health_fitness;
+  const shareableLean =
+    sit.mood === "celebratory" ||
+    sit.mood === "romantic" ||
+    ["friends", "family", "birthday", "anniversary", "festival", "date_night"].includes(
+      sit.occasion,
+    );
 
   // --- Hard-exclusion gatekeeper: non-compliant venues never enter ranking ---
   const eligible = strictDietary
@@ -509,6 +527,57 @@ export function scoreRestaurants(
       if (cState === "celebratory" && r.context_tags.includes("celebratory")) { score += 14; tags.push("Celebratory"); }
       if (cState === "solo" && r.context_tags.includes("solo")) score += 8;
       if (cState === "social" && r.context_tags.includes("social")) score += 10;
+
+      // --- ROE-014 situational ranking biases ---
+      if (shareableLean && r.context_tags.includes("celebratory")) {
+        score += 8;
+        tags.push("Occasion fit");
+      }
+      if (kidsLean) {
+        const blob = `${r.signature_dish ?? ""} ${r.cuisine}`.toLowerCase();
+        if (/\b(mild|kids|child|family|tiffin|idli|dosa|khichdi|dal)\b/.test(blob)) {
+          score += 12;
+          tags.push("Kids / mild");
+        }
+        if (/\b(vindaloo|extra spicy|ghost pepper|phall)\b/.test(blob)) {
+          score -= 14;
+          tags.push("Too spicy for kids");
+        }
+      }
+      if (healthLean === "athletic") {
+        const mxAth = restaurantMatrixSignals(r.name);
+        const protein = mxAth.main?.protein_g ?? 0;
+        if (protein >= 20) {
+          score += 12;
+          tags.push("Athletic protein");
+        }
+        if (r.energy_tags.some((t) => ["peak", "energizing", "light"].includes(t))) {
+          score += 8;
+          tags.push("Athletic fuel");
+        }
+      }
+      if (healthLean === "recovery" || sit.mood === "restorative") {
+        if (r.anti_inflammatory || r.energy_tags.some((t) => ["grounding", "restorative", "warming"].includes(t))) {
+          score += 10;
+          tags.push("Recovery fit");
+        }
+      }
+      if (
+        healthLean === "clean" ||
+        healthLean === "light" ||
+        healthLean === "digestive" ||
+        healthLean === "metabolic"
+      ) {
+        const mxH = restaurantMatrixSignals(r.name);
+        if (mxH.lightCount > mxH.heavyCount) {
+          score += 10;
+          tags.push("Health light menu");
+        }
+        if (mxH.heavyCount > mxH.lightCount + 2) {
+          score -= 8;
+          tags.push("Health heavy menu");
+        }
+      }
 
       // --- Budget alignment ---
       const targetTier = 1 + (dials.budget / 100) * 2;

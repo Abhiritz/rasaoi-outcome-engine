@@ -1,5 +1,5 @@
 /**
- * [ROE-007] (IP-FIX-001) + [ROE-008] (IP-FIX-002): Intent sanitizer helpers.
+ * [ROE-007] (IP-FIX-001) + [ROE-008] (IP-FIX-002) + [ROE-014]: Intent sanitizer helpers.
  * Keep in sync with src/lib/intentSanitize.ts
  *
  * Pure functions — unit-tested on the src twin; edge parse-intent imports this file.
@@ -192,11 +192,349 @@ export function celebratoryRestatedIntent(transcript: string): string {
   return "Celebratory · festive mood";
 }
 
+// --- ROE-014: situational layers (mood / occasion / age / health) ------------
+
+export const MOOD_SLUGS = [
+  "restorative",
+  "peak",
+  "comfort",
+  "celebratory",
+  "romantic",
+  "treat",
+  "neutral",
+] as const;
+export type MoodSlug = (typeof MOOD_SLUGS)[number];
+
+export const OCCASION_SLUGS = [
+  "solo_quick",
+  "casual",
+  "date_night",
+  "friends",
+  "family",
+  "birthday",
+  "anniversary",
+  "work",
+  "festival",
+  "kids_meal",
+  "unspecified",
+] as const;
+export type OccasionSlug = (typeof OCCASION_SLUGS)[number];
+
+export const AGE_GROUP_SLUGS = [
+  "toddler",
+  "child",
+  "teen",
+  "adult",
+  "senior",
+  "pregnancy",
+  "unspecified",
+] as const;
+export type AgeGroupSlug = (typeof AGE_GROUP_SLUGS)[number];
+
+export const HEALTH_FITNESS_SLUGS = [
+  "unspecified",
+  "clean",
+  "athletic",
+  "metabolic",
+  "digestive",
+  "recovery",
+  "light",
+] as const;
+export type HealthFitnessSlug = (typeof HEALTH_FITNESS_SLUGS)[number];
+
+export interface SituationalLayers {
+  mood: MoodSlug;
+  occasion: OccasionSlug;
+  age_group: AgeGroupSlug;
+  health_fitness: HealthFitnessSlug;
+}
+
+export const DEFAULT_SITUATIONAL: SituationalLayers = {
+  mood: "neutral",
+  occasion: "unspecified",
+  age_group: "unspecified",
+  health_fitness: "unspecified",
+};
+
+export function isMoodSlug(v: unknown): v is MoodSlug {
+  return typeof v === "string" && (MOOD_SLUGS as readonly string[]).includes(v);
+}
+export function isOccasionSlug(v: unknown): v is OccasionSlug {
+  return typeof v === "string" && (OCCASION_SLUGS as readonly string[]).includes(v);
+}
+export function isAgeGroupSlug(v: unknown): v is AgeGroupSlug {
+  return typeof v === "string" && (AGE_GROUP_SLUGS as readonly string[]).includes(v);
+}
+export function isHealthFitnessSlug(v: unknown): v is HealthFitnessSlug {
+  return typeof v === "string" && (HEALTH_FITNESS_SLUGS as readonly string[]).includes(v);
+}
+
+const RESTORATIVE_MOOD =
+  /\b(not feeling good|feeling (off|sick)|tired|exhausted|low energy|under the weather|hungover|hangover)\b/i;
+const PEAK_MOOD = /\b(energized|peak|after (a )?workout|post[- ]?workout|great energy)\b/i;
+const COMFORT_MOOD = /\b(comfort food|cozy|indulgent|comfort meal)\b/i;
+const ROMANTIC_MOOD = /\b(romantic|date night|anniversary dinner)\b/i;
+
+export function extractMoodFromTranscript(transcript: string): MoodSlug {
+  if (isSweetCravingTranscript(transcript)) return "treat";
+  if (ROMANTIC_MOOD.test(transcript) && /\bdate night\b|\bromantic\b/i.test(transcript)) {
+    return "romantic";
+  }
+  if (isCelebratoryMoodIntent(transcript) || /\bcelebrat|\bparty\b|\bfestive\b/i.test(transcript)) {
+    return "celebratory";
+  }
+  if (RESTORATIVE_MOOD.test(transcript)) return "restorative";
+  if (PEAK_MOOD.test(transcript)) return "peak";
+  if (COMFORT_MOOD.test(transcript)) return "comfort";
+  return "neutral";
+}
+
+export function extractOccasionFromTranscript(transcript: string): OccasionSlug {
+  if (/\b(kids? meal|for (the )?kids|kid[- ]friendly|children'?s? menu|toddler meal|baby food)\b/i.test(transcript)) {
+    return "kids_meal";
+  }
+  if (/\bdate night\b/i.test(transcript)) return "date_night";
+  if (/\bbirthday\b/i.test(transcript)) return "birthday";
+  if (/\banniversary\b/i.test(transcript)) return "anniversary";
+  if (/\b(diwali|holi|eid\b|festival|festive dinner)\b/i.test(transcript)) return "festival";
+  if (/\b(work lunch|business (lunch|dinner)|office lunch|meeting lunch)\b/i.test(transcript)) {
+    return "work";
+  }
+  if (/\b(with friends|friends outing|party with friends)\b/i.test(transcript)) return "friends";
+  if (/\b(family (dinner|gathering)|with (the )?family|family night)\b/i.test(transcript)) {
+    return "family";
+  }
+  if (/\b(quick|alone|solo|grab something|in a rush|by myself)\b/i.test(transcript)) {
+    return "solo_quick";
+  }
+  if (/\b(casual|weeknight)\b/i.test(transcript)) return "casual";
+  return "unspecified";
+}
+
+export function extractAgeGroupFromTranscript(transcript: string): AgeGroupSlug {
+  if (/\b(toddler|infant|baby|babies)\b/i.test(transcript)) return "toddler";
+  if (/\b(pregnant|pregnancy|postpartum|expecting)\b/i.test(transcript)) return "pregnancy";
+  if (/\b(senior|elderly|grandma|grandpa|grandmother|grandfather)\b/i.test(transcript)) {
+    return "senior";
+  }
+  if (/\b(teen|teenager|teenagers)\b/i.test(transcript)) return "teen";
+  if (/\b(kid|kids|child|children)\b/i.test(transcript)) return "child";
+  if (/\b(adults? only|for adults)\b/i.test(transcript)) return "adult";
+  return "unspecified";
+}
+
+export function extractHealthFitnessFromTranscript(transcript: string): HealthFitnessSlug {
+  if (extractBloodSugarLens(transcript)) return "metabolic";
+  if (/\b(post[- ]?workout|after (a )?workout|gym|protein (boost|heavy|rich)|fuel up|athlete|athletic)\b/i.test(transcript)) {
+    return "athletic";
+  }
+  if (/\b(gut[- ]?friendly|probiotic|fermented|easy on (my |the )?stomach|digestive)\b/i.test(transcript)) {
+    return "digestive";
+  }
+  if (/\b(hangover|hungover|sick|under the weather|not feeling good)\b/i.test(transcript)) {
+    return "recovery";
+  }
+  if (/\b(light meal|nothing heavy|something light|keep it light)\b/i.test(transcript)) {
+    return "light";
+  }
+  if (/\b(healthy|clean eating|organic|good for me|something clean)\b/i.test(transcript)) {
+    return "clean";
+  }
+  return "unspecified";
+}
+
+export function extractSituationalFromTranscript(transcript: string): SituationalLayers {
+  return {
+    mood: extractMoodFromTranscript(transcript),
+    occasion: extractOccasionFromTranscript(transcript),
+    age_group: extractAgeGroupFromTranscript(transcript),
+    health_fitness: extractHealthFitnessFromTranscript(transcript),
+  };
+}
+
+/** Transcript wins when it detects a non-default; else keep valid model enum. */
+export function mergeSituationalLayers(
+  model: {
+    mood?: unknown;
+    occasion?: unknown;
+    age_group?: unknown;
+    health_fitness?: unknown;
+  } | null | undefined,
+  transcript: string,
+): SituationalLayers {
+  const fromTx = extractSituationalFromTranscript(transcript);
+  return {
+    mood:
+      fromTx.mood !== "neutral"
+        ? fromTx.mood
+        : isMoodSlug(model?.mood)
+          ? model!.mood
+          : "neutral",
+    occasion:
+      fromTx.occasion !== "unspecified"
+        ? fromTx.occasion
+        : isOccasionSlug(model?.occasion)
+          ? model!.occasion
+          : "unspecified",
+    age_group:
+      fromTx.age_group !== "unspecified"
+        ? fromTx.age_group
+        : isAgeGroupSlug(model?.age_group)
+          ? model!.age_group
+          : "unspecified",
+    health_fitness:
+      fromTx.health_fitness !== "unspecified"
+        ? fromTx.health_fitness
+        : isHealthFitnessSlug(model?.health_fitness)
+          ? model!.health_fitness
+          : "unspecified",
+  };
+}
+
+/** Wellness tags implied by health_fitness (compose, do not replace). */
+export function wellnessTagsForHealth(health: HealthFitnessSlug): WellnessTag[] {
+  switch (health) {
+    case "clean":
+      return ["light", "low_oil"];
+    case "digestive":
+      return ["gut_friendly", "probiotic", "light"];
+    case "light":
+    case "recovery":
+      return ["light"];
+    case "metabolic":
+      return ["light", "low_oil"];
+    default:
+      return [];
+  }
+}
+
+/**
+ * Project situational enums onto dial bands (ROE-003 generalized).
+ * Mutates a copy — returns new dial object.
+ */
+export function applySituationalDials(
+  dialsIn: DialStateLike,
+  layers: SituationalLayers,
+): DialStateLike {
+  const dials = { ...dialsIn };
+  const { mood, occasion, age_group, health_fitness } = layers;
+
+  const socialOccasion =
+    occasion === "friends" ||
+    occasion === "family" ||
+    occasion === "birthday" ||
+    occasion === "anniversary" ||
+    occasion === "festival" ||
+    occasion === "kids_meal";
+
+  if (mood === "celebratory" || socialOccasion) {
+    if (dials.context < 80) dials.context = 88;
+    if (dials.energy < 55 || dials.energy > 75) dials.energy = 65;
+    if (dials.purity < 60 || dials.purity > 80) dials.purity = 68;
+    if (dials.budget < 40 || dials.budget > 75) dials.budget = 55;
+  }
+  if (mood === "romantic" || occasion === "date_night") {
+    if (dials.context < 80) dials.context = 90;
+    if (dials.energy < 55 || dials.energy > 75) dials.energy = 62;
+    if (dials.purity < 65 || dials.purity > 85) dials.purity = 72;
+  }
+  if (mood === "restorative" || health_fitness === "recovery") {
+    dials.energy = clampDial(dials.energy < 30 ? dials.energy : 18, 18);
+    dials.context = clampDial(dials.context > 45 ? 35 : dials.context, 30);
+    if (dials.purity < 75) dials.purity = 82;
+  }
+  if (mood === "peak" || health_fitness === "athletic") {
+    if (dials.energy < 75) dials.energy = 85;
+    if (dials.purity < 60) dials.purity = 68;
+  }
+  if (mood === "comfort") {
+    if (dials.purity > 45 || dials.purity < 15) dials.purity = 30;
+  }
+  if (mood === "treat") {
+    if (dials.purity > 45 || dials.purity < 20) dials.purity = 35;
+  }
+  if (
+    health_fitness === "clean" ||
+    health_fitness === "light" ||
+    health_fitness === "digestive" ||
+    health_fitness === "metabolic"
+  ) {
+    if (dials.purity < 78) dials.purity = Math.min(92, dials.purity + 14);
+  }
+  if (occasion === "solo_quick") {
+    if (dials.context > 30) dials.context = 15;
+  }
+  if (age_group === "toddler" || age_group === "child" || occasion === "kids_meal") {
+    if (dials.context < 50) dials.context = 70;
+    if (dials.purity < 55) dials.purity = 65;
+  }
+  if (age_group === "senior") {
+    if (dials.energy > 45) dials.energy = 35;
+    if (dials.purity < 70) dials.purity = 78;
+  }
+  if (age_group === "pregnancy") {
+    if (dials.purity < 75) dials.purity = 82;
+  }
+
+  dials.energy = clampDial(dials.energy, 50);
+  dials.context = clampDial(dials.context, 40);
+  dials.budget = clampDial(dials.budget, 50);
+  dials.purity = clampDial(dials.purity, 70);
+  return dials;
+}
+
+export function situationalRestatedChip(
+  layers: SituationalLayers,
+  transcript: string,
+): string | undefined {
+  if (layers.mood === "treat" || isSweetCravingTranscript(transcript)) {
+    return "Sweet · dessert / mithai · treat";
+  }
+  if (layers.mood === "celebratory" || isCelebratoryMoodIntent(transcript)) {
+    return celebratoryRestatedIntent(transcript);
+  }
+  if (layers.mood === "romantic" || layers.occasion === "date_night") {
+    return "Romantic · date night";
+  }
+  if (layers.mood === "restorative" || layers.health_fitness === "recovery") {
+    return "Restorative · low energy";
+  }
+  if (layers.health_fitness === "metabolic") return "Metabolic · blood sugar";
+  if (layers.health_fitness === "athletic") return "Athletic · post-workout";
+  if (layers.health_fitness === "digestive") return "Digestive · gut friendly";
+  if (layers.health_fitness === "clean") return "Clean · healthy";
+  if (layers.health_fitness === "light") return "Light meal";
+  if (layers.occasion === "kids_meal" || layers.age_group === "child" || layers.age_group === "toddler") {
+    return "Kids · mild plates";
+  }
+  if (layers.age_group === "senior") return "Senior · restorative";
+  if (layers.age_group === "pregnancy") return "Pregnancy · clean";
+  if (layers.mood === "peak") return "Peak energy";
+  if (layers.mood === "comfort") return "Comfort food";
+  if (layers.occasion === "solo_quick") return "Quick · solo";
+  if (layers.occasion === "work") return "Work lunch";
+  if (layers.occasion === "festival") return "Festival meal";
+  return undefined;
+}
+
+/** Strong phrases safe for Gemini-429 offline path (no invented dish). */
+export function hasStrongOfflineSituational(transcript: string): boolean {
+  if (isCelebratoryMoodIntent(transcript)) return true;
+  if (isSweetCravingTranscript(transcript)) return true;
+  const layers = extractSituationalFromTranscript(transcript);
+  if (layers.mood === "restorative" || layers.mood === "peak" || layers.mood === "comfort") return true;
+  if (layers.health_fitness !== "unspecified") return true;
+  if (layers.occasion === "kids_meal" || layers.occasion === "date_night") return true;
+  if (layers.age_group !== "unspecified") return true;
+  return false;
+}
+
 export interface BuildRestatedInput {
   modelRestated?: string;
   dietary?: StrictDietary;
   sweetCraving?: boolean;
   celebratoryMood?: boolean;
+  situational?: SituationalLayers;
   transcript?: string;
   culture_tag?: string;
   cuisine?: string;
@@ -204,10 +542,10 @@ export interface BuildRestatedInput {
 }
 
 /**
- * [ROE-008] (IP-FIX-002): Assemble restated_intent by priority; drop lowest
- * segments until ≤ RESTATED_MAX_CHARS (never mid-token chop of dietary/cuisine).
+ * [ROE-008] (IP-FIX-002) + [ROE-014]: Assemble restated_intent by priority;
+ * drop lowest segments until ≤ RESTATED_MAX_CHARS.
  *
- * Priority high→low: dietary → sweet/celebratory core → cuisine/culture →
+ * Priority high→low: dietary → situational/sweet/celebratory → cuisine/culture →
  * one wellness tag → model restated (if it adds signal).
  */
 export function buildRestatedIntent(input: BuildRestatedInput): string {
@@ -233,6 +571,8 @@ export function buildRestatedIntent(input: BuildRestatedInput): string {
 
   if (input.sweetCraving) {
     push("Sweet · dessert / mithai · treat");
+  } else if (input.situational) {
+    push(situationalRestatedChip(input.situational, input.transcript ?? ""));
   } else if (input.celebratoryMood) {
     push(celebratoryRestatedIntent(input.transcript ?? ""));
   }

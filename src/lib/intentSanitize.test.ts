@@ -5,6 +5,12 @@ import {
   extractCuisineFromTranscript,
   extractDietaryFromTranscript,
   extractDishFromTranscript,
+  extractHealthFitnessFromTranscript,
+  extractMoodFromTranscript,
+  extractOccasionFromTranscript,
+  extractAgeGroupFromTranscript,
+  applySituationalDials,
+  hasStrongOfflineSituational,
   isCarrierOnlyDish,
   isCelebratoryMoodIntent,
   isSweetCravingTranscript,
@@ -128,5 +134,51 @@ describe("intentSanitize [ROE-008] (IP-FIX-002)", () => {
       expect(r.toLowerCase()).toMatch(/vegetarian|sweet/);
       expect(r.length).toBeLessThanOrEqual(RESTATED_MAX_CHARS);
     });
+  });
+});
+
+describe("intentSanitize [ROE-014] situational layers", () => {
+  it("extracts mood / occasion / age / health from transcripts", () => {
+    expect(extractMoodFromTranscript("Celebrating mood with friends")).toBe("celebratory");
+    expect(extractMoodFromTranscript("I'm tired and low energy")).toBe("restorative");
+    expect(extractMoodFromTranscript("date night")).toBe("romantic");
+    expect(extractOccasionFromTranscript("kids meal for the kids")).toBe("kids_meal");
+    expect(extractOccasionFromTranscript("birthday dinner")).toBe("birthday");
+    expect(extractAgeGroupFromTranscript("food for my toddler")).toBe("toddler");
+    expect(extractAgeGroupFromTranscript("senior-friendly dinner")).toBe("senior");
+    expect(extractHealthFitnessFromTranscript("something healthy")).toBe("clean");
+    expect(extractHealthFitnessFromTranscript("post-workout protein")).toBe("athletic");
+    expect(extractHealthFitnessFromTranscript("Diabetic-friendly low sugar")).toBe("metabolic");
+  });
+
+  it("applySituationalDials projects restorative and athletic bands", () => {
+    const rest = applySituationalDials(
+      { energy: 50, context: 40, budget: 50, purity: 70 },
+      {
+        mood: "restorative",
+        occasion: "unspecified",
+        age_group: "unspecified",
+        health_fitness: "recovery",
+      },
+    );
+    expect(rest.energy).toBeLessThanOrEqual(25);
+    expect(rest.purity).toBeGreaterThanOrEqual(75);
+
+    const ath = applySituationalDials(
+      { energy: 50, context: 40, budget: 50, purity: 50 },
+      {
+        mood: "peak",
+        occasion: "unspecified",
+        age_group: "unspecified",
+        health_fitness: "athletic",
+      },
+    );
+    expect(ath.energy).toBeGreaterThanOrEqual(75);
+  });
+
+  it("hasStrongOfflineSituational covers clean and kids", () => {
+    expect(hasStrongOfflineSituational("something healthy")).toBe(true);
+    expect(hasStrongOfflineSituational("kids meal mild")).toBe(true);
+    expect(hasStrongOfflineSituational("hello")).toBe(false);
   });
 });

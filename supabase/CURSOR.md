@@ -16,7 +16,7 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 
 | Function | Path | Input | Output | Secrets |
 |----------|------|-------|--------|---------|
-| `parse-intent` | `functions/parse-intent/index.ts` | `{ transcript: string }` | Dials + filters; **429** `{ error, code: "rate_limit", retry_after_ms }`; ROE-003 strips carrier-only dish + celebratory dial band; **[ROE-007] (IP-FIX-001)** transcript lens + no Healthy cuisine + negation dietary (`_shared/intent-sanitize.ts`) | `GEMINI_API_KEY` |
+| `parse-intent` | `functions/parse-intent/index.ts` | `{ transcript: string }` | Dials + filters + **ROE-014** `mood`/`occasion`/`age_group`/`health_fitness`; **429** `{ error, code: "rate_limit", retry_after_ms }`; ROE-003 strips carrier-only dish; **[ROE-007]** transcript lens + no Healthy cuisine (`_shared/intent-sanitize.ts`) | `GEMINI_API_KEY` |
 | `estimate-glycemic` | `functions/estimate-glycemic/index.ts` | `{ dishes: DishInput[] }` | GL estimates; same **429** shape (client soft-fails to matrix heuristics) | `GEMINI_API_KEY` |
 | `places-search` | `functions/places-search/index.ts` | `{ query, lat?, lng? }` | Restaurant results (Google Places or mock) | `GOOGLE_PLACES_API_KEY` (optional) |
 | `ingest-menu` | `functions/ingest-menu/index.ts` | `{ restaurant_id, restaurant_name, source_url }` | `{ proposed: ProposedDish[], source_url, raw_excerpt }` | `GEMINI_API_KEY`, `FIRECRAWL_API_KEY` (optional) |
