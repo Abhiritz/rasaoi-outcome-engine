@@ -2,9 +2,10 @@
 
 | Priority | Ticket | Status |
 |----------|--------|--------|
-| 1 | **ROE-014** Layered situational intent | Shipping — `feature/ROE-014-intent-situational-layers` |
+| 1 | **ROE-014** Layered situational intent | Shipping — PR #28; redeploy `parse-intent` after merge |
+| 2 | **ROE-015** (ASK-002) Ask situational label chips | **Queued** — teach mood/age/occasion/health after ROE-014 |
 | — | Optional: ROE-006 **+perf** (matrix-first GL) | Later / unscoped |
-| — | **ROE-015** | Next free serial — **unassigned** |
+| — | **ROE-016** | Next free after ROE-015 lands |
 
 **ROE-012** — superseded (folded into ROE-011).
 
@@ -12,12 +13,12 @@
 
 | Surface | Format | Example |
 |---------|--------|---------|
-| Issue / PR | `[ROE-NNN] Short title (ABC-NNN)` | `[ROE-013] Ask intent chips (ASK-001)` |
-| Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-013][ASK-001] expand Ask situational chips` |
-| Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-013-ask-intent-chips` |
+| Issue / PR | `[ROE-NNN] Short title (ABC-NNN)` | `[ROE-015] Ask situational chips (ASK-002)` |
+| Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-015][ASK-002] expand Ask chips for situational layers` |
+| Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-015-ask-situational-chips` |
 
 Rules:
-1. **ROE-NNN** is the global serial — never skip. Next free: **ROE-015**.
+1. **ROE-NNN** is the global serial — never skip. Next free to **assign**: **ROE-015** (queued ASK-002). After that: **ROE-016**.
 2. **ABC-NNN** is the workstream alias when one exists. Omit when none.
 3. Issue and PR titles use the **same** format.
 4. Commit subject: dual tags then a short imperative phrase.
@@ -27,7 +28,10 @@ Rules:
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`
 
 ### In progress / shipping
-- **[ROE-014] Layered mood/age/occasion/health intent mapping** — implement + Vitest; redeploy `parse-intent` after merge
+- **[ROE-014] Layered mood/age/occasion/health intent mapping** — PR #28; redeploy `parse-intent` after merge
+
+### Queued (do next after ROE-014)
+- **[ROE-015] Ask situational label chips (ASK-002)** — expand `Ask.tsx` EXAMPLES for kids / athletic / recovery / senior / digestive / light (engine already supports via ROE-014). Impact analysis first.
 
 ### Board QA
 - **[ROE-013] Ask intent chips (ASK-001)** — merged PR #27; Pass pending

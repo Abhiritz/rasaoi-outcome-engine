@@ -20,7 +20,23 @@ Impact: `docs/ROE-014-intent-situational-layers-impact-analysis.md`
 - [x] Vitest (sanitize / intent / pairings)
 - [ ] PR → develop; redeploy `parse-intent`
 
-**Queue note:** Next free serial **ROE-015**.
+**Queue note:** Next free / queued: **[ROE-015] (ASK-002)** Ask situational label chips — teach mood/age/occasion/health enums from ROE-014 (not in ROE-014 scope).
+
+---
+
+## [ROE-015] Ask situational label chips (ASK-002) — queued
+
+Impact: write `docs/ROE-015-ask-situational-chips-impact-analysis.md` before implement.
+
+**Why:** ROE-014 engine enums exist; Ask “Or try” chips still under-teach kids / athletic / recovery / senior / digestive / light layers (ROE-013 chips only cover pre-014 situations).
+
+- [ ] Impact analysis (sample chips + expected enum signals)
+- [ ] Expand/replace `Ask.tsx` EXAMPLES to surface ROE-014 layers (kids_meal, post-workout, hangover/recovery, senior, gut/digestive, light meal — keep ROE-007/008-safe strings)
+- [ ] Align placeholder if needed; mobile chip scroll
+- [ ] Manual smoke: chip → parse → restated shows situational chip; no invented dish
+- [ ] Docs sync; next-free bump after land
+
+**Depends on:** ROE-014 merged + `parse-intent` redeployed.
 
 ---
 

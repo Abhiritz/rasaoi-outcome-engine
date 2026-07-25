@@ -53,7 +53,7 @@ Downstream `veda.scoreRestaurants` / `buildTripleOutcome` cannot prefer mild kid
 **Out of scope**
 
 - Full `indian_culinary_matrix` ingest / hand-edit `culinary-index.json`
-- New Ask EXAMPLE chips (follow-up ROE)
+- New Ask EXAMPLE / label chips → **queued as [ROE-015] (ASK-002)** (expand `Ask.tsx` EXAMPLES for kids / athletic / recovery / senior / digestive / light once this PR merges)
 - DB migrations / biometric age or fitness inference
 - Replacing `wellness_tags` or removing `lens=blood_sugar`
 
@@ -154,3 +154,5 @@ Landed on `feature/ROE-014-intent-situational-layers`:
 | Tests | sanitize / intent offline metabolic / pairings kids+clean |
 
 **Post-merge:** `npx supabase functions deploy parse-intent --no-verify-jwt`
+
+**Follow-up sequence:** **[ROE-015] (ASK-002)** Ask situational label chips — impact analysis then expand Ask “Or try” EXAMPLES so users discover mood / age / occasion / health_fitness layers.

@@ -12,6 +12,7 @@ recent_notes: >
   ROE-014: first-class mood/occasion/age_group/health_fitness enums on parse-intent
   + sanitize dial projection + veda/pairings situational bias. Composes with
   wellness_tags and lens=blood_sugar. Redeploy parse-intent after merge.
+  Next queued: ROE-015 (ASK-002) Ask situational label chips.
 ```
 
 ---
@@ -255,7 +256,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-014** (unassigned). Dual-audit fulfillment + Ask queue (ROE-009…013) done for now.
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next queued: **ROE-015** (ASK-002 Ask situational label chips). Dual-audit fulfillment + Ask queue (ROE-009…013) done for now.
 
 | Trigger | Action |
 |---------|--------|

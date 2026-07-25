@@ -138,7 +138,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free: **ROE-015** (unassigned).
+1. **ROE-NNN** — global serial (never skip). Next free after queued **ROE-015**: **ROE-016**.
 2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
@@ -152,9 +152,10 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
 | Ticket | Status | Impact |
 |--------|--------|--------|
-| **ROE-014** situational layers | Shipping | `docs/ROE-014-intent-situational-layers-impact-analysis.md` |
+| **ROE-014** situational layers | Shipping PR #28 | `docs/ROE-014-intent-situational-layers-impact-analysis.md` |
+| **ROE-015** (ASK-002) Ask situational label chips | **Queued** (next after ROE-014) | Write `docs/ROE-015-ask-situational-chips-impact-analysis.md` |
 | Dual-audit fulfillment + Ask (**ROE-009…013**) | **Done for now** (2026-07-24) | — |
-| **ROE-015** | Unassigned | — |
+| **ROE-016** | Unassigned | — |
 | **ROE-013** (ASK-001) Ask chips | Merged PR #27; QA | `docs/ROE-013-ask-intent-chips-impact-analysis.md` |
 | **ROE-012** | Superseded — folded into ROE-011 | — |
 | **ROE-011** (FUL-003+004) order copy | Merged PR #25; QA | `docs/ROE-011-fulfillment-order-copy-impact-analysis.md` |
