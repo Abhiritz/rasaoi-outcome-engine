@@ -1,6 +1,6 @@
 # Deploy dedicated staging site (ROE-016) — NOT rasaoi-delta production
 #
-# Target: https://rasaoi-staging.vercel.app  (separate Vercel project)
+# Target: separate Vercel project (rasaoi-i8 / preferred rename rasaoi-staging)
 # Triggers: push to experimental/staging branches only.
 # Never merges to develop. Never deploys to VERCEL_PROJECT_ID (prod).
 
@@ -21,6 +21,11 @@ permissions:
   contents: read
   deployments: write
 
+# Same as ci-cd.yml — Vitest imports supabase client at module load.
+env:
+  VITE_SUPABASE_URL: https://ci-placeholder.supabase.co
+  VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-key
+
 jobs:
   quality:
     name: Staging quality gates
@@ -37,19 +42,16 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
-        env:
-          VITE_SUPABASE_URL: https://ci-placeholder.supabase.co
-          VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-key
 
   deploy-staging:
-    name: Deploy rasaoi-staging (Vercel)
+    name: Deploy staging Vercel project
     needs: quality
     if: github.repository == 'Abhiritz/rasaoi-outcome-engine'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
       name: staging
-      url: https://rasaoi-staging.vercel.app
+      url: https://rasaoi-i8.vercel.app
     steps:
       - name: Validate secrets
         run: |
@@ -80,11 +82,11 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
-      - name: Deploy to staging project (--prod on rasaoi-staging only)
+      - name: Deploy to staging project (--prod on staging project only)
         id: deploy
         run: |
           set -euo pipefail
-          # VERCEL_PROJECT_ID here is the STAGING project — never the prod rasaoi ID.
+          # Override project to STAGING — never the prod rasaoi ID.
           export VERCEL_ORG_ID="$VERCEL_ORG_ID"
           export VERCEL_PROJECT_ID="$VERCEL_STAGING_PROJECT_ID"
 
@@ -99,7 +101,8 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "### Staging site" >> "$GITHUB_STEP_SUMMARY"
           echo "- Deployed: $url" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Stable URL: https://rasaoi-staging.vercel.app" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Project URL: https://rasaoi-i8.vercel.app" >> "$GITHUB_STEP_SUMMARY"
+          echo "- (Optional rename in Vercel → rasaoi-staging.vercel.app)" >> "$GITHUB_STEP_SUMMARY"
           echo "- Prod untouched: https://rasaoi-delta.vercel.app" >> "$GITHUB_STEP_SUMMARY"
           echo "- No develop merge" >> "$GITHUB_STEP_SUMMARY"
           echo "Deployed staging: $url"
