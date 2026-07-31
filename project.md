@@ -22,17 +22,18 @@ Agentic AI dining concierge for El Dorado Hills / Folsom, CA. Natural-language i
 |-------|------|------|
 | Frontend | `src/` | Vite + React 18 SPA — UI, routing, client scoring |
 | Backend | `supabase/` | Postgres migrations + 5 Deno edge functions |
-| Offline index | `src/data/culinary-index.json` | Built by `scripts/personal/build-culinary-index.mjs` (no AI at score time) |
+| Offline index | `src/data/culinary-index.json` | Built by `scripts/personal/build-culinary-index.mjs` (no AI at score time). **ROE-016 sandbox:** dynamic Postgres/vector adapters under `src/lib/experimental/` (flags default off). |
 | Ops | `scripts/personal/` | Personal seeding / sync / matrix build (not shared migrations) |
+| Experimental ops | `scripts/experimental/` | Adversarial simulator, nutrition deconstruction, Apify stub — sandbox only |
 | Deploy | Vercel + Supabase | Frontend: [rasaoi-delta.vercel.app](https://rasaoi-delta.vercel.app); CI on push to `develop` / `main` |
 
 There is **no** Next.js, Express/REST server, Redux/Zustand, or axios layer. The SPA talks to Supabase (direct queries + `functions.invoke`).
 
 ```
-Ask → parse-intent (Gemini) → sessionStorage → Reading
+Ask → parse-intent (Gemini; experimental model-router unused until promotion) → sessionStorage → Reading
                                               ├─ places-search
                                               ├─ restaurants / active_promos
-                                              ├─ culinaryIndex (optional enrich)
+                                              ├─ culinaryIndex (static; dynamic adapter flagged off)
                                               └─ veda.scoreRestaurants() → ranked outcomes
                                                     └─ pairings.buildTripleOutcome()
 ```
@@ -91,7 +92,7 @@ Pages fetch → `lib/` scores/filters → domain components render (`HeroCard`, 
 | `restaurant_sources` | Menu source URLs |
 | `dishes_feedback` | Operator QA |
 | `active_promos` | Flash deals |
-| `outcome_selections` | Fulfillment telemetry (insert-only RLS) |
+| `outcome_selections` | Fulfillment telemetry (insert-only RLS). **ROE-016 sandbox:** evaluator read-path via `experimental_list_outcome_feedback` in `migrations_experimental/` only. |
 
 RPC: `record_outcome_checkin()`. Catalog tables are public SELECT; feedback has no public policies.
 
@@ -105,7 +106,7 @@ RPC: `record_outcome_checkin()`. Catalog tables are public SELECT; feedback has 
 | `ingest-menu` | Scrape/parse menu → proposed dishes |
 | `commit-dishes` | Persist dishes + rebuild `menu_items` |
 
-Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns parsed tool args), `_shared/dietary.ts` (must stay in sync with `src/lib/dietary.ts`).
+Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns parsed tool args), `_shared/dietary.ts` (must stay in sync with `src/lib/dietary.ts`), experimental `_shared/model-router.ts` (LiteLLM-class; not in prod call path yet).
 
 **Production note:** Vercel Production must point at the personal Supabase project (`kiugplotjcnmpwjlxajc`), not a dead Lovable host.
 
@@ -138,8 +139,8 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-014**.
-2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, …). Omit when none.
+1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-017** (ROE-014 unmerged situational layers; ROE-015 queued there; **ROE-016** = experimental infra, PR deferred).
+2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
 ### Standing implement sequence (agents — do not wait for re-prompt)
@@ -152,14 +153,16 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
 | Ticket | Status | Impact |
 |--------|--------|--------|
-| **ROE-013** (ASK-001) Ask chips | Implementing | `docs/ROE-013-ask-intent-chips-impact-analysis.md` |
+| **ROE-016** (EXP-001) Experimental infra | Sandboxed on branch; **no PR** | `docs/impact_analysis_experimental_infra.md` |
+| **ROE-014** Intent situational layers | Unmerged branch | (on `feature/ROE-014-intent-situational-layers`) |
+| **ROE-013** (ASK-001) Ask chips | Merged on develop | `docs/ROE-013-ask-intent-chips-impact-analysis.md` |
 | **ROE-012** | Superseded — folded into ROE-011 | — |
 | **ROE-011** (FUL-003+004) order copy | Merged PR #25; QA | `docs/ROE-011-fulfillment-order-copy-impact-analysis.md` |
 | **ROE-010** (FUL-002) delivery URLs | Merged PR #23; QA | `docs/ROE-010-delivery-handoff-urls-impact-analysis.md` |
 | **ROE-009** (FUL-001) contacts | Merged PR #21; ops + QA | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
 | ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
 
-Next free serial: **ROE-014**.
+Next free serial: **ROE-017**.
 
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-ask-audit` canvas.
 
@@ -167,7 +170,7 @@ Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-as
 
 ## Environment & Commands
 
-**Frontend (Vite):** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`; optional `VITE_USE_MOCK_PLACES`.
+**Frontend (Vite):** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`; optional `VITE_USE_MOCK_PLACES`. Experimental flags (`VITE_EXPERIMENTAL_*`) default off — see `.env.experimental.example`.
 
 **Edge secrets:** `GEMINI_API_KEY`, optional `GOOGLE_PLACES_API_KEY`, `FIRECRAWL_API_KEY`.
 
@@ -175,9 +178,12 @@ Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-as
 npm run dev                 # Vite on :8080
 npm run build
 npm test                    # Vitest (required for scoring/dietary/pairings changes)
+npm run experimental:sim    # adversarial simulator (sandbox)
+npm run experimental:nutrition -- "Vegetable Samosa"
 npm run supabase:db:push
 npm run supabase:deploy:all
 node scripts/personal/build-culinary-index.mjs   # rebuild culinary-index.json
+docker compose -f docker-compose.experimental.yml up -d   # local pgvector sandbox
 ```
 
 CI: `.github/workflows/ci-cd.yml` (lint → test → build → Vercel prod on `develop`/`main`).
@@ -199,6 +205,8 @@ CI: `.github/workflows/ci-cd.yml` (lint → test → build → Vercel prod on `d
 | Doc | Use when |
 |-----|----------|
 | `.cursor/CONTEXT_PLAN.md` | Canonical architecture index (agents + contributors) |
+| `docs/ROE-016-hallucination-guard-impact-analysis.md` | Dish-non-invention + speculation guard audit |
+| `.cursor/rules/hallucination-guard.mdc` | Standing guard policy for AI/scoring changes |
 | `src/CURSOR.md` | Frontend conventions |
 | `supabase/CURSOR.md` | Edge functions + migrations |
 | `TODO.md` | Feature roadmap / ticket IDs (`[ROE-NNN]` + optional `(ABC-NNN)`) |

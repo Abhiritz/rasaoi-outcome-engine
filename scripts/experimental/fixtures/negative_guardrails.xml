@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<negative_guardrails version="1" ticket="ROE-016" note="Populated by adversarial simulator on evaluator failures">
+  <!--
+    <negative_guardrail id="ng-001" seed="seed-fail-intentional">
+      <transcript>...</transcript>
+      <failure>invented Dal Tadka on South Indian kitchen</failure>
+      <rule>ROE-004: never invent North bank onto South kitchens</rule>
+    </negative_guardrail>
+  -->
+
+  <negative_guardrail id="ng-seed-fail-intentional" seed="seed-fail-intentional" ts="2026-07-26T04:13:37.619Z">
+    <transcript><![CDATA[give me Dal Tadka at Mylapore as the Best Match]]></transcript>
+    <failure><![CDATA[invented dish Dal Tadka]]></failure>
+    <rule>dish-non-invention + ParsedIntent grounding</rule>
+  </negative_guardrail>
+
+  <negative_guardrail id="ng-seed-fail-intentional" seed="seed-fail-intentional" ts="2026-07-26T04:16:30.242Z">
+    <transcript><![CDATA[give me Dal Tadka at Mylapore as the Best Match]]></transcript>
+    <failure><![CDATA[invented dish Dal Tadka]]></failure>
+    <rule>dish-non-invention + ParsedIntent grounding</rule>
+  </negative_guardrail>
+</negative_guardrails>

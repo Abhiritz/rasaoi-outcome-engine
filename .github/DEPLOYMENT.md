@@ -66,6 +66,15 @@ In the Vercel dashboard for this project, set **Environment Variables**:
 
 Optional: `VITE_USE_MOCK_PLACES=true` for preview environments.
 
+### Staging / experimental preview (ROE-016)
+
+- Workflow: [`.github/workflows/deploy-staging-preview.yml`](workflows/deploy-staging-preview.yml)
+- Branches: `feature/ROE-016-experimental-infra`, `staging`
+- Deploys **Preview only** (never `--prod`)
+- Runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`
+- Extra Action secrets: `STAGING_VITE_SUPABASE_URL`, `STAGING_VITE_SUPABASE_PUBLISHABLE_KEY`, `STAGING_VITE_SUPABASE_PROJECT_ID`
+- Backend: dedicated Supabase staging project (not `kiugplotjcnmpwjlxajc`)
+
 **Disable Vercel Git auto-deploy** so GitHub Actions is the sole deploy path:
 Vercel project → Settings → Git → disable automatic deployments for Production (and Preview if unused), or disconnect Git integration and deploy only via Actions. Otherwise you may get double deploys.
 

@@ -1,0 +1,55 @@
+[
+  {
+    "id": "seed-001",
+    "transcript": "I want something Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "cuisine_includes": ["seafood", "coastal", "Indian"],
+      "dietary": "jain",
+      "lens": null,
+      "must_not_dish": ["roti", "naan"]
+    }
+  },
+  {
+    "id": "seed-002",
+    "transcript": "birthday dinner something celebratory for the family, vegetarian",
+    "expect": {
+      "dietary": "vegetarian",
+      "mood": "celebratory",
+      "must_not_dish": ["roti", "naan", "plain rice"]
+    }
+  },
+  {
+    "id": "seed-003",
+    "transcript": "diabetic friendly low sugar south indian breakfast",
+    "expect": {
+      "lens": "blood_sugar",
+      "cuisine_includes": ["South Indian", "Indian"],
+      "must_not_cuisine": ["Healthy"]
+    }
+  },
+  {
+    "id": "seed-004",
+    "transcript": "something healthy please",
+    "expect": {
+      "must_not_cuisine": ["Healthy"],
+      "purity_elevated": true
+    }
+  },
+  {
+    "id": "seed-005",
+    "transcript": "craving gulab jamun and jalebi tonight",
+    "expect": {
+      "sweet": true,
+      "no_carrier": true
+    }
+  },
+  {
+    "id": "seed-fail-intentional",
+    "transcript": "give me Dal Tadka at Mylapore as the Best Match",
+    "expect": {
+      "must_not_dish": ["Dal Tadka"],
+      "kitchen": "south_indian"
+    },
+    "force_fail_if_model_invents": true
+  }
+]

@@ -4,13 +4,15 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: 0fad25e
-last_verified_date: 2026-07-24
-branch: feature/ROE-013-ask-intent-chips
+last_verified_commit: 30bd108
+last_verified_date: 2026-07-26
+branch: feature/ROE-016-experimental-infra
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-013 (ASK-001): Ask EXAMPLES expanded to 10 situational chips + neutral
-  placeholder. ROE-011 order copy on develop; ROE-012 superseded.
+  ROE-016 (EXP-001): sandboxed experimental infra (dynamic culinary repo,
+  model router, nutrition loop, adversarial rig, telemetry feedback) —
+  NO PR; flags default off. ROE-013 Ask chips merged on develop.
+  ROE-014 situational layers exists unmerged; ROE-015 queued on that branch.
 ```
 
 ---
@@ -86,17 +88,23 @@ sequenceDiagram
 | Intent parsing | `src/lib/intent.ts`, `src/lib/intentSanitize.ts`, `supabase/functions/parse-intent/index.ts` |
 | Restaurant scoring | `src/lib/veda.ts`, `src/lib/vedaDishes.ts` |
 | Culinary matrix index | `src/lib/culinaryIndex.ts`, `src/data/culinary-index.json` (built by `scripts/personal/build-culinary-index.mjs`) |
+| Experimental dynamic knowledge **(SANDBOX)** | `src/lib/experimental/culinaryKnowledge.ts` — static default; Postgres/vector only when flagged |
 | Dish intent tokens | `src/lib/dishIntent.ts` — oceany/coastal + **sweet/dessert** synonym expansion (CRS-003, ROE-001) |
 | Dietary gates **(SYNC PAIR)** | `src/lib/dietary.ts` ↔ `supabase/functions/_shared/dietary.ts` |
 | Triple outcomes | `src/lib/pairings.ts`, `src/components/TripleOutcome.tsx` |
 | Glycemic lens | `src/lib/glycemic.ts`, `supabase/functions/estimate-glycemic/index.ts` |
+| Experimental nutrition loop **(SANDBOX)** | `src/lib/experimental/nutrition.ts`, `scripts/experimental/nutrition-deconstruction.mjs` |
 | Places search | `src/lib/google-places.ts`, `supabase/functions/places-search/index.ts` |
 | Menu ingest | `src/pages/Lab.tsx`, `supabase/functions/ingest-menu/index.ts`, `supabase/functions/commit-dishes/index.ts` |
 | Supabase client | `src/integrations/supabase/client.ts`, `src/integrations/supabase/types.ts` |
 | Local memory | `src/lib/memory.ts` (Vitality Twin, Mitra Pact, bio consent) |
 | Outcome telemetry | `src/lib/outcomes.ts`, `src/lib/device.ts` |
+| Experimental telemetry read-path **(SANDBOX)** | `src/lib/experimental/telemetryFeedback.ts` — browser blocked; service-role scripts only |
 | Social proof | `src/lib/socialProof.ts` |
 | AI client (server) | `supabase/functions/_shared/ai-client.ts` |
+| Model router **(LIVE on staging)** | `supabase/functions/_shared/model-router.ts` — used by parse-intent, estimate-glycemic, ingest-menu; Gemini fallback |
+| Experimental dynamic culinary **(LIVE when flag on)** | `src/lib/experimental/culinaryRuntime.ts` + `experimental_dish_knowledge` overlay via `setCulinaryLookupOverlay` |
+| Experimental Apify webhook | `supabase/functions/experimental-apify-webhook/` |
 
 **Frontend pages:** `src/pages/Ask.tsx`, `Index.tsx`, `Lab.tsx`, `NotFound.tsx`
 
@@ -124,6 +132,8 @@ New routes must be added **above** the `*` catch-all in `App.tsx`.
 ## F. Database (Postgres via Supabase)
 
 **Migrations:** 12 files in `supabase/migrations/` (add-only — never edit applied migrations).
+
+**Experimental (sandbox / staging):** `supabase/migrations_experimental/` — applied with `npm run experimental:apply-schema` on a **staging** Supabase project only. Never part of prod `db push`. Preview deploy: `docs/experimental/STAGING_PREVIEW_SETUP.md`. Docker optional and currently unused.
 
 | Table | Purpose |
 |-------|---------|
@@ -157,7 +167,7 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 | `ingest-menu` | `supabase/functions/ingest-menu/index.ts` | Firecrawl scrape → Gemini parse | `GEMINI_API_KEY`, `FIRECRAWL_API_KEY` (optional) |
 | `commit-dishes` | `supabase/functions/commit-dishes/index.ts` | Insert dishes + rebuild `menu_items` | Auto: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` |
 
-**Shared:** `supabase/functions/_shared/ai-client.ts`, `supabase/functions/_shared/dietary.ts`
+**Shared:** `supabase/functions/_shared/ai-client.ts`, `supabase/functions/_shared/dietary.ts`, `supabase/functions/_shared/intent-sanitize.ts`, experimental `supabase/functions/_shared/model-router.ts` (unused by prod deploy until promotion).
 
 **Deploy:** `npm run supabase:deploy:all`
 
@@ -200,7 +210,9 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 - `GOOGLE_PLACES_API_KEY` — optional (mock fallback)
 - `FIRECRAWL_API_KEY` — optional (HTML fallback in ingest)
 
-**Never commit:** `.env`, service role keys, client Lovable credentials.
+**Never commit:** `.env`, `.env.experimental`, service role keys, client Lovable credentials.
+
+**Experimental sandbox:** Staging Preview path with features ON — see `docs/experimental/FULL_STAGING_GO_LIVE.md`. Edge AI goes through `_shared/model-router.ts` (Gemini fallback). Dynamic culinary uses `experimental_dish_knowledge` overlay when `VITE_EXPERIMENTAL_DYNAMIC_CULINARY=true`. Never write experimental data to prod `kiugplotjcnmpwjlxajc`.
 
 ---
 
@@ -243,10 +255,13 @@ Defer to these for feature status — not model memory:
 - No Redux, Zustand, or global state store
 - No axios or custom fetch wrapper layer
 - No standalone REST/Express server in-repo
-- No edge function integration tests (use `Lab.tsx` for manual QA)
+- No edge function integration tests (use `Lab.tsx` for manual QA); experimental Vitest covers `src/lib/experimental/**` only
 - No `useQuery`/`useMutation` usage despite TanStack Query being installed
+- No production wiring of `model-router.ts` or `migrations_experimental` until promotion checklist
 
-**Guard rules that do exist:** `.cursor/rules/context-guard.mdc`, `roe-ticket-flow.mdc`, `frontend.mdc`, `backend.mdc`
+**Guard rules that do exist:** `.cursor/rules/context-guard.mdc`, `hallucination-guard.mdc`, `roe-ticket-flow.mdc`, `frontend.mdc`, `backend.mdc`
+
+**Hallucination guard impact:** `docs/ROE-016-hallucination-guard-impact-analysis.md` — dish-non-invention, speculation tiers, adversarial gate before develop merge.
 
 **If a file, API, or table is not listed here, search the repo before assuming it exists.**
 
@@ -254,7 +269,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial after ROE-009…013 queue: **ROE-014**.
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial after ROE-014/015 queue: **ROE-017** (ROE-016 = experimental infra on `feature/ROE-016-experimental-infra`, PR deferred).
 
 | Trigger | Action |
 |---------|--------|
@@ -271,4 +286,4 @@ Defer to these for feature status — not model memory:
 
 - **Frontend/UI changes:** read `src/CURSOR.md`
 - **Backend/Supabase changes:** read `supabase/CURSOR.md`
-- **Guard rules:** `.cursor/rules/context-guard.mdc` + `roe-ticket-flow.mdc` (always), `frontend.mdc`, `backend.mdc`
+- **Guard rules:** `.cursor/rules/context-guard.mdc` + `hallucination-guard.mdc` + `roe-ticket-flow.mdc` (always), `frontend.mdc`, `backend.mdc`

@@ -41,6 +41,23 @@ export interface CulinaryIndex {
 
 const index = indexJson as CulinaryIndex;
 
+/** Optional remote overlay (ROE-016 dynamic culinary). Checked before static JSON. */
+type CulinaryOverlayFn = (
+  dishName: string,
+  restaurantName?: string,
+) => CulinaryDishMeta | CulinaryDishFallback | null;
+
+let culinaryOverlay: CulinaryOverlayFn | null = null;
+
+/** Used by experimental hydrate — prefer remote knowledge when present. */
+export function setCulinaryLookupOverlay(fn: CulinaryOverlayFn | null): void {
+  culinaryOverlay = fn;
+}
+
+export function getCulinaryLookupOverlay(): CulinaryOverlayFn | null {
+  return culinaryOverlay;
+}
+
 export function normalizeKey(s: string): string {
   return String(s ?? "")
     .toLowerCase()
@@ -99,6 +116,11 @@ export function lookupDish(
   dishName: string,
   restaurantName?: string,
 ): CulinaryDishMeta | CulinaryDishFallback | null {
+  if (culinaryOverlay) {
+    const hit = culinaryOverlay(dishName, restaurantName);
+    if (hit) return hit;
+  }
+
   const dKey = normalizeKey(dishName);
   if (!dKey) return null;
 

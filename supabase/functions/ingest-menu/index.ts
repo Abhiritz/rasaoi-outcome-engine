@@ -1,6 +1,6 @@
 // Ingest a restaurant menu: Firecrawl scrape → Gemini parse → return proposed dishes.
 
-import { DEFAULT_GEMINI_MODEL, geminiJsonObject } from "../_shared/ai-client.ts";
+import { routedJsonObject } from "../_shared/model-router.ts";
 import { normalizeDishDiet } from "../_shared/dietary.ts";
 // The /lab harness reviews + commits via service role.
 //
@@ -122,10 +122,10 @@ async function scrapeMenu(url: string): Promise<string> {
   return await res.text();
 }
 
-async function parseWithLLM(rawContent: string, restaurantName: string, model?: string): Promise<ProposedDish[]> {
+async function parseWithLLM(rawContent: string, restaurantName: string, _model?: string): Promise<ProposedDish[]> {
   const trimmed = rawContent.slice(0, 60_000);
-  const content = await geminiJsonObject(
-    model || DEFAULT_GEMINI_MODEL,
+  const content = await routedJsonObject(
+    "ingest_parse",
     SYSTEM_PROMPT,
     `Restaurant: ${restaurantName}\n\nMenu source:\n${trimmed}`,
   );

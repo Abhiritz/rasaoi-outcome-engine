@@ -30,6 +30,15 @@ Update CONTEXT_PLAN header (`last_verified_commit`, affected sections) and the r
 
 Run `npm test` when changing `src/lib/` scoring, dietary, or pairings logic.
 
-## Does Not Exist
+## Hallucination & speculation guard
 
-No Next.js, Redux, Zustand, axios layer, REST server, or `useQuery`/`useMutation` usage. See CONTEXT_PLAN §L.
+Read `.cursor/rules/hallucination-guard.mdc` when touching intent, pairings, scoring, culinary data, nutrition, or experimental AI paths. Impact doc: `docs/ROE-016-hallucination-guard-impact-analysis.md`.
+
+## Experimental sandbox (ROE-016)
+
+- Code under `src/lib/experimental/`, `scripts/experimental/`, `supabase/migrations_experimental/` is **sandboxed**.
+- Staging path: Vercel Preview + dedicated Supabase staging — `docs/experimental/STAGING_PREVIEW_SETUP.md` (Docker optional / unused).
+- Edge AI uses `_shared/model-router.ts` with **Gemini fallback**; non-Gemini providers only when staging secrets + `EXPERIMENTAL_MODEL_ROUTER=true`.
+- Never apply experimental migrations with `supabase db push` to production.
+- Never point experimental writes at prod project `kiugplotjcnmpwjlxajc`.
+- Secrets: `.env.experimental` only (gitignored).

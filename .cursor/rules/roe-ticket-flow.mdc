@@ -19,7 +19,7 @@ Agents follow this sequence for every new ROE ticket **without the user restatin
 
 ## Sequence
 
-1. **Audit** — Read CONTEXT_PLAN (+ CURSOR.md if touching `src/` or `supabase/`). Search before inventing. Prefer a canvas for multi-finding audits.
+1. **Audit** — Read CONTEXT_PLAN (+ CURSOR.md if touching `src/` or `supabase/`). Search before inventing. For AI/scoring/pairings changes, also read `.cursor/rules/hallucination-guard.mdc`. Prefer a canvas for multi-finding audits.
 2. **Impact analysis** — Write `docs/ROE-NNN-*-impact-analysis.md` (problem, acceptance, scope, files, test plan, deploy). Await user approval before coding unless they already said “implement”.
 3. **Branch** — `git fetch origin develop && git checkout -b feature/ROE-NNN-… origin/develop`
 4. **Implement** — Minimal diff; honor sync pairs; add/adjust Vitest for scoring/dietary/intent/pairings.

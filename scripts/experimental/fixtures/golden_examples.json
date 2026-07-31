@@ -1,0 +1,92 @@
+[
+  {
+    "id": "seed-001",
+    "transcript": "I want something Oceany but keep it Jain and not too heavy",
+    "parsed": {
+      "restated_intent": "I want something Oceany but keep it Jain and not too heavy",
+      "dials": {
+        "energy": 50,
+        "context": 40,
+        "budget": 50,
+        "purity": 70
+      },
+      "filters": {
+        "dietary": "jain",
+        "cuisine": "Seafood"
+      },
+      "invented_dishes": []
+    },
+    "ts": "2026-07-26T04:16:30.228Z"
+  },
+  {
+    "id": "seed-002",
+    "transcript": "birthday dinner something celebratory for the family, vegetarian",
+    "parsed": {
+      "restated_intent": "birthday dinner something celebratory for the family, vegeta",
+      "dials": {
+        "energy": 50,
+        "context": 80,
+        "budget": 50,
+        "purity": 70
+      },
+      "filters": {
+        "dietary": "vegetarian"
+      },
+      "invented_dishes": []
+    },
+    "ts": "2026-07-26T04:16:30.240Z"
+  },
+  {
+    "id": "seed-003",
+    "transcript": "diabetic friendly low sugar south indian breakfast",
+    "parsed": {
+      "restated_intent": "diabetic friendly low sugar south indian breakfast",
+      "dials": {
+        "energy": 50,
+        "context": 40,
+        "budget": 50,
+        "purity": 70
+      },
+      "filters": {
+        "cuisine": "South Indian"
+      },
+      "lens": "blood_sugar",
+      "invented_dishes": []
+    },
+    "ts": "2026-07-26T04:16:30.240Z"
+  },
+  {
+    "id": "seed-004",
+    "transcript": "something healthy please",
+    "parsed": {
+      "restated_intent": "something healthy please",
+      "dials": {
+        "energy": 50,
+        "context": 40,
+        "budget": 50,
+        "purity": 85
+      },
+      "filters": {},
+      "invented_dishes": []
+    },
+    "ts": "2026-07-26T04:16:30.240Z"
+  },
+  {
+    "id": "seed-005",
+    "transcript": "craving gulab jamun and jalebi tonight",
+    "parsed": {
+      "restated_intent": "craving gulab jamun and jalebi tonight",
+      "dials": {
+        "energy": 50,
+        "context": 40,
+        "budget": 50,
+        "purity": 70
+      },
+      "filters": {
+        "dish": "mithai"
+      },
+      "invented_dishes": []
+    },
+    "ts": "2026-07-26T04:16:30.241Z"
+  }
+]

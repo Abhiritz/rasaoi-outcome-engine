@@ -71,6 +71,29 @@ export async function recordSelection(args: RecordArgs): Promise<string | null> 
     console.error("recordSelection error:", error);
     return null;
   }
+
+  // ROE-016: mirror into experimental feedback table when present (staging closed-loop).
+  void supabase
+    .from("experimental_outcome_feedback" as never)
+    .insert({
+      id,
+      device_id,
+      restaurant_id: args.restaurantId,
+      restaurant_name: args.restaurantName,
+      dish: args.dish,
+      path: args.path,
+      carrier: args.carrier,
+      dials: args.dials as unknown as never,
+      vitality_score: args.vitalityScore,
+      rank: args.rank,
+    } as never)
+    .then(({ error: mirrorErr }) => {
+      if (mirrorErr) {
+        // Table may not exist on prod — ignore quietly
+        console.debug("experimental feedback mirror skipped:", mirrorErr.message);
+      }
+    });
+
   setPending({
     id,
     restaurantName: args.restaurantName,

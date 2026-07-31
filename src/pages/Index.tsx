@@ -15,6 +15,7 @@ import { scoreRestaurants, type DialState, type Restaurant, type Promo, type Sco
 import { loadTwin, getBloodSugarLens, setBloodSugarLens } from "@/lib/memory";
 import { loadIntent, clearIntent, findRestaurantByName, type ParsedIntent } from "@/lib/intent";
 import { estimateGlycemic, type GLEstimate } from "@/lib/glycemic";
+import { hydrateCulinaryKnowledgeFromRemote } from "@/lib/experimental/culinaryRuntime";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ArrowLeft, Info, Droplet } from "lucide-react";
 
@@ -107,6 +108,7 @@ const Index = () => {
 
   useEffect(() => {
     (async () => {
+      await hydrateCulinaryKnowledgeFromRemote();
       const [rRes, pRes] = await Promise.all([
         supabase.from("restaurants").select("*"),
         supabase.from("active_promos").select("*"),

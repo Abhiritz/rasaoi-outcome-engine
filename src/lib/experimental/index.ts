@@ -1,0 +1,10 @@
+/**
+ * ROE-016 (EXP-001) — Sandbox barrel. Production scoring must not import this
+ * unless behind an explicit experimental flag.
+ */
+
+export * from "./culinaryKnowledge";
+export * from "./culinaryRuntime";
+export * from "./modelRouter";
+export * from "./nutrition";
+export * from "./telemetryFeedback";

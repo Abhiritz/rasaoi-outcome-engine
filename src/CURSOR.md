@@ -21,7 +21,7 @@
 | `src/pages/` | Route-level screens (4 pages) |
 | `src/components/` | Domain UI (17 components) |
 | `src/components/ui/` | shadcn primitives (~45) — extend, don't replace |
-| `src/lib/` | Business logic (scoring, intent, places, fulfillment, memory, culinary index) |
+| `src/lib/` | Business logic (scoring, intent, places, fulfillment, memory, culinary index, **experimental/** sandbox) |
 | `src/data/` | Compiled `culinary-index.json` (rebuild via personal script — do not hand-edit) |
 | `src/hooks/` | `use-toast`, `use-mobile` |
 | `src/integrations/supabase/` | Typed client + generated DB types |
@@ -138,6 +138,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - [ ] New route → add in `App.tsx` above `*` catch-all
 - [ ] New edge call → wrap in `src/lib/*.ts`
 - [ ] Scoring change → update `veda.ts` + add regression in `veda.test.ts`
+- [ ] Intent / pairings / AI path → read `.cursor/rules/hallucination-guard.mdc`; run `pairings.test.ts` + `experimental:sim` on staging branch
 - [ ] Dietary change → also update `supabase/functions/_shared/dietary.ts`
 - [ ] Intent sanitizer / transcript grounding change → also update `supabase/functions/_shared/intent-sanitize.ts` (+ `intentSanitize.test.ts`)
 - [ ] Wellness tag change → sync `WELLNESS_TAG_SLUGS` in `veda.ts` + `parse-intent` prompt
@@ -167,6 +168,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | `glycemic.ts` | Glycemic estimates + localStorage cache (matrix heuristics before edge, N≤8) |
 | `memory.ts` | Vitality Twin, consent, Mitra Pact — Twin counter is **twin syncs**, not restaurant outcomes |
 | `outcomes.ts` | Outcome selection telemetry |
+| `experimental/*` | **[ROE-016 sandbox]** culinary repo, model router, nutrition loop, telemetry feedback — flags default off; do not import from prod pages without a flag |
 | `socialProof.ts` | Social proof helpers |
 | `device.ts` | Anonymous device ID |
 
@@ -185,6 +187,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - Blood-sugar / GL: Refine → **Blood sugar · glycemic load (GL)** Turn on/off; when on, chrome chip **Blood sugar · On** (ROE-006). Not a Low/Med/High dropdown.
 - **[ROE-007] (IP-FIX-001):** “something healthy” is purity-only (never cuisine Healthy); diabetic/low-sugar Ask grounds `lens=blood_sugar`; negated diets (“not vegetarian”) do not set `filters.dietary`.
 - **[ROE-008] (IP-FIX-002):** client normalizes parse payloads; restated_intent keeps dietary first within 60 chars; celebratory/carrier helpers live in `intentSanitize` (re-exported from `dishIntent`).
+- **[ROE-016] (EXP-001):** experimental infra under `src/lib/experimental/` + `scripts/experimental/` — **no PR** until adversarial ≥98%; production scoring stays on static culinary-index + Gemini `ai-client.ts`.
 
 ---
 

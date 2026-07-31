@@ -9,13 +9,32 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
-## [ROE-013] Ask intent chips (ASK-001) — implementing
+## [ROE-016] Experimental infra (EXP-001) — full remote staging (NO PR yet)
+
+Impact: `docs/impact_analysis_experimental_infra.md`  
+Go-live: `docs/experimental/FULL_STAGING_GO_LIVE.md`  
+Tracker: `TODO_PROGRESS.md`
+
+- [x] Impact analysis + branch `feature/ROE-016-experimental-infra`
+- [x] Model router wired into parse-intent / estimate-glycemic / ingest-menu
+- [x] Dynamic culinary remote overlay + backfill script
+- [x] Telemetry mirror to `experimental_outcome_feedback`
+- [x] `experimental-apify-webhook` edge function
+- [x] Staging Preview workflow with experimental flags **ON**
+- [x] Vitest (experimental + pairings + culinaryIndex)
+- [ ] Create Supabase staging + apply schema/backfill/deploy (operator)
+- [ ] GitHub `STAGING_VITE_SUPABASE_*` + push → Preview URL
+- [ ] **PR deferred** until adversarial ≥98% + guard audit pass (`docs/ROE-016-hallucination-guard-impact-analysis.md`)
+
+---
+
+## [ROE-013] Ask intent chips (ASK-001) — merged on develop
 
 Impact: `docs/ROE-013-ask-intent-chips-impact-analysis.md`
 
 - [x] Expand `Ask.tsx` EXAMPLES to 10 (sweet, celebration, Jain+birthday, Thai, wellness, family)
 - [x] Align placeholder; mobile chip scroll
-- [ ] Docs sync in PR
+- [x] Docs sync in PR
 
 ---
 

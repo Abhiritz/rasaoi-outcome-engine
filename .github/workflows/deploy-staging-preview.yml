@@ -1,0 +1,103 @@
+# Deploy staging / Vercel Preview (experimental — not production)
+
+# Triggers on experimental branch push only. Never uses --prod.
+# Prod remains: push to develop|main → ci-cd.yml Deploy production.
+
+name: Deploy staging preview
+
+on:
+  push:
+    branches:
+      - feature/ROE-016-experimental-infra
+      - staging
+  workflow_dispatch:
+
+concurrency:
+  group: staging-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  quality:
+    name: Staging quality gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: test -f .cursor/CONTEXT_PLAN.md
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://ci-placeholder.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-key
+
+  deploy-preview:
+    name: Deploy Vercel Preview
+    needs: quality
+    if: github.repository == 'Abhiritz/rasaoi-outcome-engine'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: staging
+    steps:
+      - name: Validate secrets
+        run: |
+          missing=0
+          for secret in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID \
+            STAGING_VITE_SUPABASE_URL STAGING_VITE_SUPABASE_PUBLISHABLE_KEY STAGING_VITE_SUPABASE_PROJECT_ID; do
+            if [ -z "${!secret}" ]; then
+              echo "::error::Missing required secret: $secret"
+              missing=1
+            fi
+          done
+          exit $missing
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          STAGING_VITE_SUPABASE_URL: ${{ secrets.STAGING_VITE_SUPABASE_URL }}
+          STAGING_VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STAGING_VITE_SUPABASE_PUBLISHABLE_KEY }}
+          STAGING_VITE_SUPABASE_PROJECT_ID: ${{ secrets.STAGING_VITE_SUPABASE_PROJECT_ID }}
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy Preview (not production)
+        id: deploy
+        run: |
+          set -euo pipefail
+          url=$(vercel deploy --yes --token="$VERCEL_TOKEN" \
+            --build-env VITE_SUPABASE_URL="$STAGING_VITE_SUPABASE_URL" \
+            --build-env VITE_SUPABASE_PUBLISHABLE_KEY="$STAGING_VITE_SUPABASE_PUBLISHABLE_KEY" \
+            --build-env VITE_SUPABASE_PROJECT_ID="$STAGING_VITE_SUPABASE_PROJECT_ID" \
+            --build-env VITE_USE_MOCK_PLACES=true \
+            --build-env VITE_EXPERIMENTAL_DYNAMIC_CULINARY=true \
+            --build-env VITE_EXPERIMENTAL_MODEL_ROUTER=true)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "### Staging Preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "URL: $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "Target: Preview (not rasaoi-delta production)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployed preview: $url"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          STAGING_VITE_SUPABASE_URL: ${{ secrets.STAGING_VITE_SUPABASE_URL }}
+          STAGING_VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STAGING_VITE_SUPABASE_PUBLISHABLE_KEY }}
+          STAGING_VITE_SUPABASE_PROJECT_ID: ${{ secrets.STAGING_VITE_SUPABASE_PROJECT_ID }}

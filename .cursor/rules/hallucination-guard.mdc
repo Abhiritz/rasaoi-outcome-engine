@@ -1,0 +1,53 @@
+---
+description: Speculation and hallucination guardrails — dishes, intent, nutrition, catalog integrity
+alwaysApply: true
+---
+
+# Rasaoi Hallucination & Speculation Guard
+
+Agents MUST enforce these rules when changing intent parsing, scoring, pairings, culinary data, nutrition, or experimental infra.
+
+## Core invariants (never regress)
+
+1. **Dish-non-invention** — `pairings.ts` never creates a Best/Booster dish from intent text alone. Source of truth = `restaurants.menu_items` (+ matrix enrich only). See CRS-003, ROE-001, ROE-003, ROE-004.
+2. **Carrier vs dish** — Roti/naan/bread alone is never a Best Match for mood/celebration (ROE-003). Carriers may be inferred staples; dishes may not.
+3. **Regional integrity** — South Indian kitchens never receive North bank inventions (Dal Tadka, Butter Chicken, …) (ROE-004).
+4. **Catalog integrity** — Do not re-seed or invent venues (ROE-005 Mythaai retired).
+5. **Intent grounding** — `parse-intent` output MUST pass `_shared/intent-sanitize.ts` (`mergeDietary`, carrier strip, transcript cuisine/dish extract). Any model router MUST still call `validateAndSanitize` / `sanitizeFilters` after LLM output.
+6. **No Healthy cuisine** — “something healthy” elevates purity only; never `filters.cuisine = Healthy` (ROE-007).
+
+## Speculation tiers (nutrition & knowledge)
+
+| Tier | Meaning | Allowed in UI/ranking |
+|------|---------|------------------------|
+| `verified` | Menu/USDA explicit | Yes |
+| `inferred` | Matrix/heuristic/LLM with corroboration | Yes with caveats |
+| `speculative` | Unmapped ingredient, Apify-only, LLM guess | Enrich only on **exact** dish key match; never clinical claims |
+
+- Unmapped USDA ingredients → **quarantine**, never invent macros (`nutrition.ts`, `experimental_nutrition_quarantine`).
+- Dynamic culinary overlay (`culinaryRuntime.ts`) must **not** fuzzy-match speculative rows across restaurants.
+
+## Automated gates
+
+Before merge / promotion:
+
+- [ ] `npm test` — especially `pairings.test.ts`, `intentSanitize.test.ts`, `experimental.test.ts`
+- [ ] `npm run experimental:sim` — failures append `negative_guardrails.xml`; target ≥98% on expanded corpus
+- [ ] Impact doc updated when guard surface changes: `docs/ROE-016-hallucination-guard-impact-analysis.md`
+
+## Agent audit checklist (AI / scoring / experimental)
+
+When touching `parse-intent`, `model-router`, `pairings`, `veda`, `glycemic`, `experimental/**`:
+
+1. Confirm dish names on plates still come from menu/matrix, not LLM filters alone.
+2. Confirm sanitize path still runs **after** routed LLM call.
+3. Confirm static culinary fallback when remote hydrate fails.
+4. Confirm no new public SELECT on sensitive telemetry without RPC review.
+5. Document findings in impact analysis §Post-implementation audit.
+
+## References
+
+- `docs/ROE-016-hallucination-guard-impact-analysis.md`
+- `docs/impact_analysis_experimental_infra.md`
+- `CONFLICT_RESOLUTION_REPORTS.md` (IP-FIX / CRS-003 history)
+- `scripts/experimental/fixtures/negative_guardrails.xml`

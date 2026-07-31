@@ -1,7 +1,7 @@
 // Estimate glycemic load for a batch of dishes via native Gemini API.
 // Lifestyle wellness only — never medical advice.
 
-import { DEFAULT_GEMINI_MODEL, geminiToolCall } from "../_shared/ai-client.ts";
+import { routedToolCall } from "../_shared/model-router.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -93,8 +93,8 @@ Deno.serve(async (req) => {
 
     let parsed: { estimates?: unknown[] };
     try {
-      parsed = (await geminiToolCall(
-        DEFAULT_GEMINI_MODEL,
+      parsed = (await routedToolCall(
+        "glycemic_estimate",
         SYSTEM_PROMPT,
         `Estimate glycemic load for these dishes:\n${userMsg}`,
         {

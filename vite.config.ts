@@ -7,7 +7,9 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    // 8080 is often taken by EDB Postgres httpd on Windows — use Vite default.
+    port: 5173,
+    strictPort: true,
     hmr: {
       overlay: false,
     },

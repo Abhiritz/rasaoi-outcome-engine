@@ -1,7 +1,7 @@
 // Veda Intent Parser — turns a spoken/typed request into dials + filters.
 // Uses native Google Gemini API with tool-calling for reliable structured output.
 
-import { DEFAULT_GEMINI_MODEL, geminiToolCall } from "../_shared/ai-client.ts";
+import { routedToolCall } from "../_shared/model-router.ts";
 import { DIETARY_INTENT_SLUGS } from "../_shared/dietary.ts";
 import {
   buildRestatedIntent,
@@ -499,8 +499,8 @@ Deno.serve(async (req) => {
 
     let parsed: unknown;
     try {
-      parsed = await geminiToolCall(
-        DEFAULT_GEMINI_MODEL,
+      parsed = await routedToolCall(
+        "parse_intent",
         SYSTEM_PROMPT,
         trimmedTranscript,
         {

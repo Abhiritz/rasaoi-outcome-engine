@@ -1,0 +1,42 @@
+# Experimental sandbox only — OPTIONAL. Staging/preview uses hosted Supabase instead.
+# Preferred path: docs/experimental/STAGING_PREVIEW_SETUP.md (no Docker required).
+# Start (only if you install Docker Desktop later):
+#   docker compose -f docker-compose.experimental.yml up -d
+
+services:
+  pgvector:
+    image: pgvector/pgvector:pg16
+    container_name: rasaoi-exp-pgvector
+    environment:
+      POSTGRES_USER: rasaoi
+      POSTGRES_PASSWORD: rasaoi
+      POSTGRES_DB: rasaoi_exp
+    ports:
+      - "54329:5432"
+    volumes:
+      - rasaoi_exp_pgdata:/var/lib/postgresql/data
+      - ./supabase/migrations_experimental:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rasaoi -d rasaoi_exp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Optional LiteLLM-class OpenAI-compatible gateway (enable with --profile llm)
+  litellm:
+    profiles: ["llm"]
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: rasaoi-exp-litellm
+    ports:
+      - "4000:4000"
+    environment:
+      LITELLM_MASTER_KEY: sk-local-experimental
+      # Provider keys injected from host .env.experimental when running:
+      #   docker compose --env-file .env.experimental --profile llm up -d
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    command: ["--port", "4000", "--num_workers", "1"]
+
+volumes:
+  rasaoi_exp_pgdata:

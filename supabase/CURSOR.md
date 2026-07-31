@@ -33,10 +33,13 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 | `functions/_shared/ai-client.ts` | Gemini client (`geminiToolCall`, `geminiJsonObject`); reads `GEMINI_API_KEY` |
 | `functions/_shared/dietary.ts` | DIET-001 taxonomy: diet classes, modifiers, normalization, gatekeeper logic |
 | `functions/_shared/intent-sanitize.ts` | [ROE-007]/[ROE-008] transcript grounding, celebratory/carrier, `buildRestatedIntent` — sync with `src/lib/intentSanitize.ts` |
+| `functions/_shared/model-router.ts` | **[ROE-016 sandbox]** LiteLLM-class gateway tool-call — **not** wired into prod functions yet |
 
 **Sync pairs:**
 - `functions/_shared/dietary.ts` ↔ `src/lib/dietary.ts` — both must change together.
 - `functions/_shared/intent-sanitize.ts` ↔ `src/lib/intentSanitize.ts` — both must change together.
+
+**Experimental schema:** `supabase/migrations_experimental/` — Docker-only; never `db push` to production until promotion checklist (`docs/impact_analysis_experimental_infra.md`).
 
 **Deno config:** `functions/deno.json`, `functions/import_map.json` (NPM imports for Gemini + Supabase JS).
 
@@ -150,7 +153,8 @@ See `scripts/personal/README.md` for runbook.
 - [ ] New edge function → add folder under `functions/`, register in `config.toml`, add to `supabase:deploy:all` in `package.json`
 - [ ] New table/column → new migration file (never edit existing)
 - [ ] Dietary taxonomy change → update `_shared/dietary.ts` + `src/lib/dietary.ts`
-- [ ] AI prompt change in `parse-intent` → verify client scoring still aligns (`veda.ts`, `pairings.ts`)
+- [ ] AI prompt change in `parse-intent` → verify client scoring still aligns (`veda.ts`, `pairings.ts`); post-LLM sanitize must remain
+- [ ] Model-router / multi-provider change → read `.cursor/rules/hallucination-guard.mdc`; staging deploy + adversarial sim before develop merge
 - [ ] Mock fixture change → sync `places-search/fixtures/mock-places.json` + `src/testing/mock-places.json`
 - [ ] After migration → regenerate `src/integrations/supabase/types.ts`
 - [ ] Update `.cursor/CONTEXT_PLAN.md` §F/§G and this file
