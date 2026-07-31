@@ -45,14 +45,15 @@ npx supabase secrets set GEMINI_API_KEY=<key>
 npm run supabase:deploy:experimental
 ```
 
-## 6. GitHub + Vercel Preview
+## 6. Dedicated staging Vercel (rasaoi-staging.vercel.app)
 
-Add Action secrets `STAGING_VITE_SUPABASE_*` (see STAGING_PREVIEW_SETUP.md).  
-Push branch — workflow builds with:
+Create Vercel project **`rasaoi-staging`**. Add GitHub secrets:
 
-- `VITE_EXPERIMENTAL_DYNAMIC_CULINARY=true`
-- `VITE_EXPERIMENTAL_MODEL_ROUTER=true`
-- `VITE_USE_MOCK_PLACES=true`
+- `VERCEL_STAGING_PROJECT_ID`
+- `STAGING_VITE_SUPABASE_*`
+
+Push branch — workflow **Deploy staging site** publishes to https://rasaoi-staging.vercel.app  
+**Do not** merge to `develop` yet. Prod `rasaoi-delta.vercel.app` stays on `ci-cd.yml` only.
 
 ## Features then active on Preview
 

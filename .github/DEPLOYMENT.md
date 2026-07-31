@@ -7,10 +7,12 @@ Pipeline: [`.github/workflows/ci-cd.yml`](workflows/ci-cd.yml)
 | Branch | CI (lint/test/build) | Vercel deploy |
 |--------|----------------------|---------------|
 | PR → `main` / `develop` | Yes | No |
-| `develop` push | Yes | **Production** (`--prod`) |
-| `main` push | Yes | **Production** (`--prod`) |
+| `develop` push | Yes | **Production** (`--prod`) → rasaoi-delta |
+| `main` push | Yes | **Production** (`--prod`) → rasaoi-delta |
+| `feature/ROE-016-experimental-infra` / `staging` push | Staging workflow | **Staging** (`--prod` on **rasaoi-staging** project) → rasaoi-staging.vercel.app |
 
-Production URL: https://rasaoi-delta.vercel.app
+Production URL: https://rasaoi-delta.vercel.app  
+Staging URL: https://rasaoi-staging.vercel.app (**separate** Vercel project — not a Preview of prod)
 
 ## Safety guards
 
@@ -32,7 +34,11 @@ Go to **Settings → Secrets and variables → Actions** and add:
 |--------|------------------|
 | `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
 | `VERCEL_ORG_ID` | Vercel project → Settings → General → Team/Org ID |
-| `VERCEL_PROJECT_ID` | Vercel project → Settings → General → Project ID |
+| `VERCEL_PROJECT_ID` | Vercel **prod** project (`rasaoi`) → Settings → General → Project ID |
+| `VERCEL_STAGING_PROJECT_ID` | Vercel **staging** project (`rasaoi-staging`) → Project ID |
+| `STAGING_VITE_SUPABASE_URL` | Staging Supabase URL |
+| `STAGING_VITE_SUPABASE_PUBLISHABLE_KEY` | Staging anon key |
+| `STAGING_VITE_SUPABASE_PROJECT_ID` | Staging project ref |
 
 Tip: from a linked CLI, `npx vercel project ls` / project settings also show org + project IDs. Or inspect `.vercel/project.json` after `vercel link`.
 
@@ -66,14 +72,16 @@ In the Vercel dashboard for this project, set **Environment Variables**:
 
 Optional: `VITE_USE_MOCK_PLACES=true` for preview environments.
 
-### Staging / experimental preview (ROE-016)
+### Staging site (ROE-016) — no develop merge
 
-- Workflow: [`.github/workflows/deploy-staging-preview.yml`](workflows/deploy-staging-preview.yml)
+- Workflow: [`.github/workflows/deploy-staging-preview.yml`](workflows/deploy-staging-preview.yml) (**Deploy staging site**)
 - Branches: `feature/ROE-016-experimental-infra`, `staging`
-- Deploys **Preview only** (never `--prod`)
+- Deploys **`--prod` to Vercel project `rasaoi-staging`** → https://rasaoi-staging.vercel.app
+- Does **not** touch https://rasaoi-delta.vercel.app
+- Does **not** merge to `develop`
 - Runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`
-- Extra Action secrets: `STAGING_VITE_SUPABASE_URL`, `STAGING_VITE_SUPABASE_PUBLISHABLE_KEY`, `STAGING_VITE_SUPABASE_PROJECT_ID`
-- Backend: dedicated Supabase staging project (not `kiugplotjcnmpwjlxajc`)
+- Secrets: `VERCEL_STAGING_PROJECT_ID` + `STAGING_VITE_SUPABASE_*`
+- Backend: Supabase staging `aotlzhdgnvovvqxmgyyx`
 
 **Disable Vercel Git auto-deploy** so GitHub Actions is the sole deploy path:
 Vercel project → Settings → Git → disable automatic deployments for Production (and Preview if unused), or disconnect Git integration and deploy only via Actions. Otherwise you may get double deploys.
