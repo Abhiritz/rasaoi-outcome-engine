@@ -1,5 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { estimateGlycemic, glFromCulinary, GL_AI_BATCH_CAP } from "./glycemic";
+import {
+  clearNutritionLenses,
+  registerNutritionLens,
+} from "./experimental/glycemicLensAdapter";
+import { enrichPatientLens } from "./experimental/nutrition";
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
@@ -12,6 +17,10 @@ vi.mock("@/integrations/supabase/client", () => ({
 import { supabase } from "@/integrations/supabase/client";
 
 describe("glFromCulinary", () => {
+  afterEach(() => {
+    clearNutritionLenses();
+  });
+
   it("returns high GL for fried_appetizer from matrix", () => {
     const est = glFromCulinary("Gobi Manchurian", "Bawarchi Indian Cuisine");
     expect(est).toBeTruthy();
@@ -21,6 +30,27 @@ describe("glFromCulinary", () => {
 
   it("returns null for unknown dish", () => {
     expect(glFromCulinary("Completely Invented Space Stew XYZ")).toBeNull();
+  });
+
+  it("prefers experimental lens_payload over matrix when registered", () => {
+    const lens = enrichPatientLens({
+      dishName: "Gobi Manchurian",
+      protein_g: 8,
+      fat_g: 20,
+      cho_g: 42,
+      fiber_g: 3,
+      allergens: [],
+      process_tags: ["deep_fry"],
+      confidence: "inferred",
+      quarantinedIngredients: [],
+    });
+    registerNutritionLens("Gobi Manchurian", lens, {
+      restaurantName: "Bawarchi Indian Cuisine",
+      confidence: "inferred",
+    });
+    const est = glFromCulinary("Gobi Manchurian", "Bawarchi Indian Cuisine");
+    expect(est?.carbs_g).toBe(42);
+    expect(est?.why).toMatch(/Experimental nutrition lens/);
   });
 });
 

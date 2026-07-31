@@ -3,6 +3,7 @@
 // before calling Gemini (rate-limit shield).
 import { supabase } from "@/integrations/supabase/client";
 import { lookupDish, type CulinaryDishFallback, type CulinaryDishMeta } from "./culinaryIndex";
+import { tryExperimentalGlFromLens } from "./experimental/glycemicLensAdapter";
 
 export type GLLevel = "low" | "med" | "high";
 
@@ -60,6 +61,10 @@ export function glFromCulinary(
   name: string,
   restaurantName?: string,
 ): GLEstimate | null {
+  // ROE-016 EXP-T3: Stage-3 lens overlay when culinary hydrate registered lenses.
+  const fromLens = tryExperimentalGlFromLens(name, restaurantName);
+  if (fromLens) return fromLens;
+
   const meta = lookupDish(name, restaurantName) as
     | CulinaryDishMeta
     | CulinaryDishFallback

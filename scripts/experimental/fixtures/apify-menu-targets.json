@@ -1,0 +1,3698 @@
+{
+  "generated_at": "2026-07-31T16:52:56.217Z",
+  "staging_host": "aotlzhdgnvovvqxmgyyx.supabase.co",
+  "webhook_url": "https://aotlzhdgnvovvqxmgyyx.supabase.co/functions/v1/experimental-apify-webhook",
+  "note": "Pass webhookSecret via Actor input (APIFY_WEBHOOK_SECRET). Do not commit secrets.",
+  "restaurant_count": 13,
+  "with_source_url": 0,
+  "with_menu_items": 13,
+  "restaurants": [
+    {
+      "restaurant_id": "d5a66a55-ff21-43db-8e1d-16d0bead3e65",
+      "restaurant_name": "Chennai Bamboo Garden",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 32,
+      "dishes": [
+        {
+          "name": "Chicken 65"
+        },
+        {
+          "name": "Gobi Manchurian"
+        },
+        {
+          "name": "Idli (2 pc)"
+        },
+        {
+          "name": "Medhu Vada"
+        },
+        {
+          "name": "Filter Coffee"
+        },
+        {
+          "name": "About Us"
+        },
+        {
+          "name": "Accessibility"
+        },
+        {
+          "name": "Account Details"
+        },
+        {
+          "name": "Become a Dasher"
+        },
+        {
+          "name": "Butter Chicken"
+        },
+        {
+          "name": "Careers"
+        },
+        {
+          "name": "Company Blog"
+        },
+        {
+          "name": "Dasher Central"
+        },
+        {
+          "name": "DoorDash Merchant"
+        },
+        {
+          "name": "Engineering Blog"
+        },
+        {
+          "name": "Get Dashers for Deliveries"
+        },
+        {
+          "name": "Get DoorDash for Business"
+        },
+        {
+          "name": "Gift Cards"
+        },
+        {
+          "name": "Glassdoor"
+        },
+        {
+          "name": "Help"
+        },
+        {
+          "name": "Investors"
+        },
+        {
+          "name": "LinkedIn"
+        },
+        {
+          "name": "Merchant Blog"
+        },
+        {
+          "name": "Newsroom"
+        },
+        {
+          "name": "Promotions"
+        },
+        {
+          "name": "Sign in for saved address"
+        },
+        {
+          "name": "The most commonly ordered items and dishes from this store"
+        },
+        {
+          "name": "Chicken Biryani"
+        },
+        {
+          "name": "Goat Biryani"
+        },
+        {
+          "name": "Masala Dosa"
+        },
+        {
+          "name": "Mysore Masala Dosa"
+        },
+        {
+          "name": "Onion Rava Dosa"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "b1910699-9fe8-4bce-91ef-cde78d18d128",
+      "restaurant_name": "Chicago's Pizza With A Twist Folsom",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 28,
+      "dishes": [
+        {
+          "name": "Garlic Naan"
+        },
+        {
+          "name": "All Meat Pizzatwist"
+        },
+        {
+          "name": "BBQ Chicken Pizzatwist"
+        },
+        {
+          "name": "Buffalo Chicken Pizzatwist"
+        },
+        {
+          "name": "Butter Chicken Pizza"
+        },
+        {
+          "name": "Cheese Pizzatwist"
+        },
+        {
+          "name": "Cheeseburger Pizzatwist"
+        },
+        {
+          "name": "Chicken Bacon Ranch Pizzatwist"
+        },
+        {
+          "name": "Chicken Delight Pizzatwist"
+        },
+        {
+          "name": "Chicken Tikka Masala Pizza"
+        },
+        {
+          "name": "Combination Pizzatwist"
+        },
+        {
+          "name": "Create your Own Pizzatwist"
+        },
+        {
+          "name": "Garlic Chicken Pizzatwist"
+        },
+        {
+          "name": "Hawaiian Pizzatwist"
+        },
+        {
+          "name": "Italian Garlic Pizzatwist"
+        },
+        {
+          "name": "Latino Pizzatwist"
+        },
+        {
+          "name": "Mango Habanero Pizzatwist"
+        },
+        {
+          "name": "Mediterranean Combo Pizzatwis"
+        },
+        {
+          "name": "Pepperoni Pizzatwist"
+        },
+        {
+          "name": "Supreme Pizzatwist"
+        },
+        {
+          "name": "Tandoori Chicken Pizza"
+        },
+        {
+          "name": "This pizza has our signature red sauce and pepperoni."
+        },
+        {
+          "name": "Three Idiots Pizzatwist"
+        },
+        {
+          "name": "Twistys Favorite Pizzatwist"
+        },
+        {
+          "name": "Vegenation Pizzatwist"
+        },
+        {
+          "name": "Spicy Beef Lamb Kabob Pizza Twist"
+        },
+        {
+          "name": "Paneer Tikka Pizza"
+        },
+        {
+          "name": "Saag Paneer Pizza"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "207b5abb-3cee-4d9a-866e-f6b3c070a8e7",
+      "restaurant_name": "Curries & Biryanis",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 45,
+      "dishes": [
+        {
+          "name": "Chicken Pakora"
+        },
+        {
+          "name": "Masala Dosa + Idli Vada"
+        },
+        {
+          "name": "Mixed Veg Pakora"
+        },
+        {
+          "name": "Onion Pakora"
+        },
+        {
+          "name": "Samosa Chaat"
+        },
+        {
+          "name": "Spinach Pakora"
+        },
+        {
+          "name": "Vegetable Samosa"
+        },
+        {
+          "name": "Vegetable Samosa (2)"
+        },
+        {
+          "name": "Mango Lassi"
+        },
+        {
+          "name": "Butter Naan"
+        },
+        {
+          "name": "Garlic Naan"
+        },
+        {
+          "name": "Masala Bread Omelette"
+        },
+        {
+          "name": "Parotta Chicken Kurma"
+        },
+        {
+          "name": "Parotta Veg Kurma"
+        },
+        {
+          "name": "Poori + Idly Vada"
+        },
+        {
+          "name": "Bhel Puri"
+        },
+        {
+          "name": "Butter Chicken"
+        },
+        {
+          "name": "Cashew Chicken Pakoda"
+        },
+        {
+          "name": "Chicken Tikka Masala"
+        },
+        {
+          "name": "Chicken Wada"
+        },
+        {
+          "name": "Chole Bhature"
+        },
+        {
+          "name": "Curry Fries"
+        },
+        {
+          "name": "Cut Mirchi"
+        },
+        {
+          "name": "Goat Curry"
+        },
+        {
+          "name": "Idly (3)"
+        },
+        {
+          "name": "Lamb Curry"
+        },
+        {
+          "name": "Lunch Combo"
+        },
+        {
+          "name": "Masala Peanuts"
+        },
+        {
+          "name": "Punugulu (15)"
+        },
+        {
+          "name": "Raitha (4 oz)"
+        },
+        {
+          "name": "South Indian Papad (4)"
+        },
+        {
+          "name": "Tandoori Chicken (6)"
+        },
+        {
+          "name": "Chicken Biryani"
+        },
+        {
+          "name": "Lamb Biryani"
+        },
+        {
+          "name": "Vegetable Biryani"
+        },
+        {
+          "name": "Chicken Tikka"
+        },
+        {
+          "name": "Paneer Tikka"
+        },
+        {
+          "name": "Tandoori Chicken"
+        },
+        {
+          "name": "Chana Masala"
+        },
+        {
+          "name": "Ghee Roast Dosa"
+        },
+        {
+          "name": "Masala Dosa"
+        },
+        {
+          "name": "Masala Uttapam"
+        },
+        {
+          "name": "Onion Tom Peas Uttapam"
+        },
+        {
+          "name": "Palak Paneer"
+        },
+        {
+          "name": "Plain Uttapam"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "78c41492-5cd8-419e-8e15-930df50e1d84",
+      "restaurant_name": "India Oven El Dorado Hills",
+      "location_neighborhood": "El Dorado Hills",
+      "source_url": null,
+      "menu_item_count": 55,
+      "dishes": [
+        {
+          "name": "CHAAT PAPRI"
+        },
+        {
+          "name": "GOBI MANCHURIAN"
+        },
+        {
+          "name": "LAMB SAMOSA"
+        },
+        {
+          "name": "Paneer Pakora"
+        },
+        {
+          "name": "STUFFED PANEER PAKORA"
+        },
+        {
+          "name": "VEGETABLE PAKORA"
+        },
+        {
+          "name": "VEGETABLE SAMOSA"
+        },
+        {
+          "name": "Mango Lassi"
+        },
+        {
+          "name": "BUTTER NAAN"
+        },
+        {
+          "name": "GARLIC NAAN"
+        },
+        {
+          "name": "Kheer"
+        },
+        {
+          "name": "AVOCADO STRIPS"
+        },
+        {
+          "name": "BAINGAN BHURTHA"
+        },
+        {
+          "name": "Black lentils, simmered overnight, finished with garlic tomato butter sauce"
+        },
+        {
+          "name": "Butter Chicken"
+        },
+        {
+          "name": "CLASSIC BUTTER CHICKEN"
+        },
+        {
+          "name": "CRISPY PRAWNS KARAWARI"
+        },
+        {
+          "name": "Chicken Tikka Masala"
+        },
+        {
+          "name": "Chicken breast marinated with herbs & spices"
+        },
+        {
+          "name": "Cottage cheese, Associated poppas, Garlic tomato sauce"
+        },
+        {
+          "name": "Curry leaves crushed, spiced chicken with yogurt mint dipping sauce"
+        },
+        {
+          "name": "FISH AMRITSARI"
+        },
+        {
+          "name": "Fish dipped in a special batter and fried to golden perfection"
+        },
+        {
+          "name": "Goat Curry"
+        },
+        {
+          "name": "House-made cottage cheese, BBQ Masala"
+        },
+        {
+          "name": "INDO-CHINESE CHILI CHICKEN"
+        },
+        {
+          "name": "Lamb Vindaloo"
+        },
+        {
+          "name": "Medium spiced prawns, semolina crusted & fried, mint & tamarind chutneys"
+        },
+        {
+          "name": "NAVRATAN KORMA"
+        },
+        {
+          "name": "NAWABI MALAI KOFTHA"
+        },
+        {
+          "name": "PANI PURI"
+        },
+        {
+          "name": "Papad"
+        },
+        {
+          "name": "SPICED CURRY LEAF CHICKEN"
+        },
+        {
+          "name": "SPRING LAMB CHOPS"
+        },
+        {
+          "name": "Soft dumplings of house-made cottage cheese, simmered in rich cream sauce"
+        },
+        {
+          "name": "TANDOORI CHICKEN"
+        },
+        {
+          "name": "TANDOORI PRAWNS"
+        },
+        {
+          "name": "TANDOORI SALMON"
+        },
+        {
+          "name": "Turnover stuffed with minced meat and spices, deep-fried"
+        },
+        {
+          "name": "Chicken Biryani"
+        },
+        {
+          "name": "Lamb Biryani"
+        },
+        {
+          "name": "Vegetable Biryani"
+        },
+        {
+          "name": "CHICKEN MALAI TIKKA"
+        },
+        {
+          "name": "Chicken Tikka"
+        },
+        {
+          "name": "Mixed Tandoori Grill"
+        },
+        {
+          "name": "PANEER TIKKA BBQ"
+        },
+        {
+          "name": "Tandoor Roasted Eggplant, English Peas Masala"
+        },
+        {
+          "name": "ALOO GOBI"
+        },
+        {
+          "name": "ALOO TIKKI CHAT"
+        },
+        {
+          "name": "Chana Masala"
+        },
+        {
+          "name": "DAL MAKHANI"
+        },
+        {
+          "name": "INDO-CHINESE CHILI PANEER"
+        },
+        {
+          "name": "KADHAI PANEER"
+        },
+        {
+          "name": "Palak Paneer"
+        },
+        {
+          "name": "VEGETABLE PLATTER"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "328b453b-31e0-4d5f-95b6-58ba9834c246",
+      "restaurant_name": "Bawarchi Indian Cuisine",
+      "location_neighborhood": "El Dorado Hills",
+      "source_url": null,
+      "menu_item_count": 118,
+      "dishes": [
+        {
+          "name": "Bawarchi Chicken Fry"
+        },
+        {
+          "name": "Chicken 65"
+        },
+        {
+          "name": "Chicken Corn Soup"
+        },
+        {
+          "name": "Chicken Lollipop (5Pcs)"
+        },
+        {
+          "name": "Gobi Manchurian"
+        },
+        {
+          "name": "Mix Veg Pakora"
+        },
+        {
+          "name": "Samosa"
+        },
+        {
+          "name": "Mango Lassi"
+        },
+        {
+          "name": "Butter Naan (O)"
+        },
+        {
+          "name": "Fire Naan"
+        },
+        {
+          "name": "Garlic Naan"
+        },
+        {
+          "name": "Gulab Jamun"
+        },
+        {
+          "name": "Butter Chicken (O)"
+        },
+        {
+          "name": "Chicken Curry Combo"
+        },
+        {
+          "name": "Chicken Tikka Masala (O)"
+        },
+        {
+          "name": "Chickoo Smoothie"
+        },
+        {
+          "name": "Fish Curry Combo"
+        },
+        {
+          "name": "Goat Curry"
+        },
+        {
+          "name": "Goat Curry Combo"
+        },
+        {
+          "name": "Lamb Curry"
+        },
+        {
+          "name": "Noodles Combo"
+        },
+        {
+          "name": "Shrimp Curry Combo"
+        },
+        {
+          "name": "Fish Biryani Combo"
+        },
+        {
+          "name": "Fried Rice Combo"
+        },
+        {
+          "name": "Goat Biryani"
+        },
+        {
+          "name": "Goat Fry Biryani Combo"
+        },
+        {
+          "name": "Hyderabad Chicken Dum Biryani"
+        },
+        {
+          "name": "Paneer Biryani"
+        },
+        {
+          "name": "Paneer Biryani Combo"
+        },
+        {
+          "name": "Shrimp Biryani Combo"
+        },
+        {
+          "name": "Vijayawada Chicken Biryani"
+        },
+        {
+          "name": "Vijayawada Chicken Biryani Combo"
+        },
+        {
+          "name": "Chicken Seekh Kabab"
+        },
+        {
+          "name": "Chicken Tikka"
+        },
+        {
+          "name": "Paneer Tikka"
+        },
+        {
+          "name": "Tandoori Chicken"
+        },
+        {
+          "name": "Dal Makhani"
+        },
+        {
+          "name": "Masala Dosa"
+        },
+        {
+          "name": "Paneer Curry Combo"
+        },
+        {
+          "name": "Paneer Tikka Masala"
+        },
+        {
+          "name": "Veg Curry Combo"
+        },
+        {
+          "name": "Vijayawada Chicken Dosa"
+        },
+        {
+          "name": "Butter Naan",
+          "price": 4,
+          "course": "accompaniment_base",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Paneer 65",
+          "price": 13,
+          "course": "appetizer",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Butter Chicken",
+          "price": 18,
+          "course": "main_course",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Egg Noodles",
+          "price": 14,
+          "course": "main_course",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chikoo Shake",
+          "price": 5,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Ghee Soan Papdi (500g)",
+          "price": 8,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Mutton Keema Biryani",
+          "price": 16,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Peanut Pakoda",
+          "price": 5,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Puran Poli (Bobbatu)",
+          "price": 5,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Tomato Soup",
+          "price": 7,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Veg Corn Soup",
+          "price": 7,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Veg Manchow Soup",
+          "price": 8,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Manchow Soup",
+          "price": 9,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Cut Mirchi",
+          "price": 9,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Pungulu",
+          "price": 11,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Gobi 65",
+          "price": 12,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Mirchi Bajji",
+          "price": 9,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Crispy Baby corn",
+          "price": 12,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Hyderabad Onion Samosa (6pc)",
+          "price": 8,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Karvepaku (Curry Leaf) Chicken Fry",
+          "price": 14,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Fish 65",
+          "price": 14,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Bawarchi Fish Fry",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Shrimp 65",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Bawarchi Shrimp Fry",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Curry Leaf Prawns",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken 65 (O)",
+          "price": 14,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Shrimp Fried Rice",
+          "price": 14,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Bawarchi Special Chicken Fried Rice",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Vijayawada chicken Fried Rice",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Veg Noodles",
+          "price": 13,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Chicken Noodles",
+          "price": 14,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Shrimp noodles",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Tikka Kabab",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Hariyali Chicken Tikka",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Malai Chicken Tikka",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Paneer Tikka Kabab",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Gongura Goat Biryani",
+          "price": 19,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Vijayawada Chicken Biryani (0)",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Hyderabad Veg Dum Biryani (O)",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Hyderabad Chicken Dum Biryani (O)",
+          "price": 16,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Mutter Panner",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Andhra Dal",
+          "price": 14,
+          "course": "registry",
+          "dish_type": "dal"
+        },
+        {
+          "name": "Bhindi Masala",
+          "price": 14,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Paneer Butter Masala (0)",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Navaratan Kurma (0)",
+          "price": 16,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Vindaloo",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Gongura Chicken Curry",
+          "price": 16,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Keema Masala",
+          "price": 16,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Bawarchi Special Goat Curry",
+          "price": 17,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Mutton Sukka",
+          "price": 17,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Goat Pepper Masala",
+          "price": 17,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Gongura Goat Curry",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Lamb Saag",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Lamb Rogan Josh",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Lamb Vindaloo",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Madras Fish Curry",
+          "price": 16,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Shrimp Curry",
+          "price": 17,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Gongura Shrimp Curry",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Onion Kulcha",
+          "price": 5,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Cheese Naan",
+          "price": 5,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Chapati (2 Pc) (O)",
+          "price": 3.5,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Parotta (2 Pc) (O)",
+          "price": 7,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Garlic Naan (O)",
+          "price": 5,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Kulfi Ice cream",
+          "price": 5,
+          "course": "registry",
+          "dish_type": "dessert"
+        },
+        {
+          "name": "Rasa Malai",
+          "price": 6,
+          "course": "registry",
+          "dish_type": "dessert"
+        },
+        {
+          "name": "Family pack - Shrimp Biryani",
+          "price": 35,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Family Pack- Gongura Chicken Biryani",
+          "price": 34,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Family Pack- Gongura Goat Biryani",
+          "price": 36,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Extra Salan (4oz)",
+          "price": 2,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Rose Milk (O)",
+          "price": 6,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Mango Lassi (O)",
+          "price": 5.5,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Soda's (Coke,Sprite, Diet Coke, Fanta)",
+          "price": 2,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Sweet Lassi",
+          "price": 4,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Tea",
+          "price": 3,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Water Bottle",
+          "price": 2,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Mint Lime Soda",
+          "price": 4,
+          "course": "registry",
+          "dish_type": "drink"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "8a30ba87-9bd8-4bff-a18e-f5b54aff6434",
+      "restaurant_name": "Curry Pizza House Folsom",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 27,
+      "dishes": [
+        {
+          "name": "Garlic Naan Bites"
+        },
+        {
+          "name": "Butter Chicken Pizza"
+        },
+        {
+          "name": "Chicken Tikka Masala Pizza"
+        },
+        {
+          "name": "Lamb Curry Pizza"
+        },
+        {
+          "name": "Tandoori Chicken Pizza"
+        },
+        {
+          "name": "Paneer Tikka Pizza"
+        },
+        {
+          "name": "Saag Paneer Pizza"
+        },
+        {
+          "name": "Vegetable Curry Pizza"
+        },
+        {
+          "name": "HOT WINGS",
+          "price": 8.99,
+          "course": "appetizer",
+          "dish_type": "wings"
+        },
+        {
+          "name": "CHEESE PIZZA",
+          "price": 14.99,
+          "course": "main_course",
+          "dish_type": "pizza"
+        },
+        {
+          "name": "PEPPERONI PIZZA",
+          "price": 14.99,
+          "course": "main_course",
+          "dish_type": "pizza"
+        },
+        {
+          "name": "VEGGIE SUPREME PIZZA",
+          "price": 18.99,
+          "course": "main_course",
+          "dish_type": "pizza"
+        },
+        {
+          "name": "BBQ WINGS",
+          "price": 8.99,
+          "course": "registry",
+          "dish_type": "wings"
+        },
+        {
+          "name": "GARLIC STICKS w/ CHEESE",
+          "price": 8.99,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "CLASSIC PEPPERONI DELIGHT PIZZA",
+          "price": 18.99,
+          "course": "registry",
+          "dish_type": "pizza"
+        },
+        {
+          "name": "GARLIC CHICKEN SUPREME PIZZA",
+          "price": 18.99,
+          "course": "registry",
+          "dish_type": "pizza"
+        },
+        {
+          "name": "GARLIC SPINACH SUPREME PIZZA",
+          "price": 18.99,
+          "course": "registry",
+          "dish_type": "pizza"
+        },
+        {
+          "name": "MEATY MADNESS PIZZA",
+          "price": 18.99,
+          "course": "registry",
+          "dish_type": "pizza"
+        },
+        {
+          "name": "BURGER PIZZA",
+          "price": 18.99,
+          "course": "registry",
+          "dish_type": "pizza"
+        },
+        {
+          "name": "BBQ BONANZA PIZZA",
+          "price": 18.99,
+          "course": "registry",
+          "dish_type": "pizza"
+        },
+        {
+          "name": "Ranch",
+          "price": 0.5,
+          "course": "registry",
+          "dish_type": "dip_sauce"
+        },
+        {
+          "name": "Jalapeo Ranch",
+          "price": 0.5,
+          "course": "registry",
+          "dish_type": "dip_sauce"
+        },
+        {
+          "name": "Marinara Sauce",
+          "price": 0.5,
+          "course": "registry",
+          "dish_type": "dip_sauce"
+        },
+        {
+          "name": "BBQ Sauce",
+          "price": 0.5,
+          "course": "registry",
+          "dish_type": "dip_sauce"
+        },
+        {
+          "name": "CAN SODA",
+          "price": 2.79,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "BOTTLED WATER",
+          "price": 1.99,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "2 LTR SODA",
+          "price": 3.99,
+          "course": "registry",
+          "dish_type": "drink"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "384a5e4c-ca95-47ec-be6d-a4761a5ae218",
+      "restaurant_name": "DASARA",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 131,
+      "dishes": [
+        {
+          "name": "Apollo Fish"
+        },
+        {
+          "name": "Chicken 65"
+        },
+        {
+          "name": "Chicken Pakora"
+        },
+        {
+          "name": "Mirchi Bajji"
+        },
+        {
+          "name": "Onion Pakora"
+        },
+        {
+          "name": "Paneer Pakora"
+        },
+        {
+          "name": "Punugulu"
+        },
+        {
+          "name": "Vegetable Samosa"
+        },
+        {
+          "name": "Filter Coffee"
+        },
+        {
+          "name": "Mango Lassi"
+        },
+        {
+          "name": "Butter Naan"
+        },
+        {
+          "name": "Garlic Naan"
+        },
+        {
+          "name": "Gulab Jamun"
+        },
+        {
+          "name": "Butter Chicken"
+        },
+        {
+          "name": "Chicken Tikka Masala"
+        },
+        {
+          "name": "Chicken Vindaloo"
+        },
+        {
+          "name": "Garlic Chicken Curry"
+        },
+        {
+          "name": "Goat Curry"
+        },
+        {
+          "name": "Gongura Chicken"
+        },
+        {
+          "name": "Lamb Curry"
+        },
+        {
+          "name": "Pepper Chicken"
+        },
+        {
+          "name": "Chicken 65 Biryani"
+        },
+        {
+          "name": "Goat Biryani"
+        },
+        {
+          "name": "Hyderabadi Chicken Biryani"
+        },
+        {
+          "name": "Paneer Biryani"
+        },
+        {
+          "name": "Vegetable Biryani"
+        },
+        {
+          "name": "Vijayawada Chicken Biryani"
+        },
+        {
+          "name": "Chicken Tikka"
+        },
+        {
+          "name": "Paneer Tikka"
+        },
+        {
+          "name": "Tandoori Chicken"
+        },
+        {
+          "name": "Chana Masala"
+        },
+        {
+          "name": "Dal Makhani"
+        },
+        {
+          "name": "Ghee Karam Dosa"
+        },
+        {
+          "name": "Masala Dosa"
+        },
+        {
+          "name": "Mysore Masala Dosa"
+        },
+        {
+          "name": "Onion Dosa"
+        },
+        {
+          "name": "Palak Paneer"
+        },
+        {
+          "name": "Paneer Kofta"
+        },
+        {
+          "name": "Bread Basket",
+          "price": 7.99,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Onion Kulcha",
+          "price": 3.99,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Aloo Paratha",
+          "price": 4.99,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Tandoori Mix Grill (1 Leg)",
+          "price": 15.99,
+          "course": "starter",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Pachi Mirchi Paneer Pulao",
+          "price": 12.99,
+          "course": "accompaniment_base",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Pachi Mirchi Mushroom Fry",
+          "price": 10.99,
+          "course": "main_course",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Pachi Mirchi Mushroom Pulao",
+          "price": 12.99,
+          "course": "accompaniment_base",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Fish 65",
+          "price": 13.99,
+          "course": "main_course",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Ulavacharu Shrimp Biryani",
+          "price": 16.99,
+          "course": "accompaniment_base",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Egg Puff",
+          "price": 4.25,
+          "course": "main_course",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Vijayawada Egg Biryani",
+          "price": 13.99,
+          "course": "accompaniment_base",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Tandoori Roti",
+          "price": 2.99,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Shrimp Masala",
+          "price": 15.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Tandoori Fish",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Momos (5 Pcs)",
+          "price": 12.99,
+          "course": "registry",
+          "dish_type": "steamed_tiffin"
+        },
+        {
+          "name": "Veg Chili Momo (5 Pcs)",
+          "price": 13.99,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Samosa",
+          "price": 6.99,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Aloo Tikki",
+          "price": 6.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Water Chestnut Manchurian",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Pepper Waterchestnut - Dussehra Special",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Gobi Nallakaram - Dussehra Special",
+          "price": 9.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Pachi Mirchi Paneer Fry",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Kothemera Paneer Fry",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Kothemera Mushroom Fry",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Karevepaku Paneer Fry",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Karevepaku Mushroom Fry",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Momos (5 Pcs)",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "steamed_tiffin"
+        },
+        {
+          "name": "Chicken Puff",
+          "price": 5.25,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Lollipop (5 Pcs)",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Chili Chicken",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Manchuria",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Kaju Chicken",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Kothemera Chicken Fry",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Creamy Chicken (Mild) - Dussehra Special",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Nalakaram Chicken Fry - Dussehra Special",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Karevapaku Chicken Fry",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Pachi Mirchi Chicken Fry",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Andhra Chicken Fry",
+          "price": 10.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Pepper Shrimp (8 Pcs)",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chili Shrimp (8 Pcs)",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Pachi Mirchi Shrimp Fry (8 Pcs)",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Mutton Sukka",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Achari Paneer",
+          "price": 12.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Tandoori Half Chicken (1 Leg, 1 Breast)",
+          "price": 11.99,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Tandoori Full Chicken (2 Leg, 2 Breast)",
+          "price": 17.99,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Malai Kabab (8 Pcs)",
+          "price": 12.99,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Tikka Kabab (8 Pcs)",
+          "price": 12.99,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Chicken Sheek Kabab",
+          "price": 11.99,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Tandoori Shrimp (8 Pcs)",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Plain Rice",
+          "price": 2.99,
+          "course": "registry",
+          "dish_type": "rice_plain"
+        },
+        {
+          "name": "Chilli Naan",
+          "price": 3.99,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Gobi Paratha",
+          "price": 4.99,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Dal Fry",
+          "price": 9.99,
+          "course": "registry",
+          "dish_type": "dal"
+        },
+        {
+          "name": "Bindi Masala",
+          "price": 11.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Mutter Paneer",
+          "price": 11.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Navaranthan Kurma",
+          "price": 11.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Malai Koftha",
+          "price": 11.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chettinadu Chicken",
+          "price": 11.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Saag",
+          "price": 11.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Lamb Pasand",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Lamb Saag",
+          "price": 13.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Lamb Vindaloo",
+          "price": 13.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Gongura Goat",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Hyderabadi Chicken Dum Biryani",
+          "price": 13.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Chicken Leg Joint Biryani",
+          "price": 13.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Labbipet Egg Biryani",
+          "price": 13.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Labbipet Chicken Biryani",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Ulavacharu Egg Biryani",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Ulavacharu Chicken Biryani",
+          "price": 15.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Gongura Egg Biryani",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Gongura Chicken Biryani",
+          "price": 15.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Gongura Shrimp Biryani",
+          "price": 16.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Ghee Roast Goat Biryani",
+          "price": 15.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Shahi Gosht Biryani",
+          "price": 15.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Pachi Mirchi Egg Pulao",
+          "price": 12.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Kothemera Paneer Pulao",
+          "price": 12.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Kothemera Mushroom Pulao",
+          "price": 12.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Kothemera Egg Pulao",
+          "price": 12.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Pachi Mirchi Chicken Pulao",
+          "price": 13.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Kothemera Chicken Pulao",
+          "price": 13.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Goat Pulao (Mild–Medium)",
+          "price": 14.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Paneer / Mushroom Pulao Pack",
+          "price": 31.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Egg Pulao Pack",
+          "price": 30.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Chicken Dum Biryani Pack",
+          "price": 31.99,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Ras Malai (2 pcs)",
+          "price": 5.99,
+          "course": "registry",
+          "dish_type": "dessert"
+        },
+        {
+          "name": "Double Ka Meetha",
+          "price": 6.99,
+          "course": "registry",
+          "dish_type": "dessert"
+        },
+        {
+          "name": "Kurabani Ka Meetha",
+          "price": 7.99,
+          "course": "registry",
+          "dish_type": "dessert"
+        },
+        {
+          "name": "Sweet / Salt Lassi",
+          "price": 4.99,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Chikoo Milkshake",
+          "price": 6.99,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Mango Milkshake",
+          "price": 6.99,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Masala Chai",
+          "price": 5.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Coffee",
+          "price": 5.99,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Fresh Meeta Pan",
+          "price": 3,
+          "course": "registry",
+          "dish_type": "drink"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "c4e0aeea-1d1f-41fe-b0f8-14c2d44b9d6b",
+      "restaurant_name": "Ruchi Indian Cuisine",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 49,
+      "dishes": [
+        {
+          "name": "Paneer Pakora"
+        },
+        {
+          "name": "Samosa Chaat"
+        },
+        {
+          "name": "Roti"
+        },
+        {
+          "name": "Gulab Jamun"
+        },
+        {
+          "name": "About Us"
+        },
+        {
+          "name": "Accessibility"
+        },
+        {
+          "name": "Account Details"
+        },
+        {
+          "name": "Become a Dasher"
+        },
+        {
+          "name": "Butter Chicken"
+        },
+        {
+          "name": "Careers"
+        },
+        {
+          "name": "Chicken Korma"
+        },
+        {
+          "name": "Company Blog"
+        },
+        {
+          "name": "Dasher Central"
+        },
+        {
+          "name": "DoorDash Merchant"
+        },
+        {
+          "name": "Engineering Blog"
+        },
+        {
+          "name": "Get Dashers for Deliveries"
+        },
+        {
+          "name": "Get DoorDash for Business"
+        },
+        {
+          "name": "Gift Cards"
+        },
+        {
+          "name": "Glassdoor"
+        },
+        {
+          "name": "Help"
+        },
+        {
+          "name": "Investors"
+        },
+        {
+          "name": "Lamb Rogan Josh"
+        },
+        {
+          "name": "LinkedIn"
+        },
+        {
+          "name": "Merchant Blog"
+        },
+        {
+          "name": "Newsroom"
+        },
+        {
+          "name": "Promotions"
+        },
+        {
+          "name": "Sign in for saved address"
+        },
+        {
+          "name": "The most commonly ordered items and dishes from this store"
+        },
+        {
+          "name": "Hyderabadi Chicken Biryani"
+        },
+        {
+          "name": "Vegetable Biryani"
+        },
+        {
+          "name": "Chicken Tikka"
+        },
+        {
+          "name": "Lamb Seekh Kabab"
+        },
+        {
+          "name": "Baingan Bhartha"
+        },
+        {
+          "name": "Navratan Korma"
+        },
+        {
+          "name": "Aloo 65",
+          "price": 14,
+          "course": "appetizer",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Channa Masala(vegan)",
+          "price": 18,
+          "course": "main_course",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Paneer Butter Masala",
+          "price": 13.99,
+          "course": "main_course",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Shrimp Masala",
+          "price": 15.99,
+          "course": "main_course",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Makhani",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Aloo gobi+naan ( vegan)",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Dal tadka+naan(vegan)",
+          "price": 15,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Aloo bell pepper masala",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Goat Saag",
+          "price": 20,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Vijayawada Special Chicken Biryani",
+          "price": 19,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Okra masala+naan (vegan)",
+          "price": 18,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chettinadu Goat",
+          "price": 20,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Goat Biryani",
+          "price": 21,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Garlic butter naan",
+          "price": 4,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Chole poori (3)",
+          "price": 17,
+          "course": "registry",
+          "dish_type": "flatbread"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "c23af870-c5c1-4c11-b604-ea2447b7d53c",
+      "restaurant_name": "Mylapore South Indian Vegetarian",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 48,
+      "dishes": [
+        {
+          "name": "Idli (2 pc)"
+        },
+        {
+          "name": "Medhu Vada (2 pc)"
+        },
+        {
+          "name": "Sambar Vada"
+        },
+        {
+          "name": "Filter Coffee"
+        },
+        {
+          "name": "Madras Coffee"
+        },
+        {
+          "name": "AK Benne Dose"
+        },
+        {
+          "name": "AK Benne Masala Dose"
+        },
+        {
+          "name": "Benne Dose"
+        },
+        {
+          "name": "Benne Masala Dose"
+        },
+        {
+          "name": "Ghee Podi Thatte Idly - 1 pc"
+        },
+        {
+          "name": "Idly - 2 pcs"
+        },
+        {
+          "name": "Andhra Kara Dosai"
+        },
+        {
+          "name": "Andhra Kara Masala Dosai"
+        },
+        {
+          "name": "Butter Dosai"
+        },
+        {
+          "name": "Butter Masala Dosai"
+        },
+        {
+          "name": "Chapathi Kurma"
+        },
+        {
+          "name": "Cheese Dosai"
+        },
+        {
+          "name": "Cheese Masala Dosai"
+        },
+        {
+          "name": "Chilli Dosai"
+        },
+        {
+          "name": "Dru Fruit Rava Masala Dosai"
+        },
+        {
+          "name": "Ghee Dosai"
+        },
+        {
+          "name": "Ghee Masala Dosai"
+        },
+        {
+          "name": "Ghee Podi Masala Dosai"
+        },
+        {
+          "name": "Ghee Roast Dosai"
+        },
+        {
+          "name": "Kal Dosai"
+        },
+        {
+          "name": "Masala Dosai"
+        },
+        {
+          "name": "Mini Tiffin"
+        },
+        {
+          "name": "Mixed Vegetable Uthappam"
+        },
+        {
+          "name": "Mylapore Special Dosai"
+        },
+        {
+          "name": "Mysore Dosai"
+        },
+        {
+          "name": "Mysore Masala Dosai"
+        },
+        {
+          "name": "Onion Dosai"
+        },
+        {
+          "name": "Onion Masala Dosai"
+        },
+        {
+          "name": "Onion Rava Dosai"
+        },
+        {
+          "name": "Onion Uthappam"
+        },
+        {
+          "name": "Paneer Dosai"
+        },
+        {
+          "name": "Paper Dosai"
+        },
+        {
+          "name": "Plain Dosai"
+        },
+        {
+          "name": "Plain Uthappam"
+        },
+        {
+          "name": "Podi Dosai"
+        },
+        {
+          "name": "Podi Masala Dosai"
+        },
+        {
+          "name": "Poori Masala"
+        },
+        {
+          "name": "Rava Dosai"
+        },
+        {
+          "name": "Rava Masala Dosai"
+        },
+        {
+          "name": "Rava Onion Masala Dosai"
+        },
+        {
+          "name": "South Indian Thali"
+        },
+        {
+          "name": "Spring Dosai"
+        },
+        {
+          "name": "Tomato Uthappam"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "7733715e-c17d-47c0-8d24-eab2203758ee",
+      "restaurant_name": "Sanskrit - New Age Indian",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 78,
+      "dishes": [
+        {
+          "name": "Bombay Sliders"
+        },
+        {
+          "name": "Cauliflower, Manchurian Sauce, Green Onions"
+        },
+        {
+          "name": "Garden Spring Pakora"
+        },
+        {
+          "name": "Gobi Manchurian"
+        },
+        {
+          "name": "Idli Manchurian"
+        },
+        {
+          "name": "Idli Sambar"
+        },
+        {
+          "name": "Idli, Manchurian Sauce, Green Onions"
+        },
+        {
+          "name": "Idli/Medu Vada Combo"
+        },
+        {
+          "name": "Medu Vada Sambar"
+        },
+        {
+          "name": "Northern Samosas"
+        },
+        {
+          "name": "Pakora"
+        },
+        {
+          "name": "Potato Vada Sambar"
+        },
+        {
+          "name": "Rasam FireBroth Soup"
+        },
+        {
+          "name": "Samosa"
+        },
+        {
+          "name": "Samosa Chaat"
+        },
+        {
+          "name": "Street Tacos (Chicken)"
+        },
+        {
+          "name": "Street Tacos (Vegetarian)"
+        },
+        {
+          "name": "Vada Pav"
+        },
+        {
+          "name": "Garlic Naan"
+        },
+        {
+          "name": "Naan (Plain/Butter/Garlic)"
+        },
+        {
+          "name": "Onion Kulcha"
+        },
+        {
+          "name": "Poori Masala"
+        },
+        {
+          "name": "Tandoori Paratha"
+        },
+        {
+          "name": "Unleavened fried whole wheat bread, Potato Curry"
+        },
+        {
+          "name": "White Clay Oven Bread w/Butter, Garlic and Cilantro"
+        },
+        {
+          "name": "Carrot Halwa With Ice Cream"
+        },
+        {
+          "name": "Gulab Jamun"
+        },
+        {
+          "name": "Mango Kulfi"
+        },
+        {
+          "name": "Bhel Puri"
+        },
+        {
+          "name": "Chicken Tacos"
+        },
+        {
+          "name": "Chicken Tacos, Red Onion, Tomato and Spicy Mayo"
+        },
+        {
+          "name": "Chicken, Onions, Curry Leaves"
+        },
+        {
+          "name": "Fish, Tandoori Spices"
+        },
+        {
+          "name": "Fried Lentil Dough, Sambar, Chutneys"
+        },
+        {
+          "name": "Goat Curry"
+        },
+        {
+          "name": "Mangalore Fried Chicken"
+        },
+        {
+          "name": "Pav Bhaji"
+        },
+        {
+          "name": "Peas, Potato, Tamarind Chutney"
+        },
+        {
+          "name": "Potato Patty w/Dinner Roll"
+        },
+        {
+          "name": "Puffed Rice, Savory Mix, Tamrind and Mint Chutney"
+        },
+        {
+          "name": "Rasam"
+        },
+        {
+          "name": "Rice Cakes, Sambar, Chutneys"
+        },
+        {
+          "name": "Sanskrit Butter Masala (Chicken)"
+        },
+        {
+          "name": "Sanskrit Tikka Masala (Chicken)"
+        },
+        {
+          "name": "Shrimp, Yogurt, Spices"
+        },
+        {
+          "name": "Smoked Chicken Bites"
+        },
+        {
+          "name": "Spiced Potato Patty, Lentil Stew"
+        },
+        {
+          "name": "Tandoori Chicken (3 ct)"
+        },
+        {
+          "name": "Tandoori Chicken (6 ct)"
+        },
+        {
+          "name": "Tandoori Pomfret"
+        },
+        {
+          "name": "Tandoori Shrimp"
+        },
+        {
+          "name": "Chicken Biryani"
+        },
+        {
+          "name": "Curd Rice"
+        },
+        {
+          "name": "Sanskrit Biriyani (Chicken)"
+        },
+        {
+          "name": "Sanskrit Biriyani (Veg)"
+        },
+        {
+          "name": "Vijayawada Chicken Biryani Combo"
+        },
+        {
+          "name": "Chicken Tikka Kabob"
+        },
+        {
+          "name": "Chicken Tikka Wrap"
+        },
+        {
+          "name": "Manglore Fried Chicken"
+        },
+        {
+          "name": "Pahadi Chicken Kabob"
+        },
+        {
+          "name": "Paneer Cheese Malai Kabob"
+        },
+        {
+          "name": "Paneer Tikka Wrap"
+        },
+        {
+          "name": "Tikka Chicken, Spring Mix"
+        },
+        {
+          "name": "Chana Masala"
+        },
+        {
+          "name": "Dal Makhani"
+        },
+        {
+          "name": "Malai Kofta"
+        },
+        {
+          "name": "Masala Dosa"
+        },
+        {
+          "name": "Mysore Masala Dosa"
+        },
+        {
+          "name": "Palak Paneer"
+        },
+        {
+          "name": "Paneer Tikka Dosa"
+        },
+        {
+          "name": "Paneer, Cheese, Spring Mix"
+        },
+        {
+          "name": "Sanskrit Butter Masala (Paneer)"
+        },
+        {
+          "name": "Sanskrit Tikka Masala (Paneer)"
+        },
+        {
+          "name": "Seasonal Uttapam"
+        },
+        {
+          "name": "Spicy vegetable gravy, Dinner Rolls"
+        },
+        {
+          "name": "Veg Burger"
+        },
+        {
+          "name": "Veg Tacos"
+        },
+        {
+          "name": "Vegetarian Tacos, Red Onion, Tomato and Spicy Mayo"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "2659c4aa-19f6-44b9-a633-2fdb216d5ff4",
+      "restaurant_name": "Mantra",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 68,
+      "dishes": [
+        {
+          "name": "Cauliflower, Manchurian Sauce, Green Onions"
+        },
+        {
+          "name": "Cream Of Mushroom Soup"
+        },
+        {
+          "name": "Fire Broth Soup (Rasam)"
+        },
+        {
+          "name": "Gobi Manchurian"
+        },
+        {
+          "name": "Mulligatawny Soup"
+        },
+        {
+          "name": "Pakora"
+        },
+        {
+          "name": "Papdi Chaat"
+        },
+        {
+          "name": "Sabudana Vada"
+        },
+        {
+          "name": "Samosa"
+        },
+        {
+          "name": "Samosa Chaat"
+        },
+        {
+          "name": "Vada Pav"
+        },
+        {
+          "name": "Vegetable Samosa"
+        },
+        {
+          "name": "Mango Lassi"
+        },
+        {
+          "name": "Chana Masala, Puffy Deep-Fried Bread"
+        },
+        {
+          "name": "Garlic Naan"
+        },
+        {
+          "name": "Poori Masala"
+        },
+        {
+          "name": "Spiced Potato, Whole Wheat Fried Bread"
+        },
+        {
+          "name": "Beetroot Salad (Poriyal)"
+        },
+        {
+          "name": "Bhel Puri"
+        },
+        {
+          "name": "Black Pepper Caulliflower Fry"
+        },
+        {
+          "name": "Butter Chicken"
+        },
+        {
+          "name": "Cabbage, Bell Pepper, Gram Flour Fritters"
+        },
+        {
+          "name": "Cauliflower, Black Pepper, Mantra Sauce"
+        },
+        {
+          "name": "Chicken Tikka Masala"
+        },
+        {
+          "name": "Chopped Beats, Grated Coconut, Flavored By Tadka"
+        },
+        {
+          "name": "Kutchi Dabeli"
+        },
+        {
+          "name": "Lamb Curry"
+        },
+        {
+          "name": "Pav Bhaji"
+        },
+        {
+          "name": "Peas, Potato, Tamarind Chutney"
+        },
+        {
+          "name": "Raitha (6 oz)"
+        },
+        {
+          "name": "Spiced Mushroom, Cream, Black Pepper"
+        },
+        {
+          "name": "Spiced Potato Patty, Chutneys, Gunpowder"
+        },
+        {
+          "name": "Spicy Indian Cucumber Salad"
+        },
+        {
+          "name": "Chicken Biryani"
+        },
+        {
+          "name": "Thalapakatti Veg Biryani"
+        },
+        {
+          "name": "Paneer Tikka"
+        },
+        {
+          "name": "Paneer Tikka Dosa"
+        },
+        {
+          "name": "Paneer Tikka Salad"
+        },
+        {
+          "name": "Tandoori Chicken"
+        },
+        {
+          "name": "Tikka Cottage Cheese, Bell Pepper"
+        },
+        {
+          "name": "Chana Bhatura"
+        },
+        {
+          "name": "Chana Masala"
+        },
+        {
+          "name": "Crispy Veg Burger"
+        },
+        {
+          "name": "Masala Paneer Hot Dog"
+        },
+        {
+          "name": "Mixed Vegetable Curry, Dinner Roll"
+        },
+        {
+          "name": "Palak Paneer"
+        },
+        {
+          "name": "Smoked Paneer Corn Sandwich"
+        },
+        {
+          "name": "Paneer Biryani",
+          "price": 14.99,
+          "course": "accompaniment_base",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Vegetable Biryani",
+          "price": 17.25,
+          "course": "accompaniment_base",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Baingan Bharta",
+          "price": 14.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Kerala Veg Korma",
+          "price": 16.1,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Vegan Tofu Masala",
+          "price": 16.1,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "South Indian Sambar",
+          "price": 13.8,
+          "course": "registry",
+          "dish_type": "dal"
+        },
+        {
+          "name": "Methi Paneer Mutter Malai",
+          "price": 17.25,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Muhglai Kofta",
+          "price": 18.4,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Curd Rice",
+          "price": 10.35,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Schewzan Noodles",
+          "price": 17.25,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Veg Fried Rice",
+          "price": 17.25,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Soya Chaap Tikka Dum Biryani",
+          "price": 18.4,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Basmati Rice",
+          "price": 3.45,
+          "course": "registry",
+          "dish_type": "rice_plain"
+        },
+        {
+          "name": "Hakka Noodles",
+          "price": 17.25,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Schewzan Fried Rice",
+          "price": 17.25,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Chilli Gobi",
+          "price": 12,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Hyderabadi Gobi 65",
+          "price": 12,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Bhatura",
+          "price": 6.9,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Chappati (1 Ct)",
+          "price": 3.45,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Kerala Porotta (1 Ct)",
+          "price": 4.6,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Plain Paratha (1)",
+          "price": 4.6,
+          "course": "registry",
+          "dish_type": "flatbread"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "f718e955-7bef-4194-b49b-6bcbca48fe4f",
+      "restaurant_name": "TAJ GRILL",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 89,
+      "dishes": [
+        {
+          "name": "Aloo Tikki Chaat"
+        },
+        {
+          "name": "Chicken 65"
+        },
+        {
+          "name": "Chicken Soup"
+        },
+        {
+          "name": "Dal Soup"
+        },
+        {
+          "name": "Gobi Manchurian"
+        },
+        {
+          "name": "Mix Veggie Pakora"
+        },
+        {
+          "name": "Samosa Chaat Taj Special"
+        },
+        {
+          "name": "Veg Samosa"
+        },
+        {
+          "name": "Vegetable Samosa"
+        },
+        {
+          "name": "Vegetable Soup"
+        },
+        {
+          "name": "Garlic Naan"
+        },
+        {
+          "name": "Poori Chhole"
+        },
+        {
+          "name": "Whole wheat Indian puffed fried bread with garbanzo beans curry."
+        },
+        {
+          "name": "Kheer"
+        },
+        {
+          "name": "Baked with garlic."
+        },
+        {
+          "name": "Bhel Puri"
+        },
+        {
+          "name": "Butter Chicken"
+        },
+        {
+          "name": "Chhole Rhature"
+        },
+        {
+          "name": "Chicken Tikka Masala"
+        },
+        {
+          "name": "Coconut Masala Shrimp"
+        },
+        {
+          "name": "French Fries"
+        },
+        {
+          "name": "Lamb Boti Kabab"
+        },
+        {
+          "name": "Lamb Vindaloo"
+        },
+        {
+          "name": "Mixed Green Salad"
+        },
+        {
+          "name": "Onion Rings"
+        },
+        {
+          "name": "Puffed rice and tamarind sauce with onions and Indian garnish."
+        },
+        {
+          "name": "Rasmalai"
+        },
+        {
+          "name": "Shrimp marinated with coconut sauce and spices and deep-fried."
+        },
+        {
+          "name": "Spiced mashed potato with peas pan-fried cutlets."
+        },
+        {
+          "name": "Tandoori Chicken"
+        },
+        {
+          "name": "Tandoori Fish"
+        },
+        {
+          "name": "Tandoori Mixed Platter"
+        },
+        {
+          "name": "Tandoori Seafood Platter"
+        },
+        {
+          "name": "Tandoori Shrimp"
+        },
+        {
+          "name": "Vegan."
+        },
+        {
+          "name": "Vegie Chops"
+        },
+        {
+          "name": "Chicken Biryani"
+        },
+        {
+          "name": "Goat Biryani"
+        },
+        {
+          "name": "Chicken Tikka Kabab"
+        },
+        {
+          "name": "Paneer Tikka"
+        },
+        {
+          "name": "Paneer Tikka Kabab"
+        },
+        {
+          "name": "Seekh Kabab"
+        },
+        {
+          "name": "Tandoori Mixed Grill"
+        },
+        {
+          "name": "Veg Seekh Kabab"
+        },
+        {
+          "name": "Aloo Tikki"
+        },
+        {
+          "name": "Dal Tadka"
+        },
+        {
+          "name": "Saag Paneer"
+        },
+        {
+          "name": "Paneer Chili 65",
+          "price": 17.25,
+          "course": "appetizer",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Vegetable Biryani",
+          "price": 17.25,
+          "course": "accompaniment_base",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Tamarind Chutney",
+          "price": 4,
+          "course": "accompaniment_base",
+          "dish_type": "dip_sauce"
+        },
+        {
+          "name": "Veggie Wrap or Kathi Roll",
+          "price": 16,
+          "course": "main_course",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Veg Samosa (2 Pieces)",
+          "price": 10,
+          "course": "registry",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Lamb Seekh Kabab",
+          "price": 28,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Vegetable Seekh Kabab",
+          "price": 24,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Lamb Masala Wrap or Kathi Roll",
+          "price": 17.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Tikka Wrap or Kathi Roll",
+          "price": 17.95,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Paneer Tikka Wrap or Kathi Roll",
+          "price": 16.95,
+          "course": "registry",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Veggie Chili Chicken",
+          "price": 16.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Vagi Aloo Vindaloo",
+          "price": 16.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Baingan Bhartha",
+          "price": 16.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Vegetable Jalfrezi",
+          "price": 16.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Karahi Chicken (Chef Special)",
+          "price": 19.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Chicken Coconut",
+          "price": 18.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Taj Classic Chicken Curry",
+          "price": 19.95,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Lamb Kadhai",
+          "price": 20.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Lamb Bhuna",
+          "price": 22.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Taj Special Lamb Curry",
+          "price": 20.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Lamb Korma",
+          "price": 20.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Shrimp Curry (Goa Special)",
+          "price": 19.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Prawn Tikka Masala",
+          "price": 20.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Prawn Vindaloo",
+          "price": 19.95,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Lamb Biryani",
+          "price": 19.95,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Prawn Biryani",
+          "price": 19.95,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Peas Pulao",
+          "price": 7.95,
+          "course": "registry",
+          "dish_type": "biryani"
+        },
+        {
+          "name": "Taj Spicy Naan (Bullet Naan)",
+          "price": 6.85,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Spinach Naan",
+          "price": 6,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Kashmiri Naan",
+          "price": 6.95,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Naan",
+          "price": 6.55,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Indian Mixed Pickle",
+          "price": 4,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Plain Yogurt",
+          "price": 4,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Cucumber Raita",
+          "price": 5,
+          "course": "registry",
+          "dish_type": "dip_sauce"
+        },
+        {
+          "name": "Papadum",
+          "price": 4,
+          "course": "registry",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Chocolate Ice Cream",
+          "price": 4,
+          "course": "registry",
+          "dish_type": "dessert"
+        },
+        {
+          "name": "Cookies 'N Cream Ice Cream",
+          "price": 4,
+          "course": "registry",
+          "dish_type": "dessert"
+        },
+        {
+          "name": "Lassi",
+          "price": 5,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Iced Tea",
+          "price": 2.95,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Sparkling Water",
+          "price": 3.95,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Chai / Indian Tea",
+          "price": 4,
+          "course": "registry",
+          "dish_type": "drink"
+        },
+        {
+          "name": "Indian Coffee",
+          "price": 4,
+          "course": "registry",
+          "dish_type": "drink"
+        }
+      ]
+    },
+    {
+      "restaurant_id": "708459a2-7e9c-4b7e-ab66-a14849488d0d",
+      "restaurant_name": "Tandoori Nation",
+      "location_neighborhood": "Folsom",
+      "source_url": null,
+      "menu_item_count": 148,
+      "dishes": [
+        {
+          "name": "Chicken Pakora"
+        },
+        {
+          "name": "Gobi Manchurian"
+        },
+        {
+          "name": "Paneer Pakora"
+        },
+        {
+          "name": "Papri Chaat"
+        },
+        {
+          "name": "Samosa Chaat"
+        },
+        {
+          "name": "Tikki Chaat"
+        },
+        {
+          "name": "Veg. Manchurian"
+        },
+        {
+          "name": "Vegetable Samosa"
+        },
+        {
+          "name": "Hot Coffee"
+        },
+        {
+          "name": "JUICE Apple"
+        },
+        {
+          "name": "JUICE Mango"
+        },
+        {
+          "name": "JUICE Orange"
+        },
+        {
+          "name": "Masala Tea"
+        },
+        {
+          "name": "Amritsari Kulcha"
+        },
+        {
+          "name": "Butter Naan"
+        },
+        {
+          "name": "Chicken Naan"
+        },
+        {
+          "name": "Chicken Naan With Gravy"
+        },
+        {
+          "name": "Chilli Naan"
+        },
+        {
+          "name": "Chilli Roti"
+        },
+        {
+          "name": "Garlic Naan"
+        },
+        {
+          "name": "Paneer Naan With Gravy"
+        },
+        {
+          "name": "Tandoori Roti"
+        },
+        {
+          "name": "Dessert Combo"
+        },
+        {
+          "name": "Gajar Ka Halwa"
+        },
+        {
+          "name": "Gulab Jamun"
+        },
+        {
+          "name": "Amritsari Fish Fry"
+        },
+        {
+          "name": "Bhuna Gosht"
+        },
+        {
+          "name": "Boondi Raita"
+        },
+        {
+          "name": "Brownie With Vanila Icecream"
+        },
+        {
+          "name": "Butter Chicken"
+        },
+        {
+          "name": "Butter Chicken (Boneless)"
+        },
+        {
+          "name": "Chicken Curry"
+        },
+        {
+          "name": "Chicken Korma"
+        },
+        {
+          "name": "Chicken Lollipop"
+        },
+        {
+          "name": "Chicken Nuggets & Pop"
+        },
+        {
+          "name": "Chilli Chicken"
+        },
+        {
+          "name": "Chilli Momos"
+        },
+        {
+          "name": "Chilli Prawns"
+        },
+        {
+          "name": "Chole Bhature"
+        },
+        {
+          "name": "Creamy Pistachio Delight"
+        },
+        {
+          "name": "Dahi Bhalla"
+        },
+        {
+          "name": "Dahi Puri"
+        },
+        {
+          "name": "Delhi Wala Butter Chicken"
+        },
+        {
+          "name": "Fried Momos"
+        },
+        {
+          "name": "Fries & Pop"
+        },
+        {
+          "name": "Frosty Bliss (2 Scoops) Chocolate"
+        },
+        {
+          "name": "Frosty Bliss (2 Scoops) Malai Pista"
+        },
+        {
+          "name": "Frosty Bliss (2 Scoops) Mango"
+        },
+        {
+          "name": "Frosty Bliss (2 Scoops) Vanila"
+        },
+        {
+          "name": "Garden Salad"
+        },
+        {
+          "name": "Goat Curry"
+        },
+        {
+          "name": "Goat Korma"
+        },
+        {
+          "name": "Gobhi Prantha"
+        },
+        {
+          "name": "Honey Chilli Potato"
+        },
+        {
+          "name": "INDIAN POP Limca"
+        },
+        {
+          "name": "INDIAN POP Thums Up"
+        },
+        {
+          "name": "Jeera Rice"
+        },
+        {
+          "name": "Kadhai Chicken"
+        },
+        {
+          "name": "Kadhai Goat"
+        },
+        {
+          "name": "Kadhai Soya Chaap"
+        },
+        {
+          "name": "Lababdar Chicken"
+        },
+        {
+          "name": "Lachaa Parantha"
+        },
+        {
+          "name": "Lamb Rogan Josh"
+        },
+        {
+          "name": "Malai Soya Chaap"
+        },
+        {
+          "name": "Masala Laccha Pyaaz"
+        },
+        {
+          "name": "Methi Malai Chicken"
+        },
+        {
+          "name": "Mineral Water"
+        },
+        {
+          "name": "Muli Prantha"
+        },
+        {
+          "name": "Multani Lamb Chop"
+        },
+        {
+          "name": "Mushroom Duplex (Tn Special)"
+        },
+        {
+          "name": "Navratan Korma"
+        },
+        {
+          "name": "Non Veg Platter"
+        },
+        {
+          "name": "Noodles Chicken"
+        },
+        {
+          "name": "Onion Prantha"
+        },
+        {
+          "name": "POP Coke"
+        },
+        {
+          "name": "POP Crush"
+        },
+        {
+          "name": "POP Ginger Ale"
+        },
+        {
+          "name": "POP Nestea"
+        },
+        {
+          "name": "POP Sprite"
+        },
+        {
+          "name": "Pani Puri"
+        },
+        {
+          "name": "Papadum Masala (Papad)"
+        },
+        {
+          "name": "Peri Peri Fries & Pop"
+        },
+        {
+          "name": "Ras Malai"
+        },
+        {
+          "name": "Shahi Soya Chaap"
+        },
+        {
+          "name": "Sparkling Water"
+        },
+        {
+          "name": "Spring Roll"
+        },
+        {
+          "name": "Steamed Momos"
+        },
+        {
+          "name": "Steamed Rice"
+        },
+        {
+          "name": "Tandoori Chicken"
+        },
+        {
+          "name": "Tandoori Momos"
+        },
+        {
+          "name": "Tandoori Prawns"
+        },
+        {
+          "name": "Tandoori Salmon Fish"
+        },
+        {
+          "name": "Tandoori Soya Chaap"
+        },
+        {
+          "name": "Tangri Kabab"
+        },
+        {
+          "name": "Tn Special Celebration Combo"
+        },
+        {
+          "name": "Tn Special Royal Falooda"
+        },
+        {
+          "name": "Biryani Chicken"
+        },
+        {
+          "name": "Biryani Lamb"
+        },
+        {
+          "name": "Biryani Veg"
+        },
+        {
+          "name": "Chicken Biryani"
+        },
+        {
+          "name": "Fried Rice Chicken"
+        },
+        {
+          "name": "Fried Rice Egg"
+        },
+        {
+          "name": "Fried Rice Veg"
+        },
+        {
+          "name": "Chicken Seekh Kabab"
+        },
+        {
+          "name": "Chicken Tikka"
+        },
+        {
+          "name": "Chicken Tikka Masala"
+        },
+        {
+          "name": "Corn Crispy Tikka"
+        },
+        {
+          "name": "Fish Tikka"
+        },
+        {
+          "name": "Haryali Paneer Tikka"
+        },
+        {
+          "name": "Lamb Seekh Kabab"
+        },
+        {
+          "name": "Malai Chicken Tikka"
+        },
+        {
+          "name": "Malai Paneer Tikka"
+        },
+        {
+          "name": "Malai Seekh Kabab"
+        },
+        {
+          "name": "Mixed Grill Platter"
+        },
+        {
+          "name": "Paneer Tikka"
+        },
+        {
+          "name": "Paneer Tikka Masala"
+        },
+        {
+          "name": "Pudina Chicken Tikka"
+        },
+        {
+          "name": "Reshmi Chicken Tikka"
+        },
+        {
+          "name": "Sindoori Paneer Tikka"
+        },
+        {
+          "name": "Soya Chaap Tikka Masala"
+        },
+        {
+          "name": "Aloo Gobi"
+        },
+        {
+          "name": "Aloo Prantha"
+        },
+        {
+          "name": "Assorted Veg Platter"
+        },
+        {
+          "name": "Chana Masala"
+        },
+        {
+          "name": "Chilli Paneer"
+        },
+        {
+          "name": "Dal Makhani"
+        },
+        {
+          "name": "Dal Tadka"
+        },
+        {
+          "name": "Kadhai Paneer"
+        },
+        {
+          "name": "Lababdar Paneer"
+        },
+        {
+          "name": "Malai Kofta"
+        },
+        {
+          "name": "Methi Malai Paneer"
+        },
+        {
+          "name": "Non Veg Thali"
+        },
+        {
+          "name": "Noodles Veg"
+        },
+        {
+          "name": "Palak Paneer"
+        },
+        {
+          "name": "Paneer Bhurji"
+        },
+        {
+          "name": "Paneer Prantha"
+        },
+        {
+          "name": "Shahi Paneer"
+        },
+        {
+          "name": "Tikki Chana"
+        },
+        {
+          "name": "Veg Raita"
+        },
+        {
+          "name": "Veg Thali"
+        },
+        {
+          "name": "Aalo Tikki Chaat",
+          "price": 8.99,
+          "course": "appetizer",
+          "dish_type": "fried_appetizer"
+        },
+        {
+          "name": "Chana bhatura",
+          "price": 14.99,
+          "course": "accompaniment_base",
+          "dish_type": "flatbread"
+        },
+        {
+          "name": "Saag Paneer",
+          "price": 15.99,
+          "course": "main_course",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Plain Raita",
+          "price": 2.5,
+          "course": "main_course",
+          "dish_type": "dip_sauce"
+        },
+        {
+          "name": "Tandoori Fish",
+          "price": 14.99,
+          "course": "main_course",
+          "dish_type": "tandoori"
+        },
+        {
+          "name": "Chicken Karahi",
+          "price": 16.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Mix veg",
+          "price": 13.99,
+          "course": "registry",
+          "dish_type": "curry_gravy"
+        },
+        {
+          "name": "Green Salad",
+          "price": 4.5,
+          "course": "registry",
+          "dish_type": "salad"
+        }
+      ]
+    }
+  ]
+}

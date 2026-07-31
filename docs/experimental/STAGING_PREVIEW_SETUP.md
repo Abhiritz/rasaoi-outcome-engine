@@ -1,20 +1,23 @@
 # Staging site setup (ROE-016) — dedicated Vercel + Supabase
 
-**Stable URL:** https://rasaoi-staging.vercel.app  
+**Live URL:** https://rasaoi-i8.vercel.app  
+**Vercel project:** `rasaoi-i8` (`prj_vHZDGAtNR3iNjNViXhprZn6lxQKO`)  
 **Not:** https://rasaoi-delta.vercel.app (production)  
-**Not:** merge to `develop` (locked until you explicitly approve later)
+**Not:** merge to `develop` (locked until adversarial ≥98% + soak)
+
+Optional rename later: `rasaoi-i8` → `rasaoi-staging` for a preferred hostname.
 
 ---
 
 ## Architecture
 
 ```text
-feature/ROE-016-experimental-infra ──push──► GitHub Action "Deploy staging site"
+staging / feature/ROE-016-experimental-infra ──push──► GitHub Action "Deploy staging site"
                                               │
                                               ▼
-                                    Vercel project: rasaoi-staging  (--prod)
+                                    Vercel project: rasaoi-i8  (--prod on staging project)
                                               │
-                                    https://rasaoi-staging.vercel.app
+                                    https://rasaoi-i8.vercel.app
                                               │
                                     VITE_* → Supabase rasaoi-staging (aotlzhdgnvovvqxmgyyx)
 ```
@@ -22,20 +25,21 @@ feature/ROE-016-experimental-infra ──push──► GitHub Action "Deploy sta
 | Surface | URL / project |
 |---------|----------------|
 | Prod frontend | `rasaoi-delta.vercel.app` / Vercel project `rasaoi` |
-| Staging frontend | `rasaoi-staging.vercel.app` / Vercel project `rasaoi-staging` |
-| Prod backend | old/personal Supabase (unchanged by this workflow) |
+| Staging frontend | `rasaoi-i8.vercel.app` / Vercel project `rasaoi-i8` |
+| Prod backend | prod/personal Supabase `kiugplotjcnmpwjlxajc` (unchanged) |
 | Staging backend | Supabase `aotlzhdgnvovvqxmgyyx` |
 
 ---
 
-## One-time: create Vercel staging project
+## One-time: create Vercel staging project (done)
 
-1. Go to [vercel.com](https://vercel.com) → **Add New… → Project**
-2. Name: **`rasaoi-staging`** (this yields `rasaoi-staging.vercel.app`)
-3. Import the same GitHub repo **or** create empty project and deploy only via CLI/Actions
-4. **Disable** Git auto-deploy for this project (Settings → Git) so only Actions deploy
-5. Copy **Project ID** from Settings → General → `VERCEL_STAGING_PROJECT_ID` in GitHub secrets
-6. Set Production env vars on **rasaoi-staging** (or rely on Action `--build-env`):
+1. Create Vercel project (name may be auto-assigned, e.g. **`rasaoi-i8`**)
+2. Disable Git auto-deploy so only Actions deploy
+3. Set GitHub secret `VERCEL_STAGING_PROJECT_ID` = staging project ID
+4. Set GitHub `STAGING_VITE_SUPABASE_*` secrets (prefer **anon** JWT for publishable key)
+5. Keep prod `VERCEL_PROJECT_ID` pointed at `rasaoi` only
+
+Staging Vite flags (Action `--build-env` and/or Vercel env):
 
 | Name | Value |
 |------|--------|
@@ -46,8 +50,6 @@ feature/ROE-016-experimental-infra ──push──► GitHub Action "Deploy sta
 | `VITE_EXPERIMENTAL_DYNAMIC_CULINARY` | `true` |
 | `VITE_EXPERIMENTAL_MODEL_ROUTER` | `true` |
 
-Leave **rasaoi** (prod) Production vars pointed at prod Supabase.
-
 ---
 
 ## GitHub secrets
@@ -57,35 +59,29 @@ Leave **rasaoi** (prod) Production vars pointed at prod Supabase.
 | `VERCEL_TOKEN` | same token as prod |
 | `VERCEL_ORG_ID` | team/org id |
 | `VERCEL_PROJECT_ID` | **prod** project only (`rasaoi`) — used by `ci-cd.yml` |
-| `VERCEL_STAGING_PROJECT_ID` | **staging** project (`rasaoi-staging`) — used by staging workflow |
+| `VERCEL_STAGING_PROJECT_ID` | **staging** project (`rasaoi-i8`) — used by staging workflow |
 | `STAGING_VITE_SUPABASE_URL` | staging Supabase URL |
 | `STAGING_VITE_SUPABASE_PUBLISHABLE_KEY` | staging anon |
 | `STAGING_VITE_SUPABASE_PROJECT_ID` | `aotlzhdgnvovvqxmgyyx` |
-
-Optional GitHub Environment: `staging` (no required reviewers).
 
 ---
 
 ## Deploy
 
 ```bash
-git push origin feature/ROE-016-experimental-infra
+git push origin staging
+# or: git push origin feature/ROE-016-experimental-infra
 ```
 
-Workflow: **Deploy staging site** → https://rasaoi-staging.vercel.app
-
-Local one-off (after `vercel link` to staging project):
-
-```bash
-npm run experimental:deploy-staging
-```
+Workflow: **Deploy staging site** → https://rasaoi-i8.vercel.app
 
 ---
 
-## Supabase staging (already done on your machine)
+## Supabase staging (done)
 
 - Link: `aotlzhdgnvovvqxmgyyx`
-- Schema + experimental SQL + backfill + seed + `GEMINI_API_KEY`
+- Schema + experimental SQL + backfill + seed + edge functions + `GEMINI_API_KEY`
+- Ask → Reading verified 2026-07-31
 
 ---
 
@@ -95,3 +91,4 @@ npm run experimental:deploy-staging
 - Point staging Vercel at prod Supabase
 - Deploy staging with prod `VERCEL_PROJECT_ID`
 - Enable `EXPERIMENTAL_LLM_BASE_URL=http://localhost:4000` on cloud functions
+- Commit `.env` / `.env.experimental` / `supabase/.temp/*`

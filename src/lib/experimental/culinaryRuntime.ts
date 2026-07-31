@@ -18,6 +18,15 @@ import {
   type CulinaryKnowledgeRepository,
   type KnowledgeDish,
 } from "./culinaryKnowledge";
+import {
+  clearNutritionLenses,
+  registerNutritionLens,
+} from "./glycemicLensAdapter";
+import {
+  enrichPatientLens,
+  type ProcessTag,
+  type VerifiedNutrition,
+} from "./nutrition";
 
 type Row = {
   restaurant_key: string;
@@ -102,6 +111,7 @@ export function remoteCulinaryStats(): { rows: number; hydrated: boolean } {
 export async function hydrateCulinaryKnowledgeFromRemote(): Promise<boolean> {
   if (!isExperimentalDynamicCulinaryEnabled()) {
     setCulinaryLookupOverlay(null);
+    clearNutritionLenses();
     hydrated = false;
     return false;
   }
@@ -118,6 +128,7 @@ export async function hydrateCulinaryKnowledgeFromRemote(): Promise<boolean> {
     if (error) {
       console.warn("[experimental] culinary hydrate failed — static index remains:", error.message);
       setCulinaryLookupOverlay(null);
+      clearNutritionLenses();
       hydrated = false;
       return false;
     }
@@ -125,6 +136,7 @@ export async function hydrateCulinaryKnowledgeFromRemote(): Promise<boolean> {
     byRestaurantDish.clear();
     byDishOnly.clear();
     confidenceIndex.clear();
+    clearNutritionLenses();
     for (const raw of (data ?? []) as Row[]) {
       const meta = rowToMeta(raw);
       const mapKey = `${raw.restaurant_key}::${raw.dish_key}`;
@@ -139,6 +151,42 @@ export async function hydrateCulinaryKnowledgeFromRemote(): Promise<boolean> {
           dish_type: meta.dish_type,
           medianPriceUsd: meta.priceUsd,
           gi_band: meta.gi_band,
+        });
+      }
+
+      // EXP-T3: bind Stage-3 lens into glycemic when macros or gi_band exist.
+      if (raw.cho_g != null || raw.gi_band) {
+        const conf =
+          raw.nutrition_confidence === "verified" ||
+          raw.nutrition_confidence === "inferred" ||
+          raw.nutrition_confidence === "speculative"
+            ? raw.nutrition_confidence
+            : "speculative";
+        const verified: VerifiedNutrition = {
+          dishName: raw.dish_name,
+          protein_g: Number(raw.protein_g ?? 0),
+          fat_g: Number(raw.fat_g ?? 0),
+          cho_g: Number(raw.cho_g ?? 0),
+          fiber_g: Number(raw.fiber_g ?? 0),
+          allergens: raw.allergens ?? [],
+          process_tags: (raw.process_tags?.length
+            ? (raw.process_tags as ProcessTag[])
+            : ["unknown"]),
+          confidence: conf,
+          quarantinedIngredients: [],
+        };
+        const lens = enrichPatientLens(verified);
+        const band = String(raw.gi_band ?? "").toLowerCase();
+        if (band === "low" || band === "med" || band === "medium" || band === "high") {
+          lens.gi_band = band === "medium" ? "med" : (band as "low" | "med" | "high");
+        }
+        if (raw.cho_g == null || Number(raw.cho_g) <= 0) {
+          lens.lens_payload.carbs_g =
+            lens.gi_band === "high" ? 55 : lens.gi_band === "med" ? 35 : 18;
+        }
+        registerNutritionLens(raw.dish_name, lens, {
+          restaurantName: raw.restaurant_display_name || raw.restaurant_key,
+          confidence: conf,
         });
       }
     }

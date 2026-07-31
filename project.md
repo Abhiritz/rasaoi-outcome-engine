@@ -22,18 +22,18 @@ Agentic AI dining concierge for El Dorado Hills / Folsom, CA. Natural-language i
 |-------|------|------|
 | Frontend | `src/` | Vite + React 18 SPA — UI, routing, client scoring |
 | Backend | `supabase/` | Postgres migrations + 5 Deno edge functions |
-| Offline index | `src/data/culinary-index.json` | Built by `scripts/personal/build-culinary-index.mjs` (no AI at score time). **ROE-016 sandbox:** dynamic Postgres/vector adapters under `src/lib/experimental/` (flags default off). |
+| Offline index | `src/data/culinary-index.json` | Built by `scripts/personal/build-culinary-index.mjs` (no AI at score time). **ROE-016 staging:** dynamic Postgres overlay via `src/lib/experimental/` when `VITE_EXPERIMENTAL_DYNAMIC_CULINARY=true` (prod flags off). |
 | Ops | `scripts/personal/` | Personal seeding / sync / matrix build (not shared migrations) |
-| Experimental ops | `scripts/experimental/` | Adversarial simulator, nutrition deconstruction, Apify stub — sandbox only |
-| Deploy | Vercel + Supabase | Frontend: [rasaoi-delta.vercel.app](https://rasaoi-delta.vercel.app); CI on push to `develop` / `main` |
+| Experimental ops | `scripts/experimental/` | Adversarial sim (520 seeds), nutrition/quarantine, telemetry→guardrails, menu sync + Apify Actor cron — staging/sandbox only |
+| Deploy | Vercel + Supabase | **Prod:** [rasaoi-delta.vercel.app](https://rasaoi-delta.vercel.app). **Staging:** [rasaoi-i8.vercel.app](https://rasaoi-i8.vercel.app) → Supabase `aotlzhdgnvovvqxmgyyx`. CI prod on `develop`/`main`; staging deploy on ROE-016 branches |
 
 There is **no** Next.js, Express/REST server, Redux/Zustand, or axios layer. The SPA talks to Supabase (direct queries + `functions.invoke`).
 
 ```
-Ask → parse-intent (Gemini; experimental model-router unused until promotion) → sessionStorage → Reading
+Ask → parse-intent (model-router → Gemini fallback on staging; Gemini-only on prod) → sessionStorage → Reading
                                               ├─ places-search
                                               ├─ restaurants / active_promos
-                                              ├─ culinaryIndex (static; dynamic adapter flagged off)
+                                              ├─ culinaryIndex (static; staging overlay when flag on)
                                               └─ veda.scoreRestaurants() → ranked outcomes
                                                     └─ pairings.buildTripleOutcome()
 ```
@@ -92,7 +92,7 @@ Pages fetch → `lib/` scores/filters → domain components render (`HeroCard`, 
 | `restaurant_sources` | Menu source URLs |
 | `dishes_feedback` | Operator QA |
 | `active_promos` | Flash deals |
-| `outcome_selections` | Fulfillment telemetry (insert-only RLS). **ROE-016 sandbox:** evaluator read-path via `experimental_list_outcome_feedback` in `migrations_experimental/` only. |
+| `outcome_selections` | Fulfillment telemetry (insert-only RLS). **ROE-016 staging:** evaluator read-path via `experimental_list_outcome_feedback` in `migrations_experimental/` (staging project only). |
 
 RPC: `record_outcome_checkin()`. Catalog tables are public SELECT; feedback has no public policies.
 
@@ -100,13 +100,14 @@ RPC: `record_outcome_checkin()`. Catalog tables are public SELECT; feedback has 
 
 | Function | Role |
 |----------|------|
-| `parse-intent` | Gemini tool-calling → dials + filters |
-| `estimate-glycemic` | Batch glycemic load estimates |
+| `parse-intent` | Intent → dials + filters via model-router (Gemini fallback on staging) |
+| `estimate-glycemic` | Batch glycemic load estimates (routed) |
 | `places-search` | Google Places or mock fixtures |
-| `ingest-menu` | Scrape/parse menu → proposed dishes |
+| `ingest-menu` | Scrape/parse menu → proposed dishes (routed) |
 | `commit-dishes` | Persist dishes + rebuild `menu_items` |
+| `experimental-apify-webhook` | Staging-only Apify upsert → `experimental_dish_knowledge` (`speculative`); batch payloads supported |
 
-Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns parsed tool args), `_shared/dietary.ts` (must stay in sync with `src/lib/dietary.ts`), experimental `_shared/model-router.ts` (LiteLLM-class; not in prod call path yet).
+Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize), `_shared/dietary.ts` (sync with `src/lib/dietary.ts`), `_shared/model-router.ts` (**wired on staging**; prod stays Gemini-default until promotion).
 
 **Production note:** Vercel Production must point at the personal Supabase project (`kiugplotjcnmpwjlxajc`), not a dead Lovable host.
 
@@ -139,7 +140,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize, returns 
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-017** (ROE-014 unmerged situational layers; ROE-015 queued there; **ROE-016** = experimental infra, PR deferred).
+1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-017** (ROE-014 unmerged situational layers; ROE-015 queued there; **ROE-016** = experimental infra, **staging live**, sim ≥98% met, develop merge locked on soak).
 2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
@@ -153,7 +154,7 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
 | Ticket | Status | Impact |
 |--------|--------|--------|
-| **ROE-016** (EXP-001) Experimental infra | Sandboxed on branch; **no PR** | `docs/impact_analysis_experimental_infra.md` |
+| **ROE-016** (EXP-001) Experimental infra | **Staging live** (`staging` / `feature/ROE-016-experimental-infra` → https://rasaoi-i8.vercel.app); EXP-T1–T11 + Apify cron done; sim 520@100%; **no develop merge** until soak | `docs/impact_analysis_experimental_infra.md` |
 | **ROE-014** Intent situational layers | Unmerged branch | (on `feature/ROE-014-intent-situational-layers`) |
 | **ROE-013** (ASK-001) Ask chips | Merged on develop | `docs/ROE-013-ask-intent-chips-impact-analysis.md` |
 | **ROE-012** | Superseded — folded into ROE-011 | — |
@@ -175,18 +176,29 @@ Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-as
 **Edge secrets:** `GEMINI_API_KEY`, optional `GOOGLE_PLACES_API_KEY`, `FIRECRAWL_API_KEY`.
 
 ```bash
-npm run dev                 # Vite on :8080
+npm run dev                 # Vite on :5173
 npm run build
 npm test                    # Vitest (required for scoring/dietary/pairings changes)
-npm run experimental:sim    # adversarial simulator (sandbox)
+npm run experimental:sim                 # adversarial simulator (≥98% gate; 520 seeds)
+npm run experimental:expand-corpus       # regenerate chaotic seeds from templates
 npm run experimental:nutrition -- "Vegetable Samosa"
+npm run experimental:telemetry-guardrails
+npm run experimental:export-menu-targets
+npm run experimental:sync-menus -- --mirror   # knowledge only; --promote-menu-items needs --promote-commit
+npm run experimental:apify-push           # push Actor (use npx apify-cli, not npx apify)
+npm run experimental:apify-cron-setup
+npm run experimental:apply-schema
+npm run experimental:backfill
 npm run supabase:db:push
-npm run supabase:deploy:all
+npm run supabase:deploy:all              # prod 5
+npm run supabase:deploy:experimental     # + experimental-apify-webhook (staging)
 node scripts/personal/build-culinary-index.mjs   # rebuild culinary-index.json
-docker compose -f docker-compose.experimental.yml up -d   # local pgvector sandbox
+# docker compose -f docker-compose.experimental.yml up -d   # optional local pgvector; staging uses remote Supabase
 ```
 
-CI: `.github/workflows/ci-cd.yml` (lint → test → build → Vercel prod on `develop`/`main`).
+CI: `.github/workflows/ci-cd.yml` (lint → test → build → Vercel prod on `develop`/`main`).  
+Staging: `.github/workflows/deploy-staging-preview.yml` → https://rasaoi-i8.vercel.app (runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`).  
+Apify cron: `docs/experimental/APIFY_CLI_CRON_SETUP.md` (Actor → webhook → `experimental_dish_knowledge` only; not auto `menu_items`).
 
 ---
 
@@ -205,7 +217,11 @@ CI: `.github/workflows/ci-cd.yml` (lint → test → build → Vercel prod on `d
 | Doc | Use when |
 |-----|----------|
 | `.cursor/CONTEXT_PLAN.md` | Canonical architecture index (agents + contributors) |
+| `docs/impact_analysis_experimental_infra.md` | ROE-016 infra impact + staging status |
 | `docs/ROE-016-hallucination-guard-impact-analysis.md` | Dish-non-invention + speculation guard audit |
+| `docs/experimental/STAGING_PREVIEW_SETUP.md` | Staging Vercel + Supabase runbook |
+| `docs/experimental/APIFY_CLI_CRON_SETUP.md` | Apify Actor push + weekly schedule |
+| `docs/experimental/tickets/README.md` | EXP-T1–T11 local ticket board |
 | `.cursor/rules/hallucination-guard.mdc` | Standing guard policy for AI/scoring changes |
 | `src/CURSOR.md` | Frontend conventions |
 | `supabase/CURSOR.md` | Edge functions + migrations |

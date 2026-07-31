@@ -21,7 +21,7 @@
 | `src/pages/` | Route-level screens (4 pages) |
 | `src/components/` | Domain UI (17 components) |
 | `src/components/ui/` | shadcn primitives (~45) — extend, don't replace |
-| `src/lib/` | Business logic (scoring, intent, places, fulfillment, memory, culinary index, **experimental/** sandbox) |
+| `src/lib/` | Business logic (scoring, intent, places, fulfillment, memory, culinary index, **experimental/** staging overlay) |
 | `src/data/` | Compiled `culinary-index.json` (rebuild via personal script — do not hand-edit) |
 | `src/hooks/` | `use-toast`, `use-mobile` |
 | `src/integrations/supabase/` | Typed client + generated DB types |
@@ -138,7 +138,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - [ ] New route → add in `App.tsx` above `*` catch-all
 - [ ] New edge call → wrap in `src/lib/*.ts`
 - [ ] Scoring change → update `veda.ts` + add regression in `veda.test.ts`
-- [ ] Intent / pairings / AI path → read `.cursor/rules/hallucination-guard.mdc`; run `pairings.test.ts` + `experimental:sim` on staging branch
+- [ ] Intent / pairings / AI path → read `.cursor/rules/hallucination-guard.mdc`; run `pairings.test.ts` + `npm run experimental:sim` (target ≥98% on 520-seed corpus)
 - [ ] Dietary change → also update `supabase/functions/_shared/dietary.ts`
 - [ ] Intent sanitizer / transcript grounding change → also update `supabase/functions/_shared/intent-sanitize.ts` (+ `intentSanitize.test.ts`)
 - [ ] Wellness tag change → sync `WELLNESS_TAG_SLUGS` in `veda.ts` + `parse-intent` prompt
@@ -157,7 +157,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | File | Responsibility |
 |------|----------------|
 | `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters |
-| `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script) |
+| `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script). Optional overlay via `setCulinaryLookupOverlay` when staging dynamic culinary is on |
 | `dishIntent.ts` | Oceany/coastal + sweet/dessert + **carrier-only / celebratory mood** helpers (CRS-003, ROE-001, ROE-003) |
 | `vedaDishes.ts` | Dish-level scoring; `cravingSweet` includes/boosts Dessert category |
 | `dietary.ts` | DIET-001 taxonomy (sync with `_shared/dietary.ts`) |
@@ -165,10 +165,17 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | `intent.ts` | Intent client + 90s parse cache; RateLimitError + backoff (ROE-002); **celebratory offline dials on exhausted 429** (ROE-003); **`normalizeParsedIntent`** (ROE-008 / IP-FIX-002) |
 | `intentSanitize.ts` | Transcript grounding + celebratory/carrier + **`buildRestatedIntent`** **(SYNC PAIR** with `_shared/intent-sanitize.ts`) — ROE-007 / ROE-008 |
 | `google-places.ts` | Places search with mock interceptor |
-| `glycemic.ts` | Glycemic estimates + localStorage cache (matrix heuristics before edge, N≤8) |
+| `glycemic.ts` | Glycemic estimates + localStorage cache (matrix heuristics before edge, N≤8). Staging: optional experimental lens bind via `glycemicLensAdapter` |
 | `memory.ts` | Vitality Twin, consent, Mitra Pact — Twin counter is **twin syncs**, not restaurant outcomes |
-| `outcomes.ts` | Outcome selection telemetry |
-| `experimental/*` | **[ROE-016 sandbox]** culinary repo, model router, nutrition loop, telemetry feedback — flags default off; do not import from prod pages without a flag |
+| `outcomes.ts` | Outcome selection telemetry; staging mirrors check-in → `experimental_outcome_feedback` when flag on |
+| `experimental/*` | **[ROE-016]** see module table below — flags default off on prod; **ON** on staging (https://rasaoi-i8.vercel.app). Do not import from prod pages without a flag |
+| `experimental/culinaryKnowledge.ts` | Static/Postgres culinary knowledge adapters |
+| `experimental/culinaryRuntime.ts` | Reading hydrate + `setCulinaryLookupOverlay`; no speculative fuzzy cross-restaurant match |
+| `experimental/nutrition.ts` | USDA deconstruction + quarantine tiers |
+| `experimental/nutritionQuarantine.ts` | Persist unmapped ingredients → `experimental_nutrition_quarantine` |
+| `experimental/glycemicLensAdapter.ts` | Bind quarantine/nutrition rows into glycemic `lens_payload` |
+| `experimental/telemetryFeedback.ts` | Service-role feedback RPC helpers; check-in→rating; XML guardrail merge |
+| `experimental/modelRouter.ts` | Client-side router purpose helpers (edge uses `_shared/model-router.ts`) |
 | `socialProof.ts` | Social proof helpers |
 | `device.ts` | Anonymous device ID |
 
@@ -187,21 +194,22 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - Blood-sugar / GL: Refine → **Blood sugar · glycemic load (GL)** Turn on/off; when on, chrome chip **Blood sugar · On** (ROE-006). Not a Low/Med/High dropdown.
 - **[ROE-007] (IP-FIX-001):** “something healthy” is purity-only (never cuisine Healthy); diabetic/low-sugar Ask grounds `lens=blood_sugar`; negated diets (“not vegetarian”) do not set `filters.dietary`.
 - **[ROE-008] (IP-FIX-002):** client normalizes parse payloads; restated_intent keeps dietary first within 60 chars; celebratory/carrier helpers live in `intentSanitize` (re-exported from `dishIntent`).
-- **[ROE-016] (EXP-001):** experimental infra under `src/lib/experimental/` + `scripts/experimental/` — **no PR** until adversarial ≥98%; production scoring stays on static culinary-index + Gemini `ai-client.ts`.
+- **[ROE-016] (EXP-001):** experimental infra under `src/lib/experimental/` + `scripts/experimental/`. **Staging live** at https://rasaoi-i8.vercel.app (Supabase `aotlzhdgnvovvqxmgyyx`); Reading hydrates culinary overlay when `VITE_EXPERIMENTAL_DYNAMIC_CULINARY=true`. Adversarial sim **GATE PASS** (520 seeds @ 100% heuristic). **Develop merge locked** until formal plate soak + approval. Apify weekly cron upserts `experimental_dish_knowledge` only — never auto-promotes live `menu_items` (needs `--promote-menu-items --promote-commit`). Production scoring stays on static culinary-index + Gemini `ai-client.ts` unless staging secrets/`EXPERIMENTAL_MODEL_ROUTER` promote.
 
 ---
 
 ## Tests
 
 ```bash
-npm test          # run once
+npm test          # run once (includes src/lib/experimental/experimental.test.ts)
 npm run test:watch  # watch mode
+npm run experimental:sim   # adversarial gate (≥98%; 520 seeds on staging branch)
 ```
 
 Test files live beside lib modules: `src/lib/*.test.ts`, `src/test/example.test.ts`.
 
 **Fixtures:** `src/testing/mock-places.json` (must stay synced with edge fixture).
-Scoring / dietary / pairings changes require `npm test` before commit.
+Scoring / dietary / pairings changes require `npm test` before commit. Staging AI/nutrition/menu paths also use `scripts/experimental/` (see `project.md`).
 
 ---
 

@@ -12,9 +12,19 @@ import {
   enrichPatientLens,
   type RecipeInversion,
 } from "./nutrition";
+import { buildQuarantineRows } from "./nutritionQuarantine";
+import {
+  clearNutritionLenses,
+  glEstimateFromLens,
+  registerNutritionLens,
+  tryExperimentalGlFromLens,
+} from "./glycemicLensAdapter";
 import {
   BrowserTelemetryBlockedSource,
+  checkinToRating,
   feedbackToGuardrailCandidates,
+  mergeNegativeGuardrailsXml,
+  telemetryCandidatesToXmlBlocks,
 } from "./telemetryFeedback";
 
 describe("ROE-016 experimental culinary knowledge", () => {
@@ -162,12 +172,59 @@ describe("ROE-016 nutrition deconstruction", () => {
     expect(lens.gi_band).toBe("low");
     expect(lens.fiber_protein_paired).toBe(true);
   });
+
+  it("builds idempotent quarantine rows", () => {
+    const rows = buildQuarantineRows("Samosa", [
+      "Mystery Spice",
+      "mystery spice",
+      "  ",
+    ]);
+    expect(rows).toEqual([
+      {
+        dish_name: "Samosa",
+        ingredient_raw: "mystery spice",
+        reason: "usda_unmapped",
+      },
+    ]);
+  });
+
+  it("binds lens_payload into GL estimate adapter", () => {
+    clearNutritionLenses();
+    const lens = enrichPatientLens({
+      dishName: "Steamed Idli",
+      protein_g: 12,
+      fat_g: 1,
+      cho_g: 18,
+      fiber_g: 5,
+      allergens: [],
+      process_tags: ["steam"],
+      confidence: "verified",
+      quarantinedIngredients: [],
+    });
+    registerNutritionLens("Steamed Idli", lens, {
+      restaurantName: "Mylapore",
+      confidence: "verified",
+    });
+    const est = tryExperimentalGlFromLens("Steamed Idli", "Mylapore");
+    expect(est?.carbs_g).toBe(18);
+    expect(est?.glycemic_load).toBe("low");
+    expect(est?.why).toMatch(/Experimental nutrition lens/);
+    expect(glEstimateFromLens("X", lens, "speculative").why).toMatch(/speculative/);
+    clearNutritionLenses();
+  });
 });
 
 describe("ROE-016 telemetry feedback", () => {
   it("blocks browser read-path", async () => {
     const src = new BrowserTelemetryBlockedSource();
     await expect(src.listRecent(10)).rejects.toThrow(/blocked in the browser/i);
+  });
+
+  it("maps check-in signals to ratings", () => {
+    expect(checkinToRating({ status: "skipped" })).toBeNull();
+    expect(checkinToRating({ status: "happened", digestion: "off" })).toBe(1);
+    expect(checkinToRating({ status: "happened", digestion: "heavy", energy: "same" })).toBe(2);
+    expect(checkinToRating({ status: "happened", digestion: "clean", energy: "higher" })).toBe(5);
   });
 
   it("maps low check-ins to guardrail candidates", () => {
@@ -184,5 +241,18 @@ describe("ROE-016 telemetry feedback", () => {
       },
     ]);
     expect(c[0]?.dish).toBe("Samosa");
+    expect(c[0]?.id).toBe("tel-1");
+  });
+
+  it("merges telemetry negatives with id dedupe", () => {
+    const existing = `<?xml version="1.0"?>\n<negative_guardrails>\n  <negative_guardrail id="tel-1" seed="tel-1"><failure>old</failure></negative_guardrail>\n</negative_guardrails>\n`;
+    const blocks = telemetryCandidatesToXmlBlocks([
+      { id: "tel-1", dish: "Samosa", reason: "low_checkin_rating=1 path=pickup restaurant=X" },
+      { id: "tel-2", dish: "Biryani", reason: "low_checkin_rating=2 path=dine_in restaurant=Y" },
+    ]);
+    const { added, skipped, xml } = mergeNegativeGuardrailsXml(existing, blocks);
+    expect(added).toBe(1);
+    expect(skipped).toBe(1);
+    expect(xml).toContain('id="tel-2"');
   });
 });

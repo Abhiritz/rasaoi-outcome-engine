@@ -30,3 +30,6 @@ dist-ssr
 .env.*.local
 .env.experimental
 !.env.experimental.example
+scripts/experimental/fixtures/apify-actor-input.local.json
+scripts/experimental/apify-rasaoi-menu-sync/node_modules/
+scripts/experimental/apify-rasaoi-menu-sync/storage/

@@ -7,9 +7,10 @@
 | Parent | `origin/develop` |
 | Proposed branch | `feature/ROE-016-experimental-infra` |
 | Impact doc | `docs/impact_analysis_experimental_infra.md` (this file) |
-| Status | Approved for sandboxed implementation (user: execute end-to-end; **no PR**) |
+| Status | **Staging live** (2026-07-31) — https://rasaoi-i8.vercel.app + Supabase `aotlzhdgnvovvqxmgyyx`; Ask verified; sim GATE PASS 520@100%. **Develop merge locked** until formal plate soak + approval |
 | Serial note | `ROE-014` claimed by unmerged `feature/ROE-014-intent-situational-layers` (queues ROE-015); this experiment uses **ROE-016** |
-| Related | CRS-003 pairings invariants; ROE-002 rate-limit; DIET-001; culinary-index offline path |
+| Related | CRS-003 pairings invariants; ROE-002 rate-limit; DIET-001; culinary-index offline path; guard doc `docs/ROE-016-hallucination-guard-impact-analysis.md` |
+| Staging | Vercel project `rasaoi-i8` (`prj_vHZDGAtNR3iNjNViXhprZn6lxQKO`); branches `staging` + `feature/ROE-016-experimental-infra` |
 
 ---
 
@@ -18,6 +19,20 @@
 The Outcome Engine today is a **hybrid**: live venues/dishes in Postgres, but ranking enrichment still depends on a **static compile-time artifact** (`culinary-index.json`). AI is **Gemini-hardwired**. Telemetry (`outcome_selections`) is **write-only**. Moving to a dynamic knowledge + multi-model + closed-loop evaluator architecture is correct — **but only if every new surface is gated behind experimental isolation** so Vercel/`develop` CI cannot accidentally promote schema, secrets, or routing.
 
 This document is the sandbox contract for that evolution.
+
+### Staging status (2026-07-31)
+
+| Surface | Value |
+|---------|--------|
+| Frontend | https://rasaoi-i8.vercel.app (Vercel project **`rasaoi-i8`**, not renamed) |
+| Backend | Supabase `aotlzhdgnvovvqxmgyyx` (`rasaoi-staging`) |
+| Features ON | Model router (Gemini fallback), dynamic culinary overlay, experimental schema/backfill, nutrition quarantine+lens, telemetry→guardrails |
+| Data | Culinary backfill ~772 dishes; CSV seed ~18 restaurants / ~642 dishes; `verify-reading` PASS |
+| Guard | Adversarial sim **GATE PASS** 520 seeds @ 100% (≥98%); heuristic ≠ live LLM parse |
+| Menus | EXP-T11 sync scripts + Apify weekly cron → `experimental_dish_knowledge` only (promote flags for `menu_items`) |
+| QA | Ask → Reading verified by stakeholder (“works like a charm”) |
+| Prod | https://rasaoi-delta.vercel.app / `kiugplotjcnmpwjlxajc` — **untouched** |
+| Merge | **No** PR/merge to `develop` until formal plate soak + approval |
 
 ---
 
@@ -277,14 +292,16 @@ PINECONE_INDEX=
 - Breaking `ParsedIntent` fields
 - Committing real API keys
 
-### Acceptance (sandbox exit criteria — before any future PR)
+### Acceptance (sandbox exit criteria — before any future develop merge)
 
-- [ ] Experimental suite green (`npm test` including experimental tests)
-- [ ] Static adapters remain default; prod paths unchanged when flags off
-- [ ] Adversarial runner executes against seed corpus; golden / negative sinks update
-- [ ] Docker pgvector schema applies cleanly from `migrations_experimental`
-- [ ] Dish-non-invention tests still pass
-- [ ] Documentation lists promotion checklist (this doc §4)
+- [x] Experimental suite green (`npm test` including experimental tests)
+- [x] Static adapters remain default; prod paths unchanged when flags off
+- [x] Adversarial runner executes against seed corpus; golden / negative sinks update
+- [x] Experimental schema applies cleanly on staging (`experimental:apply-schema`; Docker optional/unused)
+- [x] Dish-non-invention tests still pass
+- [x] Staging site live + Ask verified (https://rasaoi-i8.vercel.app)
+- [x] Adversarial ≥98% on expanded corpus (520 seeds @ 100% heuristic — G-05 sim gate closed)
+- [ ] Formal plate soak + documentation promotion checklist (this doc §4) + develop merge approval
 
 ---
 
@@ -298,20 +315,35 @@ PINECONE_INDEX=
 | Telemetry reader | Browser anon client **cannot** SELECT `outcome_selections`; script with service role can call RPC in experimental DB |
 | Pairings regression | Existing `pairings.test.ts` / CRS-003 cases green |
 | Simulator | ≥1 golden write + ≥1 negative_guardrail on deliberate fail seed |
+| Staging Ask | Transcript parses; Reading shows menu-bound plates (verified 2026-07-31) |
 
 ---
 
-## 8. Deploy / ops (sandbox only)
+## 8. Deploy / ops
+
+**Staging (current):**
 
 ```bash
-# Local vector DB
+# Link CLI to aotlzhdgnvovvqxmgyyx, then:
+npm run supabase:db:push
+npm run experimental:apply-schema
+npm run experimental:backfill
+npx supabase functions deploy --project-ref aotlzhdgnvovvqxmgyyx
+git push origin staging   # or feature/ROE-016-experimental-infra
+# → GitHub Action "Deploy staging site" → https://rasaoi-i8.vercel.app
+```
+
+Runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`
+
+**Local Docker (optional — unused for staging path):**
+
+```bash
 docker compose -f docker-compose.experimental.yml up -d
+```
 
-# Apply experimental SQL (local only)
-psql "$EXPERIMENTAL_DATABASE_URL" -f supabase/migrations_experimental/20260726090000_exp_pgvector_knowledge.sql
-
-# Do NOT: npm run supabase:db:push   # until promotion
-# Do NOT: gh pr create               # locked per STEP 5
+```
+# Do NOT: npm run supabase:db:push experimental SQL to prod
+# Do NOT: gh pr create / merge to develop  # locked until acceptance gates
 ```
 
 ---
@@ -320,12 +352,18 @@ psql "$EXPERIMENTAL_DATABASE_URL" -f supabase/migrations_experimental/2026072609
 
 ```
 docs/impact_analysis_experimental_infra.md
+docs/ROE-016-hallucination-guard-impact-analysis.md
 docs/experimental/tickets/*.md
+docs/experimental/STAGING_PREVIEW_SETUP.md
+docs/experimental/FULL_STAGING_GO_LIVE.md
 TODO_PROGRESS.md
 .env.experimental.example
 docker-compose.experimental.yml
 supabase/migrations_experimental/*.sql
 supabase/functions/_shared/model-router.ts
+supabase/functions/experimental-apify-webhook/
+.github/workflows/deploy-staging-preview.yml
+vercel.json
 src/lib/experimental/**
 scripts/experimental/**
 scripts/experimental/fixtures/**
@@ -349,4 +387,5 @@ supabase/CURSOR.md
 | Default culinary path | Static adapter | Zero production behavior change |
 | Telemetry | SECURITY DEFINER RPC | Avoid reopening public SELECT |
 | Router | Shared module + optional LiteLLM URL | Free-tier local; enterprise URL swap |
-| PR | Deferred | User STEP 5 lock until 100% sandbox confidence |
+| Staging frontend | Dedicated Vercel project `rasaoi-i8` | Isolate from prod `rasaoi-delta`; Action uses `VERCEL_STAGING_PROJECT_ID` |
+| PR / develop merge | Deferred | User lock until formal plate soak (sim ≥98% already met) |

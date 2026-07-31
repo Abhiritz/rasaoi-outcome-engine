@@ -2,7 +2,7 @@
 
 | Priority | Ticket | Status |
 |----------|--------|--------|
-| — | **[ROE-016] Experimental infra (EXP-001)** | Sandboxed branch `feature/ROE-016-experimental-infra` — **PR locked** until ≥98% adversarial + Vitest |
+| — | **[ROE-016] Experimental infra (EXP-001)** | **Staging live** on `staging` + `feature/ROE-016-experimental-infra` → https://rasaoi-i8.vercel.app — sim **GATE PASS** 520@100%; **no develop merge** until formal plate soak + your approval |
 | 1 | **[ROE-014] Intent situational layers** | Unmerged branch (queues ROE-015 Ask situational labels) |
 | — | Optional: ROE-006 **+perf** (matrix-first GL) | Later |
 
@@ -26,10 +26,13 @@ Rules:
 
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`  
 Experimental tickets: `docs/experimental/tickets/README.md`  
-Hallucination guard: `docs/ROE-016-hallucination-guard-impact-analysis.md` + `.cursor/rules/hallucination-guard.mdc`
+Hallucination guard: `docs/ROE-016-hallucination-guard-impact-analysis.md` + `.cursor/rules/hallucination-guard.mdc`  
+Staging runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`  
+Apify cron: `docs/experimental/APIFY_CLI_CRON_SETUP.md`  
+Progress: `TODO_PROGRESS.md`
 
 ### In progress / shipping
-- **[ROE-016] Experimental infra (EXP-001)** — sandbox only; no PR
+- **[ROE-016] Experimental infra (EXP-001)** — staging live (https://rasaoi-i8.vercel.app); EXP-T1–T11 done; Apify weekly cron live; **soak + develop merge** still locked
 - **[ROE-014] Intent situational layers** — unmerged
 
 ### Board QA

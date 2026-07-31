@@ -9,22 +9,31 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
-## [ROE-016] Experimental infra (EXP-001) — full remote staging (NO PR yet)
+## [ROE-016] Experimental infra (EXP-001) — staging live (NO develop merge yet)
 
 Impact: `docs/impact_analysis_experimental_infra.md`  
+Guard: `docs/ROE-016-hallucination-guard-impact-analysis.md`  
 Go-live: `docs/experimental/FULL_STAGING_GO_LIVE.md`  
-Tracker: `TODO_PROGRESS.md`
+Runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`  
+Apify: `docs/experimental/APIFY_CLI_CRON_SETUP.md`  
+Tickets: `docs/experimental/tickets/README.md`  
+Tracker: `TODO_PROGRESS.md`  
+Site: https://rasaoi-i8.vercel.app · Supabase `aotlzhdgnvovvqxmgyyx`
 
-- [x] Impact analysis + branch `feature/ROE-016-experimental-infra`
+- [x] Impact analysis + branch `feature/ROE-016-experimental-infra` (+ `staging` clone)
 - [x] Model router wired into parse-intent / estimate-glycemic / ingest-menu
 - [x] Dynamic culinary remote overlay + backfill script
-- [x] Telemetry mirror to `experimental_outcome_feedback`
-- [x] `experimental-apify-webhook` edge function
-- [x] Staging Preview workflow with experimental flags **ON**
+- [x] Telemetry mirror to `experimental_outcome_feedback` + check-in→rating + telemetry→guardrails
+- [x] Nutrition quarantine persist + glycemic lens bind (EXP-T3)
+- [x] Adversarial corpus 520 seeds + sim GATE PASS 100% ≥98% (EXP-T9/T4)
+- [x] Menu sync export/mirror/scrape/promote scripts (EXP-T11)
+- [x] `experimental-apify-webhook` edge + Apify Actor weekly cron (`rasaoi-weekly-menu-sync`)
+- [x] Staging deploy workflow with experimental flags **ON**
 - [x] Vitest (experimental + pairings + culinaryIndex)
-- [ ] Create Supabase staging + apply schema/backfill/deploy (operator)
-- [ ] GitHub `STAGING_VITE_SUPABASE_*` + push → Preview URL
-- [ ] **PR deferred** until adversarial ≥98% + guard audit pass (`docs/ROE-016-hallucination-guard-impact-analysis.md`)
+- [x] Supabase staging schema/backfill/edge + `GEMINI_API_KEY`
+- [x] GitHub `STAGING_VITE_*` + `VERCEL_STAGING_PROJECT_ID` → https://rasaoi-i8.vercel.app
+- [x] Ask → Reading smoke verified on staging
+- [ ] Formal staging soak (oceany/sweet/Jain/South) + develop merge approval
 
 ---
 

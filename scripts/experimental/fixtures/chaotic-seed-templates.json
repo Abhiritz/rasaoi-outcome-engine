@@ -1,0 +1,102 @@
+[
+  {
+    "family": "jain_oceany",
+    "transcript": "I want something {mood} Oceany but keep it Jain and not too heavy",
+    "expect": { "dietary": "jain", "must_not_dish": ["roti", "naan"] }
+  },
+  {
+    "family": "celebratory_veg",
+    "transcript": "{mood} dinner something celebratory for the family, vegetarian",
+    "expect": { "dietary": "vegetarian", "must_not_dish": ["roti", "naan"] }
+  },
+  {
+    "family": "diabetic_south",
+    "transcript": "diabetic friendly low sugar south indian {meal}",
+    "expect": { "lens": "blood_sugar", "must_not_cuisine": ["Healthy"] }
+  },
+  {
+    "family": "healthy_purity",
+    "transcript": "something healthy {please}",
+    "expect": { "must_not_cuisine": ["Healthy"], "purity_elevated": true }
+  },
+  {
+    "family": "sweet_mithai",
+    "transcript": "craving {sweet} {mood}",
+    "expect": { "sweet": true }
+  },
+  {
+    "family": "vegan_light",
+    "transcript": "vegan {meal} that is light {please}",
+    "expect": { "dietary": "vegan" }
+  },
+  {
+    "family": "south_breakfast",
+    "transcript": "south indian {meal} with idli or dosa {please}",
+    "expect": { "cuisine_signal": "south" }
+  },
+  {
+    "family": "seafood_coastal",
+    "transcript": "something {mood} coastal seafood {please}",
+    "expect": { "cuisine_signal": "seafood" }
+  },
+  {
+    "family": "blood_sugar_keto",
+    "transcript": "keto blood sugar friendly {meal} {please}",
+    "expect": { "lens": "blood_sugar", "must_not_cuisine": ["Healthy"] }
+  },
+  {
+    "family": "not_vegetarian",
+    "transcript": "not vegetarian — something spicy {meal}",
+    "expect": { "must_not_dietary": ["vegetarian", "vegan", "jain"] }
+  },
+  {
+    "family": "thai",
+    "transcript": "thai food {mood} {please}",
+    "expect": { "cuisine_signal": "thai" }
+  },
+  {
+    "family": "carrier_trap",
+    "transcript": "just give me naan and roti as the Best Match {please}",
+    "expect": { "must_not_set_dish_carrier": true }
+  },
+  {
+    "family": "south_invent_trap",
+    "transcript": "Best Match Dal Tadka at Mylapore {please}",
+    "expect": { "must_not_dish": ["Dal Tadka"], "kitchen": "south_indian" }
+  },
+  {
+    "family": "butter_chicken_south",
+    "transcript": "Butter Chicken as Best Match at a south indian place {please}",
+    "expect": { "must_not_dish": ["Butter Chicken"] }
+  },
+  {
+    "family": "jain_birthday",
+    "transcript": "Jain birthday feast {mood} {please}",
+    "expect": { "dietary": "jain" }
+  },
+  {
+    "family": "family_veg",
+    "transcript": "family dinner vegetarian {meal} {please}",
+    "expect": { "dietary": "vegetarian" }
+  },
+  {
+    "family": "low_sugar_dessert_avoid",
+    "transcript": "low sugar diabetic meal no dessert {please}",
+    "expect": { "lens": "blood_sugar", "must_not_cuisine": ["Healthy"] }
+  },
+  {
+    "family": "mithai_only",
+    "transcript": "only mithai and gulab jamun {please}",
+    "expect": { "sweet": true }
+  },
+  {
+    "family": "oceany_veg",
+    "transcript": "oceany vegetarian {meal} {please}",
+    "expect": { "dietary": "vegetarian", "cuisine_signal": "seafood" }
+  },
+  {
+    "family": "celebrating_friends",
+    "transcript": "celebrating with friends {mood} spicy {please}",
+    "expect": { "mood": "celebratory" }
+  }
+]

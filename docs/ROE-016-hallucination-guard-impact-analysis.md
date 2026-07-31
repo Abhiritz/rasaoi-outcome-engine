@@ -5,8 +5,9 @@
 | Ticket | **ROE-016** (EXP-001) |
 | Workstream | **Guard audit** (companion to `docs/impact_analysis_experimental_infra.md`) |
 | Branch | `feature/ROE-016-experimental-infra` |
-| Status | Post-implementation audit + standing guard policy |
+| Status | Post-implementation audit + **staging live** (2026-07-31); sim GATE PASS 520@100%; develop merge still gated on formal soak (§5) |
 | Cursor rule | `.cursor/rules/hallucination-guard.mdc` (new) |
+| Staging | https://rasaoi-i8.vercel.app — Ask verified; G-05 adversarial gate still open |
 
 ---
 
@@ -96,17 +97,31 @@ Existing guards (CRS-003, ROE-001/003/004/007/008) were built for Gemini-only + 
 |----|----------|---------|------------|
 | **G-01** | Medium | Overlay **fuzzy** dish-key match could attach wrong restaurant’s macros | **Code fix:** exact key match only for `speculative` rows; fuzzy disabled for speculative |
 | **G-02** | Medium | Apify webhook upserts dish names not validated against `menu_items` | Acceptable for **enrichment only**; pairings still menu-bound. Document: never promote Apify row to plate without Lab commit |
-| **G-03** | Low | `nutrition_confidence` from DB not passed into glycemic heuristics in overlay | Overlay uses macros/gi_band; tier ignored today. Future: downgrade GL trust for speculative |
-| **G-04** | Low | `outcomes.ts` mirrors to `experimental_outcome_feedback` on any project with table | Fail-open debug log; table only on staging schema |
-| **G-05** | Medium | Multi-model router on staging without ≥98% adversarial gate | Block **develop merge** until corpus expanded + simulator pass rate met |
-| **G-06** | Low | `negative_guardrails.xml` duplicate entries from repeated sim runs | Dedupe script optional; manual cleanup before promotion |
+| **G-03** | Low | `nutrition_confidence` from DB not passed into glycemic heuristics in overlay | **Mitigated in part (EXP-T3):** `glycemicLensAdapter` + quarantine persist; full tier-aware GL trust still optional |
+| **G-04** | Low | `outcomes.ts` mirrors to `experimental_outcome_feedback` on any project with table | Fail-open debug log; table only on staging schema. **EXP-T5:** check-in→rating + `experimental:telemetry-guardrails` |
+| **G-05** | Medium | Multi-model router on staging without ≥98% adversarial gate | **CLOSED (sim):** 520 seeds @ 100% heuristic GATE PASS. Heuristic ≠ live LLM parse. Develop merge still needs formal soak |
+| **G-06** | Low | `negative_guardrails.xml` duplicate entries from repeated sim runs | Dedupe in telemetry/guardrails merge; review before promotion |
 | **G-07** | Info | `context-guard.mdc` still said “never wire model-router” | **Updated** — router live with Gemini fallback; prod needs explicit `EXPERIMENTAL_MODEL_ROUTER` secret to swap |
+| **G-08** | Info | Apify cron upserts knowledge without menu_items promote | By design (G-02); promote requires `--promote-menu-items --promote-commit` |
 
 ### 4.3 FAIL-closed behaviors verified
 
 - Unknown dish in static index + no overlay → `lookupDish` returns null → matrix GL heuristic skip / med default
 - Experimental flag off → overlay null → pure static path
 - Router gateway down → Gemini fallback (no silent empty parse)
+
+### 4.4 Staging soak note (2026-07-31)
+
+| Check | Result |
+|-------|--------|
+| Staging site Ask → Reading | **PASS** (stakeholder confirmed) |
+| Staging Supabase + GEMINI | Deployed; edge functions live |
+| Culinary overlay hydrate | ON via staging Vite flags |
+| Invented-plate scenarios (oceany/sweet/Jain/South) | Manual soak still required before develop merge |
+| Adversarial ≥98% / 500+ | **PASS** (G-05 sim) — 520 seeds @ 100% heuristic |
+| Nutrition quarantine + lens bind | **PASS** (EXP-T3) |
+| Telemetry → guardrails | **PASS** (EXP-T5) |
+| Apify weekly cron (knowledge-only) | **PASS** (EXP-T11 + CLI setup) |
 
 ---
 
@@ -116,11 +131,13 @@ Before PR to `develop`:
 
 - [x] Standing Cursor rule `.cursor/rules/hallucination-guard.mdc`
 - [x] This impact analysis in `docs/`
-- [ ] Overlay exact-match guard for speculative rows (G-01)
-- [ ] `npm test` full suite green
-- [ ] Adversarial sim ≥98% on 500+ seeds (currently 5/6 on 6 seeds — **not promotion-ready**)
-- [ ] Staging Preview QA: no invented plates on oceany/sweet/Jain/South Indian scenarios
+- [x] Overlay exact-match guard for speculative rows (G-01)
+- [x] `npm test` full suite green (experimental + pairings)
+- [x] Staging site live + Ask smoke verified (https://rasaoi-i8.vercel.app)
+- [x] Adversarial sim ≥98% on 500+ seeds (**520 @ 100%** heuristic — G-05 sim closed)
+- [ ] Staging QA checklist: no invented plates on oceany/sweet/Jain/South Indian scenarios (formal soak)
 - [ ] `negative_guardrails.xml` reviewed; no unaddressed ROE-004 class failures
+- [ ] Stakeholder approve develop merge
 
 ---
 
@@ -137,7 +154,8 @@ Before PR to `develop`:
 
 - Changing DIET-001 taxonomy
 - Production deploy of experimental schema
-- Full 500+ adversarial corpus generation (follow-up ticket)
+- Full 500+ adversarial corpus generation — **done** (EXP-T9; 520 seeds)
+- Formal plate soak + develop merge — remaining
 
 ---
 
@@ -176,7 +194,7 @@ Manual staging:
 Merge to `develop` only when **both**:
 
 1. Infra soak complete (`docs/experimental/FULL_STAGING_GO_LIVE.md`)
-2. Guard acceptance §5 satisfied (especially G-05 adversarial gate)
+2. Guard acceptance §5 satisfied (sim gate closed; **formal soak + XML review** still open)
 
 Prod Vercel remains on static index until explicit promotion checklist in `impact_analysis_experimental_infra.md` §4.
 

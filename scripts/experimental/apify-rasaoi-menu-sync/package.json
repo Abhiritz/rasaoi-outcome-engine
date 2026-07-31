@@ -1,0 +1,13 @@
+{
+  "name": "rasaoi-staging-menu-sync",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Apify Actor — Rasaoi staging menu → experimental webhook",
+  "dependencies": {
+    "apify": "^3.2.6",
+    "vite_react_shadcn_ts": "file:../../.."
+  },
+  "scripts": {
+    "start": "node src/main.js"
+  }
+}

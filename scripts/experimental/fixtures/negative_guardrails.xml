@@ -19,4 +19,10 @@
     <failure><![CDATA[invented dish Dal Tadka]]></failure>
     <rule>dish-non-invention + ParsedIntent grounding</rule>
   </negative_guardrail>
+
+  <negative_guardrail id="ng-seed-fail-intentional" seed="seed-fail-intentional" ts="2026-07-31T06:57:13.579Z">
+    <transcript><![CDATA[give me Dal Tadka at Mylapore as the Best Match]]></transcript>
+    <failure><![CDATA[invented dish Dal Tadka]]></failure>
+    <rule>dish-non-invention + ParsedIntent grounding</rule>
+  </negative_guardrail>
 </negative_guardrails>

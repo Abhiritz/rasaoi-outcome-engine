@@ -36,9 +36,12 @@ Read `.cursor/rules/hallucination-guard.mdc` when touching intent, pairings, sco
 
 ## Experimental sandbox (ROE-016)
 
-- Code under `src/lib/experimental/`, `scripts/experimental/`, `supabase/migrations_experimental/` is **sandboxed**.
-- Staging path: Vercel Preview + dedicated Supabase staging — `docs/experimental/STAGING_PREVIEW_SETUP.md` (Docker optional / unused).
+- Code under `src/lib/experimental/`, `scripts/experimental/`, `supabase/migrations_experimental/` is **sandboxed** from production.
+- Staging path: dedicated Vercel project **https://rasaoi-i8.vercel.app** + Supabase `aotlzhdgnvovvqxmgyyx` — `docs/experimental/STAGING_PREVIEW_SETUP.md` (Docker optional / unused).
 - Edge AI uses `_shared/model-router.ts` with **Gemini fallback**; non-Gemini providers only when staging secrets + `EXPERIMENTAL_MODEL_ROUTER=true`.
 - Never apply experimental migrations with `supabase db push` to production.
 - Never point experimental writes at prod project `kiugplotjcnmpwjlxajc`.
 - Secrets: `.env.experimental` only (gitignored).
+- Adversarial sim gate: `npm run experimental:sim` — **PASS** on 520 seeds @ 100% heuristic (2026-07-31). Heuristic gate ≠ live LLM parse gate.
+- Apify weekly cron (`docs/experimental/APIFY_CLI_CRON_SETUP.md`) upserts **`experimental_dish_knowledge` only** — never auto-write live `menu_items` without explicit `--promote-menu-items --promote-commit`.
+- Develop merge still locked until **formal plate soak** + stakeholder approval (`docs/ROE-016-hallucination-guard-impact-analysis.md`).

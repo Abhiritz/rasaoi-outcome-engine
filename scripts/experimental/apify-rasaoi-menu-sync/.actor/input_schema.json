@@ -1,0 +1,35 @@
+{
+  "title": "Rasaoi staging menu sync input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "webhookUrl": {
+      "title": "Webhook URL",
+      "type": "string",
+      "description": "Staging experimental-apify-webhook URL",
+      "editor": "textfield"
+    },
+    "webhookSecret": {
+      "title": "Webhook secret",
+      "type": "string",
+      "description": "Same as APIFY_WEBHOOK_SECRET on staging",
+      "editor": "textfield",
+      "isSecret": true
+    },
+    "mode": {
+      "title": "Mode",
+      "type": "string",
+      "description": "auto = scrape when source_url present else catalog; catalog = input dishes only; scrape = URLs only",
+      "enum": ["auto", "catalog", "scrape"],
+      "default": "auto",
+      "editor": "select"
+    },
+    "targets": {
+      "title": "Restaurant targets",
+      "type": "array",
+      "description": "From apify-menu-targets.json restaurants[] (name, source_url, dishes)",
+      "editor": "json"
+    }
+  },
+  "required": ["webhookUrl", "webhookSecret", "targets"]
+}

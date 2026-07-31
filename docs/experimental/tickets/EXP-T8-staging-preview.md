@@ -1,19 +1,17 @@
-# EXP-T8 — Staging / Vercel Preview path
+# EXP-T8 — Staging Vercel + Supabase
 
-**Labels:** `type: experiment`, `status: sandboxed`  
+**Labels:** `type: experiment`, `status: staging-live`  
 **Parent:** ROE-016 (EXP-001)  
-**Runbook:** `docs/experimental/STAGING_PREVIEW_SETUP.md`
+**Result:** LIVE — https://rasaoi-i8.vercel.app
 
-## Done in repo
-- [x] Workflow `.github/workflows/deploy-staging-preview.yml` (Preview only, never `--prod`)
-- [x] `npm run experimental:apply-schema`
-- [x] Staging-first `.env.experimental.example`
-- [x] DEPLOYMENT.md + CONTEXT notes
+- [x] Workflow `.github/workflows/deploy-staging-preview.yml` (dedicated staging project via `VERCEL_STAGING_PROJECT_ID`)
+- [x] `vercel.json` Vite framework + SPA rewrites
+- [x] Create Supabase project `rasaoi-staging` (`aotlzhdgnvovvqxmgyyx`) + enable `vector`
+- [x] `db push` + `experimental:apply-schema` on staging
+- [x] Culinary backfill + CSV seed + `verify-reading` PASS
+- [x] GitHub `STAGING_VITE_*` + `VERCEL_STAGING_PROJECT_ID`
+- [x] Push branch → staging site URL bookmarked
+- [x] Deploy edge functions + `GEMINI_API_KEY` on staging
+- [x] Ask → Reading smoke verified (2026-07-31)
 
-## You must finish (dashboards)
-- [ ] Create Supabase project `rasaoi-staging` + enable `vector`
-- [ ] `db push` + `experimental:apply-schema` on staging
-- [ ] GitHub secrets `STAGING_VITE_SUPABASE_*`
-- [ ] Vercel Preview env vars (or rely on Action build-env)
-- [ ] Push branch → bookmark Preview URL
-- [ ] Deploy edge functions + `GEMINI_API_KEY` on staging
+**Note:** Vercel project name is `rasaoi-i8` (auto-assigned). Optional rename to `rasaoi-staging` later.

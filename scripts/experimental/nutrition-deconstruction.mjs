@@ -1,6 +1,7 @@
 /**
  * ROE-016 — Clinical nutrition deconstruction stub (sandbox).
- * Stage1 heuristics → Stage2 USDA map (optional key) → Stage3 patient lens.
+ * Stage1 heuristics → Stage2 USDA map (optional key) → Stage3 patient lens
+ * → persist quarantined ingredients to experimental_nutrition_quarantine (service role).
  *
  * Usage:
  *   node scripts/experimental/nutrition-deconstruction.mjs "Vegetable Samosa"
@@ -9,6 +10,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createClient } from "@supabase/supabase-js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "../..");
@@ -150,6 +152,38 @@ function stage3Lens(v) {
   };
 }
 
+function buildQuarantineRows(dishName, ingredients, reason = "usda_unmapped") {
+  const dish = String(dishName || "").trim();
+  if (!dish) return [];
+  const seen = new Set();
+  const rows = [];
+  for (const raw of ingredients) {
+    const ingredient_raw = String(raw ?? "")
+      .trim()
+      .toLowerCase();
+    if (!ingredient_raw || seen.has(ingredient_raw)) continue;
+    seen.add(ingredient_raw);
+    rows.push({ dish_name: dish, ingredient_raw, reason });
+  }
+  return rows;
+}
+
+async function persistQuarantine(dishName, ingredients) {
+  const url = process.env.EXPERIMENTAL_SUPABASE_URL?.trim();
+  const key = process.env.EXPERIMENTAL_SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!url || !key) {
+    return { skipped: true, reason: "missing EXPERIMENTAL_SUPABASE_URL or SERVICE_ROLE_KEY" };
+  }
+  const rows = buildQuarantineRows(dishName, ingredients);
+  if (!rows.length) return { attempted: 0 };
+  const sb = createClient(url, key, { auth: { persistSession: false } });
+  const { error } = await sb
+    .from("experimental_nutrition_quarantine")
+    .upsert(rows, { onConflict: "dish_name,ingredient_raw", ignoreDuplicates: true });
+  if (error) return { attempted: rows.length, error: error.message };
+  return { attempted: rows.length };
+}
+
 async function main() {
   loadExperimentalEnv();
   const dish = process.argv[2] || "Vegetable Samosa";
@@ -161,6 +195,15 @@ async function main() {
     console.error(
       `\nQuarantined (not invented): ${verified.quarantinedIngredients.join(", ")}`,
     );
+    const persist = await persistQuarantine(dish, verified.quarantinedIngredients);
+    if (persist.skipped) {
+      console.error(`Quarantine persist skipped: ${persist.reason}`);
+    } else if (persist.error) {
+      console.error(`Quarantine persist failed: ${persist.error}`);
+      process.exitCode = 1;
+    } else {
+      console.error(`Quarantine persisted: ${persist.attempted} row(s)`);
+    }
   }
 }
 

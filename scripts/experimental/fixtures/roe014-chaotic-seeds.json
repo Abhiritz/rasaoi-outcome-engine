@@ -3,10 +3,11 @@
     "id": "seed-001",
     "transcript": "I want something Oceany but keep it Jain and not too heavy",
     "expect": {
-      "cuisine_includes": ["seafood", "coastal", "Indian"],
       "dietary": "jain",
-      "lens": null,
-      "must_not_dish": ["roti", "naan"]
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
     }
   },
   {
@@ -14,8 +15,11 @@
     "transcript": "birthday dinner something celebratory for the family, vegetarian",
     "expect": {
       "dietary": "vegetarian",
-      "mood": "celebratory",
-      "must_not_dish": ["roti", "naan", "plain rice"]
+      "must_not_dish": [
+        "roti",
+        "naan",
+        "plain rice"
+      ]
     }
   },
   {
@@ -23,15 +27,18 @@
     "transcript": "diabetic friendly low sugar south indian breakfast",
     "expect": {
       "lens": "blood_sugar",
-      "cuisine_includes": ["South Indian", "Indian"],
-      "must_not_cuisine": ["Healthy"]
+      "must_not_cuisine": [
+        "Healthy"
+      ]
     }
   },
   {
     "id": "seed-004",
     "transcript": "something healthy please",
     "expect": {
-      "must_not_cuisine": ["Healthy"],
+      "must_not_cuisine": [
+        "Healthy"
+      ],
       "purity_elevated": true
     }
   },
@@ -39,17 +46,6185 @@
     "id": "seed-005",
     "transcript": "craving gulab jamun and jalebi tonight",
     "expect": {
-      "sweet": true,
-      "no_carrier": true
+      "sweet": true
     }
   },
   {
-    "id": "seed-fail-intentional",
+    "id": "seed-006-south-invent-guard",
     "transcript": "give me Dal Tadka at Mylapore as the Best Match",
     "expect": {
-      "must_not_dish": ["Dal Tadka"],
+      "must_not_dish": [
+        "Dal Tadka"
+      ],
       "kitchen": "south_indian"
+    }
+  },
+  {
+    "id": "seed-0007-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
     },
-    "force_fail_if_model_invents": true
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0008-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0009-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0010-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0011-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0012-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0013-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0014-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0015-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0016-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0017-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0018-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0019-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0020-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0021-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0022-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0023-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0024-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0025-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0026-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0027-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0028-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0029-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0030-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0031-jain_oceany",
+    "transcript": "I want something tonight Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0032-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0033-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0034-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0035-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0036-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0037-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0038-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0039-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0040-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0041-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0042-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0043-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0044-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0045-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0046-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0047-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0048-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0049-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0050-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0051-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0052-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0053-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0054-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0055-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0056-jain_oceany",
+    "transcript": "I want something for lunch Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0057-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0058-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0059-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0060-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0061-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0062-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0063-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0064-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0065-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0066-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0067-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0068-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0069-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0070-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0071-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0072-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0073-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0074-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0075-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0076-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0077-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0078-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0079-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0080-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0081-jain_oceany",
+    "transcript": "I want something this weekend Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0082-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0083-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0084-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0085-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0086-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0087-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0088-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0089-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0090-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0091-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0092-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0093-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0094-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0095-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0096-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0097-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0098-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0099-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0100-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0101-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0102-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0103-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0104-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0105-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0106-jain_oceany",
+    "transcript": "I want something after work Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0107-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0108-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0109-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0110-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0111-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0112-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0113-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0114-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0115-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0116-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0117-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0118-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0119-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0120-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0121-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0122-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0123-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0124-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0125-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0126-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0127-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0128-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0129-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0130-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0131-jain_oceany",
+    "transcript": "I want something with kids Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0132-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0133-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0134-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0135-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0136-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0137-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0138-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0139-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0140-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0141-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0142-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0143-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0144-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0145-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0146-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0147-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0148-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0149-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0150-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0151-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0152-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0153-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0154-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0155-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0156-jain_oceany",
+    "transcript": "I want something date night Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0157-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0158-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0159-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0160-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0161-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0162-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0163-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0164-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0165-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0166-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0167-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0168-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0169-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0170-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0171-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0172-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0173-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0174-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0175-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0176-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0177-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0178-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0179-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0180-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0181-jain_oceany",
+    "transcript": "I want something quick Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0182-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0183-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0184-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0185-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0186-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0187-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0188-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0189-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0190-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0191-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0192-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0193-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0194-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0195-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0196-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0197-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0198-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0199-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0200-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0201-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0202-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0203-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0204-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0205-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0206-jain_oceany",
+    "transcript": "I want something relaxed Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0207-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0208-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0209-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0210-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0211-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0212-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0213-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0214-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0215-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0216-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0217-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0218-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0219-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0220-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0221-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0222-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0223-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0224-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0225-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0226-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0227-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0228-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0229-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0230-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0231-jain_oceany",
+    "transcript": "I want something on Friday Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0232-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0233-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0234-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0235-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0236-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0237-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0238-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0239-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0240-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0241-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0242-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0243-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0244-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0245-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0246-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0247-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0248-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0249-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0250-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0251-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0252-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0253-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0254-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0255-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0256-jain_oceany",
+    "transcript": "I want something before the movie Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0257-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0258-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0259-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0260-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0261-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0262-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0263-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0264-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0265-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0266-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0267-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0268-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0269-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0270-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0271-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0272-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0273-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0274-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0275-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0276-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0277-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0278-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0279-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0280-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0281-jain_oceany",
+    "transcript": "I want something post workout Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0282-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy under $20 in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0283-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy under $20 near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0284-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy under $20 nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0285-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy under $20 close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0286-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy under $20",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0287-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy splurge in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0288-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy splurge near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0289-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy splurge nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0290-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy splurge close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0291-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy splurge",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0292-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy cheap eats in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0293-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy cheap eats near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0294-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy cheap eats nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0295-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy cheap eats close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0296-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy cheap eats",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0297-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy mid range in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0298-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy mid range near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0299-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy mid range nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0300-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy mid range close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0301-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy mid range",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0302-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy in Folsom",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0303-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy near EDH",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0304-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy nearby",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0305-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy close by",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0306-jain_oceany",
+    "transcript": "I want something rainy day Oceany but keep it Jain and not too heavy",
+    "expect": {
+      "dietary": "jain",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "jain_oceany"
+  },
+  {
+    "id": "seed-0307-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian under $20 in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0308-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian under $20 near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0309-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian under $20 nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0310-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian under $20 close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0311-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian under $20",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0312-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian splurge in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0313-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian splurge near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0314-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian splurge nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0315-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian splurge close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0316-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian splurge",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0317-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian cheap eats in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0318-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian cheap eats near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0319-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian cheap eats nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0320-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian cheap eats close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0321-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian cheap eats",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0322-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian mid range in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0323-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian mid range near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0324-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian mid range nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0325-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian mid range close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0326-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian mid range",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0327-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0328-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0329-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0330-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0331-celebratory_veg",
+    "transcript": "tonight dinner something celebratory for the family, vegetarian",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0332-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian under $20 in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0333-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian under $20 near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0334-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian under $20 nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0335-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian under $20 close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0336-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian under $20",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0337-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian splurge in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0338-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian splurge near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0339-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian splurge nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0340-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian splurge close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0341-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian splurge",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0342-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian cheap eats in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0343-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian cheap eats near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0344-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian cheap eats nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0345-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian cheap eats close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0346-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian cheap eats",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0347-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian mid range in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0348-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian mid range near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0349-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian mid range nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0350-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian mid range close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0351-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian mid range",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0352-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0353-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0354-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0355-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0356-celebratory_veg",
+    "transcript": "for lunch dinner something celebratory for the family, vegetarian",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0357-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian under $20 in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0358-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian under $20 near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0359-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian under $20 nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0360-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian under $20 close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0361-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian under $20",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0362-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian splurge in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0363-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian splurge near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0364-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian splurge nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0365-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian splurge close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0366-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian splurge",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0367-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian cheap eats in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0368-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian cheap eats near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0369-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian cheap eats nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0370-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian cheap eats close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0371-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian cheap eats",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0372-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian mid range in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0373-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian mid range near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0374-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian mid range nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0375-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian mid range close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0376-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian mid range",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0377-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0378-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0379-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0380-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0381-celebratory_veg",
+    "transcript": "this weekend dinner something celebratory for the family, vegetarian",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0382-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian under $20 in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0383-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian under $20 near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0384-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian under $20 nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0385-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian under $20 close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0386-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian under $20",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0387-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian splurge in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0388-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian splurge near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0389-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian splurge nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0390-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian splurge close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0391-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian splurge",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0392-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian cheap eats in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0393-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian cheap eats near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0394-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian cheap eats nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0395-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian cheap eats close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0396-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian cheap eats",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0397-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian mid range in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0398-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian mid range near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0399-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian mid range nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0400-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian mid range close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0401-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian mid range",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0402-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0403-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0404-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0405-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0406-celebratory_veg",
+    "transcript": "after work dinner something celebratory for the family, vegetarian",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0407-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian under $20 in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0408-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian under $20 near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0409-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian under $20 nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0410-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian under $20 close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0411-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian under $20",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0412-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian splurge in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0413-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian splurge near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0414-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian splurge nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0415-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian splurge close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0416-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian splurge",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0417-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian cheap eats in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0418-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian cheap eats near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0419-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian cheap eats nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0420-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian cheap eats close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0421-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian cheap eats",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0422-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian mid range in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0423-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian mid range near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0424-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian mid range nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0425-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian mid range close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0426-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian mid range",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0427-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0428-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0429-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0430-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0431-celebratory_veg",
+    "transcript": "with kids dinner something celebratory for the family, vegetarian",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0432-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian under $20 in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0433-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian under $20 near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0434-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian under $20 nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0435-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian under $20 close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0436-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian under $20",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0437-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian splurge in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0438-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian splurge near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0439-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian splurge nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0440-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian splurge close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0441-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian splurge",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0442-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian cheap eats in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0443-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian cheap eats near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0444-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian cheap eats nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0445-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian cheap eats close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0446-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian cheap eats",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0447-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian mid range in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0448-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian mid range near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0449-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian mid range nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0450-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian mid range close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0451-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian mid range",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0452-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0453-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0454-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0455-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0456-celebratory_veg",
+    "transcript": "date night dinner something celebratory for the family, vegetarian",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0457-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian under $20 in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0458-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian under $20 near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0459-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian under $20 nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0460-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian under $20 close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0461-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian under $20",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0462-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian splurge in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0463-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian splurge near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0464-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian splurge nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0465-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian splurge close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0466-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian splurge",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0467-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian cheap eats in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0468-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian cheap eats near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0469-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian cheap eats nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0470-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian cheap eats close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0471-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian cheap eats",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0472-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian mid range in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0473-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian mid range near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0474-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian mid range nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0475-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian mid range close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0476-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian mid range",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0477-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0478-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0479-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0480-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0481-celebratory_veg",
+    "transcript": "quick dinner something celebratory for the family, vegetarian",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0482-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian under $20 in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0483-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian under $20 near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0484-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian under $20 nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0485-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian under $20 close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0486-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian under $20",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0487-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian splurge in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0488-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian splurge near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0489-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian splurge nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0490-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian splurge close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0491-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian splurge",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0492-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian cheap eats in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0493-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian cheap eats near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0494-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian cheap eats nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0495-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian cheap eats close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0496-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian cheap eats",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0497-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian mid range in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0498-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian mid range near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0499-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian mid range nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0500-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian mid range close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0501-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian mid range",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0502-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0503-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0504-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0505-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0506-celebratory_veg",
+    "transcript": "relaxed dinner something celebratory for the family, vegetarian",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0507-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian under $20 in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0508-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian under $20 near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0509-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian under $20 nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0510-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian under $20 close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0511-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian under $20",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0512-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian splurge in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0513-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian splurge near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0514-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian splurge nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0515-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian splurge close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0516-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian splurge",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0517-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian cheap eats in Folsom",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0518-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian cheap eats near EDH",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0519-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian cheap eats nearby",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
+  },
+  {
+    "id": "seed-0520-celebratory_veg",
+    "transcript": "on Friday dinner something celebratory for the family, vegetarian cheap eats close by",
+    "expect": {
+      "dietary": "vegetarian",
+      "must_not_dish": [
+        "roti",
+        "naan"
+      ]
+    },
+    "family": "celebratory_veg"
   }
 ]

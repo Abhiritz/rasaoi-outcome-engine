@@ -7,4 +7,6 @@ export * from "./culinaryKnowledge";
 export * from "./culinaryRuntime";
 export * from "./modelRouter";
 export * from "./nutrition";
+export * from "./nutritionQuarantine";
+export * from "./glycemicLensAdapter";
 export * from "./telemetryFeedback";

@@ -4,6 +4,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { getDeviceId } from "./device";
+import { checkinToRating } from "./experimental/telemetryFeedback";
 import type { DialState } from "./veda";
 
 export type Path = "dine_in" | "pickup" | "delivery";
@@ -122,5 +123,34 @@ export async function submitCheckin(opts: {
     p_reorder: opts.reorder ?? null,
   });
   if (error) console.error("submitCheckin error:", error);
+
+  // ROE-016 EXP-T5: mirror check-in quality onto experimental feedback (staging closed-loop).
+  const rating = checkinToRating({
+    status: opts.status,
+    energy: opts.energy,
+    digestion: opts.digestion,
+  });
+  if (rating != null) {
+    void supabase
+      .from("experimental_outcome_feedback" as never)
+      .update({
+        checkin_rating: rating,
+        checkin_notes: [
+          opts.status,
+          opts.energy ? `energy=${opts.energy}` : null,
+          opts.digestion ? `digestion=${opts.digestion}` : null,
+          opts.reorder != null ? `reorder=${opts.reorder}` : null,
+        ]
+          .filter(Boolean)
+          .join("|"),
+      } as never)
+      .eq("id" as never, opts.id)
+      .then(({ error: mirrorErr }) => {
+        if (mirrorErr) {
+          console.debug("experimental checkin mirror skipped:", mirrorErr.message);
+        }
+      });
+  }
+
   clearPending();
 }

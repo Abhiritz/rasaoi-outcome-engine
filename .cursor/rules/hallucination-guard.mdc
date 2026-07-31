@@ -24,15 +24,17 @@ Agents MUST enforce these rules when changing intent parsing, scoring, pairings,
 | `inferred` | Matrix/heuristic/LLM with corroboration | Yes with caveats |
 | `speculative` | Unmapped ingredient, Apify-only, LLM guess | Enrich only on **exact** dish key match; never clinical claims |
 
-- Unmapped USDA ingredients → **quarantine**, never invent macros (`nutrition.ts`, `experimental_nutrition_quarantine`).
+- Unmapped USDA ingredients → **quarantine**, never invent macros (`nutrition.ts`, `nutritionQuarantine.ts`, `experimental_nutrition_quarantine`).
 - Dynamic culinary overlay (`culinaryRuntime.ts`) must **not** fuzzy-match speculative rows across restaurants.
+- Apify / menu-sync cron may write speculative knowledge only; promoting to `menu_items` requires explicit promote flags + Lab-equivalent review.
 
 ## Automated gates
 
 Before merge / promotion:
 
 - [ ] `npm test` — especially `pairings.test.ts`, `intentSanitize.test.ts`, `experimental.test.ts`
-- [ ] `npm run experimental:sim` — failures append `negative_guardrails.xml`; target ≥98% on expanded corpus
+- [x] `npm run experimental:sim` — **GATE PASS** 520 seeds @ 100% (≥98%) on staging branch (heuristic corpus; not a live LLM parse gate)
+- [ ] Formal plate soak recorded + stakeholder approve develop merge
 - [ ] Impact doc updated when guard surface changes: `docs/ROE-016-hallucination-guard-impact-analysis.md`
 
 ## Agent audit checklist (AI / scoring / experimental)
@@ -43,7 +45,8 @@ When touching `parse-intent`, `model-router`, `pairings`, `veda`, `glycemic`, `e
 2. Confirm sanitize path still runs **after** routed LLM call.
 3. Confirm static culinary fallback when remote hydrate fails.
 4. Confirm no new public SELECT on sensitive telemetry without RPC review.
-5. Document findings in impact analysis §Post-implementation audit.
+5. Confirm Apify/webhook paths do not auto-promote speculative rows onto plates.
+6. Document findings in impact analysis §Post-implementation audit.
 
 ## References
 
@@ -51,3 +54,4 @@ When touching `parse-intent`, `model-router`, `pairings`, `veda`, `glycemic`, `e
 - `docs/impact_analysis_experimental_infra.md`
 - `CONFLICT_RESOLUTION_REPORTS.md` (IP-FIX / CRS-003 history)
 - `scripts/experimental/fixtures/negative_guardrails.xml`
+- `docs/experimental/tickets/README.md` (EXP-T1–T11)

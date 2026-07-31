@@ -33,13 +33,14 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 | `functions/_shared/ai-client.ts` | Gemini client (`geminiToolCall`, `geminiJsonObject`); reads `GEMINI_API_KEY` |
 | `functions/_shared/dietary.ts` | DIET-001 taxonomy: diet classes, modifiers, normalization, gatekeeper logic |
 | `functions/_shared/intent-sanitize.ts` | [ROE-007]/[ROE-008] transcript grounding, celebratory/carrier, `buildRestatedIntent` — sync with `src/lib/intentSanitize.ts` |
-| `functions/_shared/model-router.ts` | **[ROE-016 sandbox]** LiteLLM-class gateway tool-call — **not** wired into prod functions yet |
+| `functions/_shared/model-router.ts` | **[ROE-016]** LiteLLM-class gateway — **wired** into `parse-intent`, `estimate-glycemic`, `ingest-menu` on staging (Gemini fallback always). Non-Gemini providers only when staging secrets + `EXPERIMENTAL_MODEL_ROUTER=true` |
+| `functions/experimental-apify-webhook/` | **[ROE-016]** Apify normalize/upsert → `experimental_dish_knowledge` (`speculative`); supports batch payloads from Actor cron |
 
 **Sync pairs:**
 - `functions/_shared/dietary.ts` ↔ `src/lib/dietary.ts` — both must change together.
 - `functions/_shared/intent-sanitize.ts` ↔ `src/lib/intentSanitize.ts` — both must change together.
 
-**Experimental schema:** `supabase/migrations_experimental/` — Docker-only; never `db push` to production until promotion checklist (`docs/impact_analysis_experimental_infra.md`).
+**Experimental schema:** `supabase/migrations_experimental/` — apply on **staging** only (`npm run experimental:apply-schema`). Never `db push` experimental SQL to production (`kiugplotjcnmpwjlxajc`). Staging project: `aotlzhdgnvovvqxmgyyx`. Migrations include pgvector knowledge, staging RLS, nutrition quarantine upsert, feedback check-in update. Runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`. Apify cron: `docs/experimental/APIFY_CLI_CRON_SETUP.md` (knowledge-only; no auto `menu_items`).
 
 **Deno config:** `functions/deno.json`, `functions/import_map.json` (NPM imports for Gemini + Supabase JS).
 
