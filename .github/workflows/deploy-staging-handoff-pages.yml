@@ -1,0 +1,57 @@
+# Deploy ROE-016 staging stakeholder handoff to GitHub Pages
+name: Deploy staging handoff pages
+
+on:
+  push:
+    branches: [staging]
+    paths:
+      - "docs/experimental/ROE-016-staging-stakeholder-handoff.html"
+      - "docs/experimental/ROE-016-staging-stakeholder-handoff.pdf"
+      - ".github/workflows/deploy-staging-handoff-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-staging-handoff
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assemble Pages site
+        run: |
+          mkdir -p _site
+          cp docs/experimental/ROE-016-staging-stakeholder-handoff.html _site/index.html
+          if [ -f docs/experimental/ROE-016-staging-stakeholder-handoff.pdf ]; then
+            cp docs/experimental/ROE-016-staging-stakeholder-handoff.pdf _site/ROE-016-staging-stakeholder-handoff.pdf
+          fi
+          printf '%s\n' \
+            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Rasaoi staging handoff</title></head>' \
+            '<body style="font-family:system-ui;padding:2rem">' \
+            '<p><a href="./">Open stakeholder handoff</a></p>' \
+            '<p><a href="./ROE-016-staging-stakeholder-handoff.pdf">Download PDF</a></p>' \
+            '</body></html>' > _site/links.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

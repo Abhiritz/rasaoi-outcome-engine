@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Rasaoi Staging Handoff — ROE-016</title>
+  <style>
+    @page { size: Letter; margin: 0.65in; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Calibri, Arial, sans-serif;
+      color: #1a1a1a;
+      line-height: 1.45;
+      font-size: 11pt;
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0.4in 0.5in 0.6in;
+    }
+    h1 {
+      font-size: 20pt;
+      margin: 0 0 0.15em;
+      color: #0f3d2e;
+      letter-spacing: -0.02em;
+    }
+    h2 {
+      font-size: 13.5pt;
+      margin: 1.35em 0 0.45em;
+      color: #0f3d2e;
+      border-bottom: 2px solid #c4a35a;
+      padding-bottom: 0.2em;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-size: 11.5pt;
+      margin: 1em 0 0.35em;
+      color: #1f4d3a;
+      page-break-after: avoid;
+    }
+    .sub {
+      color: #444;
+      font-size: 10.5pt;
+      margin: 0 0 1em;
+    }
+    .banner {
+      background: #f3f7f4;
+      border-left: 4px solid #0f3d2e;
+      padding: 0.7em 0.9em;
+      margin: 0.8em 0 1.2em;
+    }
+    .banner strong { color: #0f3d2e; }
+    .meta {
+      display: grid;
+      grid-template-columns: 1.1fr 1.9fr;
+      gap: 0.25em 0.75em;
+      font-size: 10pt;
+      margin: 0.6em 0 1em;
+    }
+    .meta dt { font-weight: 600; color: #333; }
+    .meta dd { margin: 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+      margin: 0.5em 0 1em;
+      page-break-inside: auto;
+    }
+    th, td {
+      border: 1px solid #c9d4cc;
+      padding: 0.4em 0.5em;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #0f3d2e;
+      color: #fff;
+      font-weight: 600;
+    }
+    tr:nth-child(even) td { background: #f7faf8; }
+    tr { page-break-inside: avoid; }
+    ul, ol { margin: 0.35em 0 0.8em; padding-left: 1.25em; }
+    li { margin: 0.25em 0; }
+    .callout {
+      background: #fff8e8;
+      border: 1px solid #e0c878;
+      padding: 0.65em 0.85em;
+      margin: 0.8em 0;
+      font-size: 10.5pt;
+    }
+    .ok { color: #0f6b3a; font-weight: 600; }
+    .wait { color: #9a5b00; font-weight: 600; }
+    .footer {
+      margin-top: 1.6em;
+      padding-top: 0.6em;
+      border-top: 1px solid #ccc;
+      font-size: 9pt;
+      color: #555;
+    }
+    .feat {
+      border: 1px solid #d5e0d8;
+      border-radius: 4px;
+      padding: 0.65em 0.8em;
+      margin: 0.55em 0;
+      page-break-inside: avoid;
+      background: #fcfdfc;
+    }
+    .feat h3 { margin-top: 0; }
+    .tag {
+      display: inline-block;
+      font-size: 8.5pt;
+      font-weight: 600;
+      background: #e6f0ea;
+      color: #0f3d2e;
+      padding: 0.1em 0.45em;
+      border-radius: 3px;
+      margin-right: 0.35em;
+    }
+    a { color: #0f3d2e; }
+  </style>
+</head>
+<body>
+
+  <h1>Rasaoi Staging Handoff</h1>
+  <p class="sub">Simple guide for stakeholders · Ticket <strong>ROE-016</strong> (Experimental staging) · 31 July 2026</p>
+
+  <div class="banner">
+    <strong>Bottom line:</strong> A safe <em>practice</em> website is live so we can try big new features
+    without touching the real customer site. Production is unchanged.
+    Staging Ask → Reading was checked and works.
+  </div>
+
+  <dl class="meta">
+    <dt>Staging website</dt>
+    <dd><a href="https://v0-rasaoi-staging.vercel.app">https://v0-rasaoi-staging.vercel.app</a></dd>
+    <dt>Real (production) site</dt>
+    <dd><a href="https://rasaoi-delta.vercel.app">https://rasaoi-delta.vercel.app</a> — not changed by this work</dd>
+    <dt>Staging data home</dt>
+    <dd>Separate Supabase project (<code>aotlzhdgnvovvqxmgyyx</code>)</dd>
+    <dt>Latest ship</dt>
+    <dd>Commit <code>cd6be34</code> · Vercel deploy succeeded (31 Jul 2026)</dd>
+    <dt>Not ready yet</dt>
+    <dd>Merge into main product branch (<code>develop</code>) — waiting on a final plate soak + your OK</dd>
+  </dl>
+
+  <h2>1. Why we built staging</h2>
+  <p>
+    Rasaoi ranks restaurants and builds meal “plates” from real menus.
+    New AI and data features are powerful — and risky if they invent dishes or break the live app.
+  </p>
+  <p>
+    Staging is a <strong>copy playground</strong>: same kind of app, separate servers, separate data.
+    We turn new features <strong>on</strong> there first. Production stays on the proven path until you approve.
+  </p>
+
+  <h2>2. Advantage comparison (old vs staging)</h2>
+  <p>Plain language: what production does today vs what staging adds, and why it helps.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:18%">Feature</th>
+        <th style="width:27%">Before (production today)</th>
+        <th style="width:27%">After (staging now)</th>
+        <th style="width:28%">Advantage for Rasaoi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Safe place to try changes</strong></td>
+        <td>Most tests hit the same live path or local machines.</td>
+        <td>Own website + own database. Flags on only for staging.</td>
+        <td>We can break things safely. Customers never feel experiments.</td>
+      </tr>
+      <tr>
+        <td><strong>Which AI model answers Ask</strong></td>
+        <td>Always Gemini only.</td>
+        <td>Smart router can try other models; if they fail, Gemini still answers.</td>
+        <td>Less lock-in to one vendor. Better uptime. Room to pick cheaper/faster models later.</td>
+      </tr>
+      <tr>
+        <td><strong>Dish knowledge for ranking</strong></td>
+        <td>Fixed file built offline (<code>culinary-index.json</code>). Slow to refresh.</td>
+        <td>Live database overlay of dish knowledge on top of that file.</td>
+        <td>Menus and nutrition facts can update without a full rebuild. Ranking stays richer.</td>
+      </tr>
+      <tr>
+        <td><strong>Nutrition / blood-sugar help</strong></td>
+        <td>Heuristics + Gemini estimates. Gaps can be guessed.</td>
+        <td>3-step food breakdown; unknown bits go to a <em>quarantine</em> (held aside). Linked into the GL lens.</td>
+        <td>Honest about missing data. Less fake nutrition. Safer for wellness claims.</td>
+      </tr>
+      <tr>
+        <td><strong>Learning from user feedback</strong></td>
+        <td>Check-ins are write-only. Hard for tools to read safely.</td>
+        <td>Secure mirror + script turns weak ratings into written “don’t do this again” rules.</td>
+        <td>Closed loop: real user pain becomes automated test cases.</td>
+      </tr>
+      <tr>
+        <td><strong>Stress-test for bad / weird Asks</strong></td>
+        <td>Small manual checks.</td>
+        <td>520 chaotic test Asks; simulator scored <strong>100%</strong> (goal was ≥98%).</td>
+        <td>Catch invented dishes and regional mistakes before they hit users.</td>
+      </tr>
+      <tr>
+        <td><strong>Keeping menus fresh</strong></td>
+        <td>Lab / Firecrawl / manual ingest.</td>
+        <td>Weekly Apify job + webhook; knowledge updates first. Live menu publish needs a human promote step.</td>
+        <td>Automation without silent menu inventing. Catalog stays trustworthy.</td>
+      </tr>
+      <tr>
+        <td><strong>Secrets &amp; keys</strong></td>
+        <td>Prod env only.</td>
+        <td>Separate <code>.env.experimental</code> + staging secrets (USDA, OpenAI, Anthropic, Apify…).</td>
+        <td>Keys never mix with production. Easier to revoke staging-only access.</td>
+      </tr>
+      <tr>
+        <td><strong>Ship process</strong></td>
+        <td>Prod CI on <code>develop</code> / <code>main</code>.</td>
+        <td>Dedicated GitHub Action deploys staging branch → <a href="https://v0-rasaoi-staging.vercel.app">v0-rasaoi-staging.vercel.app</a>.</td>
+        <td>Every staging push can auto-update the practice site.</td>
+      </tr>
+      <tr>
+        <td><strong>Guardrails policy</strong></td>
+        <td>Pairings rules in code + tests.</td>
+        <td>Same rules + standing “no invented dishes” Cursor policy + impact audits.</td>
+        <td>Agents and humans share one clear “do not invent plates” contract.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. Features live on staging (detail)</h2>
+
+  <div class="feat">
+    <h3><span class="tag">EXP-T8</span> Dedicated staging site</h3>
+    <p><strong>What:</strong> https://v0-rasaoi-staging.vercel.app talks only to staging Supabase.</p>
+    <p><strong>Advantage:</strong> Zero risk to rasaoi-delta. Stakeholders can click the same Ask → Reading flow.</p>
+  </div>
+
+  <div class="feat">
+    <h3><span class="tag">EXP-T2 / T10</span> Model router</h3>
+    <p><strong>What:</strong> Ask, glycemic, and menu ingest go through a router. Gemini is the safety net.</p>
+    <p><strong>Advantage:</strong> We can trial OpenAI/Anthropic on staging without stranding users if a key fails.</p>
+  </div>
+
+  <div class="feat">
+    <h3><span class="tag">EXP-T1</span> Dynamic culinary overlay</h3>
+    <p><strong>What:</strong> Reading loads dish knowledge from staging Postgres and overlays the static index.</p>
+    <p><strong>Advantage:</strong> Fresher dish facts. If remote load fails, the old static file still works.</p>
+  </div>
+
+  <div class="feat">
+    <h3><span class="tag">EXP-T3</span> Nutrition quarantine + blood-sugar lens bind</h3>
+    <p><strong>What:</strong> Unmapped ingredients are stored as quarantine rows, not invented macros. Lens can use verified binds.</p>
+    <p><strong>Advantage:</strong> Better honesty for “healthy / GL” asks. No silent fake calories.</p>
+  </div>
+
+  <div class="feat">
+    <h3><span class="tag">EXP-T5</span> Telemetry → guardrails</h3>
+    <p><strong>What:</strong> Check-ins mirror to an experimental feedback table. A script can feed low scores into <code>negative_guardrails.xml</code>.</p>
+    <p><strong>Advantage:</strong> Bad outcomes become permanent regression tests.</p>
+  </div>
+
+  <div class="feat">
+    <h3><span class="tag">EXP-T4 / T9</span> Adversarial simulator (520 seeds)</h3>
+    <p><strong>What:</strong> Automated “chaotic Ask” corpus. Gate passed at <strong>100%</strong> (target ≥98%).</p>
+    <p><strong>Advantage:</strong> Proof we resist inventing Dal Tadka on South Indian menus, carrier-only plates, etc. (heuristic gate — not the same as live LLM QA).</p>
+  </div>
+
+  <div class="feat">
+    <h3><span class="tag">EXP-T7 / T11</span> Apify menu pipeline + weekly cron</h3>
+    <p><strong>What:</strong> Webhook + Actor schedule Sunday 06:00 UTC. Writes <em>knowledge</em> first. Promoting into live <code>menu_items</code> needs an explicit promote command.</p>
+    <p><strong>Advantage:</strong> Menus can refresh automatically while plates still come only from approved catalog dishes.</p>
+  </div>
+
+  <div class="feat">
+    <h3><span class="tag">EXP-T6</span> Isolation</h3>
+    <p><strong>What:</strong> Experimental migrations and secrets stay off production. Docker is optional; staging uses remote Supabase.</p>
+    <p><strong>Advantage:</strong> Clear wall between experiment and money path.</p>
+  </div>
+
+  <h2>4. What we did for this deployment (action log)</h2>
+  <p>Detailed list of work that got staging to today’s state (including the ship of commit <code>cd6be34</code>).</p>
+
+  <h3>A. Foundation</h3>
+  <ol>
+    <li>Opened ticket ROE-016 (EXP-001) with impact analysis and hallucination-guard docs.</li>
+    <li>Created sandboxed code under <code>src/lib/experimental/</code>, <code>scripts/experimental/</code>, <code>migrations_experimental/</code>.</li>
+    <li>Provisioned staging Supabase project and applied core + experimental schema (vector knowledge, RLS, later quarantine + feedback RPCs).</li>
+    <li>Backfilled ~772 culinary knowledge dishes; seeded ~18 Folsom/EDH Indian restaurants / ~642 dishes.</li>
+    <li>Verified Reading data path with <code>verify-reading</code> (PASS).</li>
+  </ol>
+
+  <h3>B. Product features on staging</h3>
+  <ol>
+    <li>Built model router (edge) with Gemini fallback; wired into parse-intent, estimate-glycemic, ingest-menu.</li>
+    <li>Turned on dynamic culinary hydrate + overlay on Reading when Vite experimental flags are true.</li>
+    <li>Added nutrition deconstruction CLI + quarantine persist + glycemic lens adapter.</li>
+    <li>Mirrored outcome check-ins into experimental feedback; added telemetry→guardrails script.</li>
+    <li>Expanded adversarial corpus to 520 seeds; simulator GATE PASS 100%.</li>
+    <li>Built menu export / mirror / scrape / promote scripts; extended Apify webhook for batch payloads.</li>
+    <li>Pushed Apify Actor and weekly schedule <code>rasaoi-weekly-menu-sync</code>.</li>
+  </ol>
+
+  <h3>C. Hosting &amp; CI</h3>
+  <ol>
+    <li>Created dedicated Vercel staging project (public URL: <a href="https://v0-rasaoi-staging.vercel.app">https://v0-rasaoi-staging.vercel.app</a>) — not the production project.</li>
+    <li>Added GitHub Action “Deploy staging preview” with staging Vite env + <code>VERCEL_STAGING_PROJECT_ID</code>.</li>
+    <li>Fixed staging CI / Vite framework settings so deploys succeed.</li>
+    <li>Set staging edge secrets (Gemini; optional OpenAI/Anthropic/Apify/USDA via experimental env).</li>
+    <li>Deployed edge functions including <code>experimental-apify-webhook</code>.</li>
+  </ol>
+
+  <h3>D. Quality &amp; safety</h3>
+  <ol>
+    <li>Standing Cursor rules: context-guard, hallucination-guard, ROE ticket flow.</li>
+    <li>Blocked speculative fuzzy dish matches across restaurants (G-01).</li>
+    <li>Kept dish-non-invention: plates still from menu / matrix, not from LLM text alone.</li>
+    <li>Ran Vitest (including experimental suite); Ask → Reading smoke confirmed by stakeholder.</li>
+    <li>Synced plan files, <code>project.md</code>, CURSOR guides, TODO / impact docs.</li>
+  </ol>
+
+  <h3>E. This latest ship (31 Jul 2026)</h3>
+  <ol>
+    <li>Committed <code>cd6be34</code> on branch <code>staging</code> (nutrition, telemetry, corpus, Apify, docs).</li>
+    <li>Pushed to <code>origin/staging</code>.</li>
+    <li>GitHub Action run succeeded → Vercel updated https://v0-rasaoi-staging.vercel.app.</li>
+  </ol>
+
+  <h2>5. What staging is <em>not</em> (important)</h2>
+  <ul>
+    <li>Not production. Do not treat staging data as customer truth.</li>
+    <li>Apify cron does <strong>not</strong> auto-publish scraped dishes onto live plates. Promote is manual on purpose.</li>
+    <li>Simulator 100% is a <strong>heuristic</strong> gate. We still want a short human “plate soak” (oceany / sweet / Jain / South Indian) before merge.</li>
+    <li>No merge to <code>develop</code> until you approve after that soak.</li>
+  </ul>
+
+  <div class="callout">
+    <strong>Ask of stakeholders:</strong>
+    Spend 10–15 minutes on the staging site with a few real Asks
+    (oceany, something sweet, Jain/birthday, South Indian).
+    Confirm plates look menu-true. Then say <span class="ok">Pass</span> or note issues.
+    After Pass, engineering can open the develop PR.
+  </div>
+
+  <h2>6. Quick links</h2>
+  <ul>
+    <li>Staging app: <a href="https://v0-rasaoi-staging.vercel.app">https://v0-rasaoi-staging.vercel.app</a></li>
+    <li>Production app: <a href="https://rasaoi-delta.vercel.app">https://rasaoi-delta.vercel.app</a></li>
+    <li>This handoff (GitHub Pages): <a href="https://abhiritz.github.io/rasaoi-outcome-engine/">https://abhiritz.github.io/rasaoi-outcome-engine/</a></li>
+    <li>PDF download: <a href="https://abhiritz.github.io/rasaoi-outcome-engine/ROE-016-staging-stakeholder-handoff.pdf">handoff PDF</a></li>
+    <li>Deploy run (latest): GitHub Actions → Deploy staging preview on <code>staging</code></li>
+    <li>Deep tech notes: <code>docs/impact_analysis_experimental_infra.md</code>, <code>docs/ROE-016-hallucination-guard-impact-analysis.md</code></li>
+    <li>Ticket board: <code>docs/experimental/tickets/README.md</code></li>
+  </ul>
+
+  <div class="footer">
+    Rasaoi Outcome Engine · ROE-016 / EXP-001 staging handoff · Prepared 31 July 2026 ·
+    Language kept simple for cross-team stakeholders ·
+    Status: staging <span class="ok">LIVE</span> · develop merge <span class="wait">WAITING ON SOAK</span>
+  </div>
+
+</body>
+</html>
