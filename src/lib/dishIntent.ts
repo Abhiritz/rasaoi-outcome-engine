@@ -29,7 +29,9 @@ const DESSERT_FAMILY = [
   "falooda", "halwa", "ladoo", "laddu", "jalebi", "barfi", "burfi", "payasam",
   "ice", "cream", "cake", "pudding", "brownie", "cookie", "pastry", "sorbet",
   "cheesecake", "tiramisu", "mochi", "gelato", "sundae", "parfait", "custard",
-  "shrikhand", "basundi", "phirni", "modak", "mysore", "pak",
+  "shrikhand", "basundi", "phirni", "modak",
+  // ROE-017: do NOT add bare "mysore"/"pak" — they false-match "Mysore Masala Dosa".
+  // Full sweet "Mysore pak" is covered by DESSERT_NAME + multi-word expand below.
 ];
 
 /** Conceptual → concrete menu tokens. */
@@ -51,6 +53,8 @@ const DISH_SYNONYMS: Record<string, string[]> = {
   desserts: DESSERT_FAMILY,
   mithai: ["mithai", "gulab", "jamun", "kheer", "rasmalai", "ladoo", "laddu", "jalebi", "barfi", "halwa"],
   treat: ["dessert", "mithai", "sweet", ...DESSERT_FAMILY.slice(0, 12)],
+  // Multi-word dessert only (never bare "mysore")
+  "mysore pak": ["mysore pak", "mysorepak", "mithai", "dessert"],
 };
 
 const COASTAL_TOKEN = /^(oceany|ocean|coastal|seafood|fish|shrimp|prawn|prawns|crab|lobster|salmon)$/;
@@ -108,11 +112,26 @@ export function isSweetDishIntent(phrase?: string): boolean {
 }
 
 export function isDessertDish(name: string, desc = ""): boolean {
-  // Savory fried / curry names must not count as dessert via description tokens like "pastry"
-  if (/\b(samosa|pakora|bhaji|kebab|tikka|biryani|curry|tandoori|chicken|lamb|goat|fish|shrimp)\b/i.test(name)) {
+  // Savory fried / curry / tiffin names must not count as dessert
+  if (
+    /\b(samosa|pakora|bhaji|kebab|tikka|biryani|curry|tandoori|chicken|lamb|goat|fish|shrimp|dosa|dosai|idli|idly|uttapam|vada|sambar|rasam)\b/i.test(
+      name,
+    )
+  ) {
     return false;
   }
   return DESSERT_NAME.test(`${name} ${desc}`);
+}
+
+/** ROE-017: true when dish text hits a hard-excluded ingredient/token. */
+export function dishHitsExclusion(name: string, desc = "", exclusions?: string[]): boolean {
+  if (!exclusions?.length) return false;
+  const t = `${name} ${desc}`.toLowerCase();
+  return exclusions.some((ex) => {
+    const e = ex.trim().toLowerCase();
+    if (!e) return false;
+    return new RegExp(`\\b${e.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(t);
+  });
 }
 
 export function isLightSweetDish(name: string, desc = ""): boolean {
@@ -145,4 +164,50 @@ export function intentMatchScore(name: string, desc: string, tokens: string[]): 
     score += 8;
   }
   return score;
+}
+
+/** ROE-018: rice is the vessel of the Ask (biryani / clay-pot rice / fried rice), not a side. */
+export const RICE_AS_MAIN_PATTERN =
+  /\b(clay[- ]?pot\s+rice|biryani|fried\s+rice|pulao|pilaf|khichdi|khichri|claypot)\b/i;
+
+export function isRiceAsMainIntent(phrase?: string): boolean {
+  if (!phrase) return false;
+  return RICE_AS_MAIN_PATTERN.test(phrase);
+}
+
+/**
+ * ROE-018: concrete named-dish Ask (not mood-only / bare craving words).
+ * Used to trigger honest "no exact dish" venue scoring.
+ */
+export function isNamedDishAsk(phrase?: string): boolean {
+  if (!phrase) return false;
+  const lc = phrase.toLowerCase().trim();
+  if (!lc || lc.length < 4) return false;
+  // Craving-only / category words alone are not "named dish" honesty mode
+  if (
+    /^(something\s+)?(sweet|spicy|healthy|light|oceany|coastal|seafood)\s*$/i.test(lc) ||
+    /^(dessert|mithai|treat)$/i.test(lc)
+  ) {
+    return false;
+  }
+  const tokens = expandDishTokens(phrase).filter((t) => t.length >= 3);
+  return tokens.length >= 2 || /\b(clay|pot|biryani|tikka|dosa|curry|noodle|pizza|burger|soup|salad)\b/i.test(lc);
+}
+
+/** Score how well a menu line matches intent tokens (0 = none). */
+export function namedDishMatchStrength(
+  name: string,
+  desc: string,
+  tokens: string[],
+): "exact" | "partial" | "none" {
+  if (!tokens.length) return "none";
+  const t = `${name} ${desc}`.toLowerCase();
+  const hits = tokens.filter((tok) => t.includes(tok));
+  if (!hits.length) return "none";
+  const ratio = hits.length / tokens.length;
+  // Multi-token asks (goat + clay + pot + rice): need majority overlap for exact
+  if (tokens.length >= 2 && ratio >= 0.5 && hits.length >= 2) return "exact";
+  if (tokens.length === 1 && hits.length === 1) return "exact";
+  if (ratio >= 0.34) return "partial";
+  return "none";
 }

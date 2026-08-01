@@ -10,3 +10,4 @@ export * from "./nutrition";
 export * from "./nutritionQuarantine";
 export * from "./glycemicLensAdapter";
 export * from "./telemetryFeedback";
+export { isDishOnRestaurantCatalog, normalizeDishKey } from "@/lib/catalogGuard";

@@ -9,6 +9,39 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-018] Catalog freshness & honest dish-match — implemented (staging path)
+
+Impact: `docs/ROE-018-catalog-freshness-honest-match-impact-analysis.md`  
+Branch: `feature/ROE-018-catalog-freshness-honest-match`
+
+- [x] Stakeholder / owner **approve** impact
+- [x] Branch from soak tip (includes ROE-017)
+- [x] Honest miss scoring / UI when named dish absent (`dishMatch`, cap ≤72, Closest label)
+- [x] Rice-as-main token hygiene
+- [x] Promote noise denylist (EXP-T11 sync)
+- [x] Staging SQL helper `scripts/personal/seed-bamboo-garden-clay-pot.sql`
+- [x] Vitest 120/120
+- [ ] Push feature branch; merge/push `staging`; run seed SQL on staging Supabase
+- [ ] Stakeholder re-soak “goat clay pot rice”
+- [ ] Still **no develop merge** until ROE-016 gate
+
+---
+
+## [ROE-017] Staging soak fixes — on feature branch (no develop merge)
+
+Impact: `docs/ROE-017-staging-soak-fixes-impact-analysis.md`  
+Branch: `feature/ROE-017-staging-soak-fixes` (from `origin/staging`)
+
+- [x] S-01 sweet → not Mysore Masala Dosa (`mysore`/`pak` token fix + dessert-only pick)
+- [x] S-02 “meat but not chicken” → `exclude_ingredients` hard strip
+- [x] S-03 catalog plate gate (menu ∪ matrix)
+- [x] S-04 telemetry audit trail + `experimental:verify-telemetry-loop`
+- [x] Vitest 116/116
+- [ ] Push / merge into `staging` + redeploy parse-intent on staging Supabase
+- [ ] Stakeholder re-soak Pass → then consider develop merge of ROE-016+017
+
+---
+
 ## [ROE-016] Experimental infra (EXP-001) — staging live (NO develop merge yet)
 
 Impact: `docs/impact_analysis_experimental_infra.md`  
@@ -18,7 +51,7 @@ Runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`
 Apify: `docs/experimental/APIFY_CLI_CRON_SETUP.md`  
 Tickets: `docs/experimental/tickets/README.md`  
 Tracker: `TODO_PROGRESS.md`  
-Site: https://rasaoi-i8.vercel.app · Supabase `aotlzhdgnvovvqxmgyyx`
+Site: https://v0-rasaoi-staging.vercel.app · Supabase `aotlzhdgnvovvqxmgyyx`
 
 - [x] Impact analysis + branch `feature/ROE-016-experimental-infra` (+ `staging` clone)
 - [x] Model router wired into parse-intent / estimate-glycemic / ingest-menu

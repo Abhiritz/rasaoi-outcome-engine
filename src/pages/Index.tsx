@@ -182,6 +182,7 @@ const Index = () => {
       intent?.filters?.cuisine,
       intent?.filters?.wellness_tags,
       intent?.filters?.dietary,
+      intent?.filters?.exclude_ingredients,
     );
     const filtered = cuisineFilter ? all.filter((s) => s.restaurant.cuisine === cuisineFilter) : all;
     const needsSort = (!cuisineFilter && intentCuisine) || lens;
@@ -217,6 +218,7 @@ const Index = () => {
       intent?.filters?.cuisine,
       intent?.filters?.wellness_tags,
       intent?.filters?.dietary,
+      intent?.filters?.exclude_ingredients,
     );
     const topRestaurants = all.slice(0, 8).map((s) => s.restaurant);
     const dishes = topRestaurants
@@ -302,6 +304,7 @@ const Index = () => {
         intent?.filters?.cuisine,
         intent?.filters?.wellness_tags,
         intent?.filters?.dietary,
+        intent?.filters?.exclude_ingredients,
       )[0];
       if (pinnedScored) hero = pinnedScored;
     }

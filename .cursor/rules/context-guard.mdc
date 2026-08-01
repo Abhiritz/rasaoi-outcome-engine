@@ -45,3 +45,4 @@ Read `.cursor/rules/hallucination-guard.mdc` when touching intent, pairings, sco
 - Adversarial sim gate: `npm run experimental:sim` — **PASS** on 520 seeds @ 100% heuristic (2026-07-31). Heuristic gate ≠ live LLM parse gate.
 - Apify weekly cron (`docs/experimental/APIFY_CLI_CRON_SETUP.md`) upserts **`experimental_dish_knowledge` only** — never auto-write live `menu_items` without explicit `--promote-menu-items --promote-commit`.
 - Develop merge still locked until **formal plate soak** + stakeholder approval (`docs/ROE-016-hallucination-guard-impact-analysis.md`).
+- **ROE-017 soak fixes** (on staging branch path): negation → `exclude_ingredients`; catalog plate gate; sweet-token fix (`mysore`/`pak`); telemetry verify script — see `docs/ROE-017-staging-soak-fixes-impact-analysis.md`.

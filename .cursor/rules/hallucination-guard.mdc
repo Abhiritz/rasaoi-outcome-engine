@@ -13,9 +13,11 @@ Agents MUST enforce these rules when changing intent parsing, scoring, pairings,
 2. **Carrier vs dish** — Roti/naan/bread alone is never a Best Match for mood/celebration (ROE-003). Carriers may be inferred staples; dishes may not.
 3. **Regional integrity** — South Indian kitchens never receive North bank inventions (Dal Tadka, Butter Chicken, …) (ROE-004).
 4. **Catalog integrity** — Do not re-seed or invent venues (ROE-005 Mythaai retired).
-5. **Intent grounding** — `parse-intent` output MUST pass `_shared/intent-sanitize.ts` (`mergeDietary`, carrier strip, transcript cuisine/dish extract). Any model router MUST still call `validateAndSanitize` / `sanitizeFilters` after LLM output.
+5. **Intent grounding** — `parse-intent` output MUST pass `_shared/intent-sanitize.ts` (`mergeDietary`, carrier strip, transcript cuisine/dish extract, **`exclude_ingredients` from negation**). Any model router MUST still call `validateAndSanitize` / `sanitizeFilters` after LLM output.
 6. **No Healthy cuisine** — “something healthy” elevates purity only; never `filters.cuisine = Healthy` (ROE-007).
-
+7. **Negation hard-exclude (ROE-017)** — “not / no / excluding / without / but not \<ingredient\>” → `filters.exclude_ingredients`; plates and ranking must strip matching dishes.
+8. **Catalog plate gate (ROE-017)** — every Best/Clean/Heritage dish must exist on that venue’s `menu_items` or culinary matrix; cuisine-bank invents without catalog ID are dropped.
+9. **Honest named-dish miss (ROE-018)** — when a concrete dish Ask has no catalog hit, do not present ~100% as exact-dish success; prefer Closest / No exact dish. Refresh menus via promote — never invent the missing dish onto another kitchen.
 ## Speculation tiers (nutrition & knowledge)
 
 | Tier | Meaning | Allowed in UI/ranking |
@@ -46,7 +48,9 @@ When touching `parse-intent`, `model-router`, `pairings`, `veda`, `glycemic`, `e
 3. Confirm static culinary fallback when remote hydrate fails.
 4. Confirm no new public SELECT on sensitive telemetry without RPC review.
 5. Confirm Apify/webhook paths do not auto-promote speculative rows onto plates.
-6. Document findings in impact analysis §Post-implementation audit.
+6. Confirm sweet intent never false-matches via bare tokens like `mysore` on dosa names.
+7. Confirm negated ingredients appear in `exclude_ingredients` and are stripped from plates.
+8. Document findings in impact analysis §Post-implementation audit.
 
 ## References
 
@@ -55,3 +59,4 @@ When touching `parse-intent`, `model-router`, `pairings`, `veda`, `glycemic`, `e
 - `CONFLICT_RESOLUTION_REPORTS.md` (IP-FIX / CRS-003 history)
 - `scripts/experimental/fixtures/negative_guardrails.xml`
 - `docs/experimental/tickets/README.md` (EXP-T1–T11)
+- `docs/ROE-017-staging-soak-fixes-impact-analysis.md` (sweet / negation / catalog / telemetry soak fixes)

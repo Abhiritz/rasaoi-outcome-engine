@@ -26,6 +26,8 @@ import {
   stagingClient,
   upsertKnowledge,
   dishKey,
+  filterMenuNoise,
+  isMenuNoiseName,
 } from "./menu-sync-lib.mjs";
 
 function hasFlag(name) {
@@ -135,11 +137,12 @@ async function main() {
       if (error) throw new Error(error.message);
 
       const byName = new Map();
-      for (const m of t.menu_items) {
+      for (const m of filterMenuNoise(t.menu_items)) {
         if (m?.name) byName.set(dishKey(m.name), m);
       }
       let added = 0;
       for (const k of knowledge ?? []) {
+        if (isMenuNoiseName(k.dish_name)) continue;
         const dk = dishKey(k.dish_name);
         if (byName.has(dk)) continue;
         byName.set(dk, {
@@ -150,9 +153,9 @@ async function main() {
         });
         added++;
       }
-      const merged = [...byName.values()];
+      const merged = filterMenuNoise([...byName.values()]);
       console.log(
-        `PROMOTE-MENU ${t.restaurant_name}: ${t.menu_item_count} → ${merged.length} (+${added})`,
+        `PROMOTE-MENU ${t.restaurant_name}: ${t.menu_item_count} → ${merged.length} (+${added}, noise filtered)`,
       );
       if (!dryRun && added > 0) {
         const { error: upErr } = await sb

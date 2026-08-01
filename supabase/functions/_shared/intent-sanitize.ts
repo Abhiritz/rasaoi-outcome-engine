@@ -128,6 +128,86 @@ export function isSweetCravingTranscript(transcript: string): boolean {
 }
 
 /**
+ * ROE-017: Culinary keywords negated by "not" / "no" / "excluding" / "without" / "but not".
+ * Pushed into filters.exclude_ingredients — hard strip from ranking + plates.
+ */
+const EXCLUDABLE_INGREDIENTS = [
+  "chicken",
+  "mutton",
+  "lamb",
+  "goat",
+  "beef",
+  "pork",
+  "fish",
+  "shrimp",
+  "prawn",
+  "seafood",
+  "egg",
+  "eggs",
+  "paneer",
+  "dairy",
+  "onion",
+  "garlic",
+  "mushroom",
+  "peanut",
+  "nuts",
+  "gluten",
+  "shellfish",
+] as const;
+
+const NEGATION_EXCLUDE_PATTERNS: RegExp[] = [
+  /\b(?:but\s+)?not\s+(\w[\w-]*)/gi,
+  /\bno\s+(\w[\w-]*)/gi,
+  /\bexcluding\s+(\w[\w-]*)/gi,
+  /\bwithout\s+(\w[\w-]*)/gi,
+  /\bexcept\s+(?:for\s+)?(\w[\w-]*)/gi,
+];
+
+export function extractExcludedIngredients(transcript: string): string[] {
+  const found = new Set<string>();
+  const t = transcript.toLowerCase();
+  for (const re of NEGATION_EXCLUDE_PATTERNS) {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(t)) !== null) {
+      const raw = (m[1] ?? "").toLowerCase().replace(/[^a-z-]/g, "");
+      if (!raw || raw === "veg" || raw === "vegetarian") continue;
+      const canonical = EXCLUDABLE_INGREDIENTS.find(
+        (c) => c === raw || c === `${raw}s` || `${c}s` === raw || (c === "prawn" && raw === "prawns"),
+      );
+      if (canonical) found.add(canonical === "eggs" ? "egg" : canonical);
+      else if (EXCLUDABLE_INGREDIENTS.includes(raw as (typeof EXCLUDABLE_INGREDIENTS)[number])) {
+        found.add(raw === "eggs" ? "egg" : raw);
+      }
+    }
+  }
+  for (const c of EXCLUDABLE_INGREDIENTS) {
+    if (new RegExp(`\\bnon[- ]?${c}\\b`, "i").test(t)) found.add(c === "eggs" ? "egg" : c);
+  }
+  return [...found];
+}
+
+export function mergeExcludedIngredients(
+  modelList: unknown,
+  transcript: string,
+): string[] | undefined {
+  const fromTx = extractExcludedIngredients(transcript);
+  const fromModel: string[] = [];
+  if (Array.isArray(modelList)) {
+    for (const x of modelList) {
+      if (typeof x === "string" && x.trim()) {
+        const s = x.trim().toLowerCase();
+        if (EXCLUDABLE_INGREDIENTS.includes(s as (typeof EXCLUDABLE_INGREDIENTS)[number]) || s === "egg") {
+          fromModel.push(s === "eggs" ? "egg" : s);
+        }
+      }
+    }
+  }
+  const merged = [...new Set([...fromTx, ...fromModel])];
+  return merged.length ? merged : undefined;
+}
+
+/**
  * Prefer named sweets / explicit dessert phrases.
  * Does not blank the whole dish extract when dietary is present (violative dishes
  * are stripped later in sanitizeFilters).

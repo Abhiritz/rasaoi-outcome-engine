@@ -4,7 +4,10 @@ import {
   isCelebratoryMoodIntent,
   isCoastalDishIntent,
   isDessertDish,
+  isNamedDishAsk,
+  isRiceAsMainIntent,
   isSweetDishIntent,
+  namedDishMatchStrength,
   needsPlateCarrier,
 } from "./dishIntent";
 
@@ -50,5 +53,17 @@ describe("dishIntent (CRS-003a + ROE-001 + ROE-003)", () => {
     expect(isCelebratoryMoodIntent("Celebrating mood with friends")).toBe(true);
     expect(isCelebratoryMoodIntent("date night")).toBe(true);
     expect(isCelebratoryMoodIntent("something sweet")).toBe(false);
+  });
+
+  it("ROE-018: rice-as-main keeps rice in expand path and named match", () => {
+    expect(isRiceAsMainIntent("goat clay pot rice")).toBe(true);
+    expect(isRiceAsMainIntent("chicken biryani")).toBe(true);
+    expect(isRiceAsMainIntent("extra rice on the side")).toBe(false);
+    expect(isNamedDishAsk("goat clay pot rice")).toBe(true);
+    expect(isNamedDishAsk("something sweet")).toBe(false);
+    expect(namedDishMatchStrength("Clay-Pot Rice (Goat)", "", expandDishTokens("goat clay pot rice"))).toBe(
+      "exact",
+    );
+    expect(namedDishMatchStrength("Chicken 65", "", expandDishTokens("goat clay pot rice"))).toBe("none");
   });
 });

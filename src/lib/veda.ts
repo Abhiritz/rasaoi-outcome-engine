@@ -1,5 +1,12 @@
 import type { Tables } from "@/integrations/supabase/types";
-import { expandDishTokens } from "./dishIntent";
+import {
+  dishHitsExclusion,
+  expandDishTokens,
+  isDessertDish,
+  isNamedDishAsk,
+  isSweetDishIntent,
+  namedDishMatchStrength,
+} from "./dishIntent";
 
 export type Restaurant = Tables<"restaurants">;
 export type Promo = Tables<"active_promos">;
@@ -24,6 +31,8 @@ export interface ScoredRestaurant {
   why: string;
   inferenceTags: string[];
   promo?: Promo;
+  /** ROE-018: how well this venue's catalog matches a named dish Ask. */
+  dishMatch?: "exact" | "partial" | "none";
 }
 
 /** Canonical wellness slugs from parse-intent (must stay in sync with edge function). */
@@ -323,6 +332,7 @@ export function scoreRestaurants(
   intentCuisine?: string,
   intentWellnessTags?: WellnessTag[] | unknown[],
   intentDietary?: StrictDietaryTag | unknown,
+  excludeIngredients?: string[],
 ): ScoredRestaurant[] {
   const eState = energyState(dials.energy);
   const cState = contextState(dials.context);
@@ -331,6 +341,9 @@ export function scoreRestaurants(
   const cuisineIntent = intentCuisine?.trim();
   const wellnessTags = normalizeWellnessTags(intentWellnessTags);
   const strictDietary = normalizeDietaryIntent(intentDietary);
+  const exclusions = (excludeIngredients ?? []).map((x) => x.toLowerCase()).filter(Boolean);
+  const sweetIntent = isSweetDishIntent(intentDish);
+  const namedAsk = isNamedDishAsk(intentDish);
 
   // --- Hard-exclusion gatekeeper: non-compliant venues never enter ranking ---
   const eligible = strictDietary
@@ -341,6 +354,7 @@ export function scoreRestaurants(
     .map((r) => {
       let score = 50;
       const tags: string[] = [];
+      let dishMatch: "exact" | "partial" | "none" | undefined;
       if (strictDietary) {
         tags.push(`${strictDietary} compliant`);
       }
@@ -368,43 +382,77 @@ export function scoreRestaurants(
         const menu = Array.isArray((r as Restaurant & { menu_items?: { name?: string; description?: string }[] }).menu_items)
           ? (r as Restaurant & { menu_items?: { name?: string; description?: string }[] }).menu_items!
           : [];
-        let nameHit = false;
-        let descHit = false;
+        let bestStrength: "exact" | "partial" | "none" = "none";
+
         for (const m of menu) {
-          const n = (m?.name ?? "").toLowerCase();
-          const d = (m?.description ?? "").toLowerCase();
-          if (dTokens.some((t) => n.includes(t))) { nameHit = true; break; }
-          if (!descHit && dTokens.some((t) => d.includes(t))) descHit = true;
+          if (dishHitsExclusion(m?.name ?? "", m?.description ?? "", exclusions)) continue;
+          if (sweetIntent && !isDessertDish(m?.name ?? "", m?.description ?? "")) continue;
+          const s = namedDishMatchStrength(m?.name ?? "", m?.description ?? "", dTokens);
+          if (s === "exact") {
+            bestStrength = "exact";
+            break;
+          }
+          if (s === "partial" && bestStrength === "none") bestStrength = "partial";
         }
-        // Also check signature_dish text as a name-equivalent.
-        if (!nameHit) {
-          const sig = (r.signature_dish ?? "").toLowerCase();
-          if (dTokens.some((t) => sig.includes(t))) nameHit = true;
+
+        if (bestStrength !== "exact") {
+          const sig = r.signature_dish ?? "";
+          if (sig && !dishHitsExclusion(sig, "", exclusions) && !(sweetIntent && !isDessertDish(sig))) {
+            const s = namedDishMatchStrength(sig, "", dTokens);
+            if (s === "exact") bestStrength = "exact";
+            else if (s === "partial" && bestStrength === "none") bestStrength = "partial";
+          }
         }
-        // Culinary matrix: dish listed under this venue even when menu_items is thin.
-        if (!nameHit) {
+
+        if (bestStrength !== "exact") {
           const mxRest = lookupRestaurant(r.name);
           if (mxRest) {
             for (const dish of Object.values(mxRest.dishes)) {
-              const n = dish.name.toLowerCase();
-              if (dTokens.some((t) => n.includes(t))) {
-                nameHit = true;
+              if (dishHitsExclusion(dish.name, "", exclusions)) continue;
+              if (sweetIntent && !isDessertDish(dish.name)) continue;
+              const s = namedDishMatchStrength(dish.name, "", dTokens);
+              if (s === "exact") {
+                bestStrength = "exact";
                 tags.push("Matrix dish");
                 break;
+              }
+              if (s === "partial" && bestStrength === "none") {
+                bestStrength = "partial";
+                tags.push("Matrix dish");
               }
             }
           }
         }
-        if (nameHit) {
-          score += 48;
-          tags.push(`Has ${dTokens[0]}`);
-        } else if (descHit) {
+
+        dishMatch = bestStrength;
+        if (bestStrength === "exact") {
+          score += sweetIntent ? 56 : 52;
+          tags.push(sweetIntent ? "Has dessert" : `Has ${dTokens[0]}`);
+        } else if (bestStrength === "partial") {
           score += 22;
           tags.push(`Mentions ${dTokens[0]}`);
         } else {
-          // Strong miss penalty so high-purity non-matches don't bury seafood kitchens (CRS-003a).
           score -= 28;
-          tags.push("No dish match");
+          tags.push(sweetIntent ? "No dessert match" : "No dish match");
+          if (namedAsk) {
+            tags.push("No exact dish");
+          }
+        }
+      }
+
+      // ROE-017: hard demote venues whose remaining protein hits are all excluded
+      if (exclusions.length) {
+        const menu = Array.isArray((r as Restaurant & { menu_items?: { name?: string; description?: string }[] }).menu_items)
+          ? (r as Restaurant & { menu_items?: { name?: string; description?: string }[] }).menu_items!
+          : [];
+        const survivors = menu.filter(
+          (m) => !dishHitsExclusion(m?.name ?? "", m?.description ?? "", exclusions),
+        );
+        if (menu.length > 0 && survivors.length === 0) {
+          score -= 60;
+          tags.push("Excluded ingredients only");
+        } else if (survivors.length < menu.length) {
+          tags.push("Exclusion applied");
         }
       }
 
@@ -534,6 +582,12 @@ export function scoreRestaurants(
 
       score = Math.max(0, Math.min(100, Math.round(score)));
 
+      // ROE-018: never present a naked ~100% when the named dish is absent from catalog
+      if (namedAsk && dishMatch === "none") {
+        score = Math.min(score, 72);
+        if (!tags.includes("No exact dish")) tags.push("No exact dish");
+      }
+
       const stateLabel = lowRecovery
         ? "low recovery state"
         : eState === "peak" ? "peak energy state" : "moderate energy state";
@@ -548,12 +602,17 @@ export function scoreRestaurants(
         ? ` Plus, there is an active benefit today: ${(promo as Promo & { description?: string }).description ?? promo.label}.`
         : "";
 
+      const honestySuffix =
+        namedAsk && dishMatch === "none"
+          ? ` Note: "${intentDish}" was not found on this kitchen's stored menu — showing a closest fit, not an exact dish match.`
+          : "";
+
       const why = sigInMenu
-        ? `I've selected the ${r.signature_dish} from ${r.name} because it provides ${r.dish_outcome} — aligned to your ${stateLabel}, ${cState} context, and ${purityLabel}-tier purity preference.${promoSuffix}`
-        : `Fetching verified menu data for ${r.name}… In the meantime, ${r.name} aligns to your ${stateLabel}, ${cState} context, and ${purityLabel}-tier purity preference.${promoSuffix}`;
+        ? `I've selected the ${r.signature_dish} from ${r.name} because it provides ${r.dish_outcome} — aligned to your ${stateLabel}, ${cState} context, and ${purityLabel}-tier purity preference.${promoSuffix}${honestySuffix}`
+        : `Fetching verified menu data for ${r.name}… In the meantime, ${r.name} aligns to your ${stateLabel}, ${cState} context, and ${purityLabel}-tier purity preference.${promoSuffix}${honestySuffix}`;
 
       const restaurantOut = strictDietary ? sanitizeRestaurantForDietary(r, strictDietary) : r;
-      return { restaurant: restaurantOut, score, why, inferenceTags: tags, promo };
+      return { restaurant: restaurantOut, score, why, inferenceTags: tags, promo, dishMatch };
     })
     .sort((a, b) => b.score - a.score);
 }

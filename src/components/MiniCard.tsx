@@ -36,6 +36,11 @@ export const MiniCard = ({
         <span className="serif text-base text-gold font-semibold leading-none">
           {score}
           <span className="text-[10px] align-top ml-0.5">%</span>
+          {item.dishMatch === "none" && (
+            <span className="block text-[8px] uppercase tracking-wider text-card/70 font-sans font-medium mt-0.5">
+              Closest
+            </span>
+          )}
         </span>
       </div>
 

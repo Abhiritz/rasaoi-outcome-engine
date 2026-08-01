@@ -4,18 +4,17 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: 592093d
-last_verified_date: 2026-07-31
-branch: staging
+last_verified_commit: pending-ROE-017
+last_verified_date: 2026-08-01
+branch: feature/ROE-017-staging-soak-fixes
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-016 (EXP-001): staging LIVE — Vercel rasaoi-i8 (https://rasaoi-i8.vercel.app)
-  + Supabase aotlzhdgnvovvqxmgyyx; model-router + dynamic culinary ON; Ask verified.
-  EXP-T1–T11 done: nutrition quarantine+lens, telemetry→guardrails, corpus 520@100%
-  sim GATE PASS, menu sync scripts, Apify weekly cron (knowledge-only upserts).
-  Develop merge still locked (formal plate soak + approval). Companion branch
-  feature/ROE-016-experimental-infra. ROE-013 Ask chips on develop; ROE-014 unmerged;
-  ROE-015 queued; next free ROE-017.
+  ROE-017 staging soak fixes on top of ROE-016: sweet-token mysore/pak fix,
+  exclude_ingredients negation, catalog plate gate, telemetry verify loop.
+  Staging URL for stakeholders: https://v0-rasaoi-staging.vercel.app.
+  ROE-018: catalog freshness + honest dish-match (clay-pot RCA) on
+  feature/ROE-018-catalog-freshness-honest-match — dishMatch honesty, rice-as-main
+  tokens, promote noise filter, Bamboo Garden seed SQL. Next free: ROE-019.
 ```
 
 ---
@@ -88,9 +87,10 @@ sequenceDiagram
 
 | Domain | Canonical files |
 |--------|-----------------|
-| Intent parsing | `src/lib/intent.ts`, `src/lib/intentSanitize.ts`, `supabase/functions/parse-intent/index.ts` |
+| Intent parsing | `src/lib/intent.ts`, `src/lib/intentSanitize.ts`, `supabase/functions/parse-intent/index.ts` (ROE-017 `exclude_ingredients`) |
 | Restaurant scoring | `src/lib/veda.ts`, `src/lib/vedaDishes.ts` |
 | Culinary matrix index | `src/lib/culinaryIndex.ts`, `src/data/culinary-index.json` (built by `scripts/personal/build-culinary-index.mjs`) |
+| Catalog plate gate | `src/lib/catalogGuard.ts` — menu ∪ matrix membership before plate return |
 | Experimental dynamic knowledge **(SANDBOX)** | `src/lib/experimental/culinaryKnowledge.ts` — static default; Postgres/vector only when flagged |
 | Experimental nutrition loop **(SANDBOX)** | `src/lib/experimental/nutrition.ts`, `nutritionQuarantine.ts`, `glycemicLensAdapter.ts`, `scripts/experimental/nutrition-deconstruction.mjs` |
 | Experimental telemetry read-path **(SANDBOX)** | `src/lib/experimental/telemetryFeedback.ts` — browser blocked; service-role scripts + `experimental:telemetry-guardrails` |
@@ -230,7 +230,7 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 | `npm run experimental:sim` | Adversarial simulator (≥98% gate; 520 seeds) |
 | `npm run experimental:expand-corpus` | Regenerate chaotic seed corpus |
 | `npm run experimental:nutrition` | USDA nutrition deconstruction CLI |
-| `npm run experimental:telemetry-guardrails` | Feedback → `negative_guardrails.xml` |
+| `npm run experimental:verify-telemetry-loop` | Dry-run (or `--live`) check-in → feedback → guardrails proof |
 | `npm run experimental:export-menu-targets` | Export Folsom/EDH Indian menu targets |
 | `npm run experimental:sync-menus` | Mirror/scrape → knowledge; promote needs flags |
 | `npm run experimental:apify-push` | Push Apify Actor (`npx apify-cli`) |
@@ -286,7 +286,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-017** (ROE-016 = experimental infra **staging live** on `staging` / `feature/ROE-016-experimental-infra`; sim ≥98% met; develop merge locked on soak).
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` (or `origin/staging` for ROE-016 soak hotfixes) → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-018** (ROE-017 = staging soak fixes; ROE-016 staging live; develop merge locked on soak).
 
 | Trigger | Action |
 |---------|--------|

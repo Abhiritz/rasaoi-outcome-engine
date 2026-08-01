@@ -38,6 +38,45 @@ export function dishKey(name) {
     .trim();
 }
 
+/** ROE-018: DoorDash/footer chrome that must never enter menu_items. */
+const MENU_NOISE_NAMES = new Set(
+  [
+    "about us",
+    "accessibility",
+    "account details",
+    "become a dasher",
+    "careers",
+    "company blog",
+    "dasher central",
+    "doordash merchant",
+    "engineering blog",
+    "get dashers for deliveries",
+    "get doordash for business",
+    "gift cards",
+    "glassdoor",
+    "help",
+    "investors",
+    "linkedin",
+    "merchant blog",
+    "newsroom",
+    "promotions",
+    "sign in for saved address",
+    "the most commonly ordered items and dishes from this store",
+  ].map(dishKey),
+);
+
+export function isMenuNoiseName(name) {
+  const k = dishKey(name);
+  if (!k || k.length < 2) return true;
+  if (MENU_NOISE_NAMES.has(k)) return true;
+  if (/^(sign in|terms|privacy|download|app store|play store)/i.test(String(name ?? ""))) return true;
+  return false;
+}
+
+export function filterMenuNoise(items) {
+  return (items ?? []).filter((m) => m?.name && !isMenuNoiseName(m.name));
+}
+
 export function stagingClient() {
   loadExperimentalEnv();
   const url = process.env.EXPERIMENTAL_SUPABASE_URL?.trim();
@@ -93,7 +132,7 @@ export async function listIndianFolsomEdhTargets(sb) {
 export function menuItemsToKnowledgeRows(restaurantName, menuItems, source = "lab_ingest") {
   const restaurant_key = dishKey(restaurantName);
   const rows = [];
-  for (const m of menuItems) {
+  for (const m of filterMenuNoise(menuItems)) {
     const dish_name = String(m?.name || "").trim();
     if (!dish_name) continue;
     rows.push({

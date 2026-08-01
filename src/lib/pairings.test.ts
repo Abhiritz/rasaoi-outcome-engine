@@ -204,17 +204,77 @@ describe("ROE-001 sweet / dessert coherence", () => {
     expect(picks[1].dish.toLowerCase()).not.toMatch(/samosa/);
   });
 
-  it("does not invent a dish named Sweet on kitchens without dessert", () => {
+  it("ROE-017: Best Match prefers Gulab Jamun over Mysore Masala Dosa for something sweet", () => {
     const r = mockRestaurant({
-      id: "savory",
-      name: "Savory Only",
+      id: "sweet-dosa",
+      name: "South Sweet House",
       cuisine: "Indian",
-      signature_dish: "Dal Tadka",
-      menu_items: [{ name: "Dal Tadka" }, { name: "Tandoori Chicken" }],
+      signature_dish: "Mysore Masala Dosa",
+      menu_items: [
+        { name: "Mysore Masala Dosa", description: "crispy dosa with potato" },
+        { name: "Gulab Jamun", description: "warm mithai in syrup" },
+        { name: "Sambar", description: "lentil stew" },
+      ],
     });
-    const picks = buildTripleOutcome(r, dials, { dish: "dessert" });
-    expect(picks[0].dish.toLowerCase()).not.toBe("sweet");
-    expect(picks[0].dish.toLowerCase()).not.toBe("dessert");
+    const picks = buildTripleOutcome(r, dials, { dish: "something sweet" });
+    expect(picks[0].dish.toLowerCase()).toMatch(/gulab|jamun/);
+    expect(picks[0].dish.toLowerCase()).not.toMatch(/dosa/);
+  });
+
+  it("ROE-017: exclude_ingredients strips chicken from Best Match", () => {
+    const r = mockRestaurant({
+      id: "meat-not-chicken",
+      name: "Meat House",
+      cuisine: "Indian",
+      signature_dish: "Chicken 65",
+      menu_items: [
+        { name: "Chicken 65", description: "spicy fried chicken" },
+        { name: "Lamb Rogan Josh", description: "goat curry" },
+        { name: "Fish Tikka", description: "tandoor fish" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, {
+      dish: "meat",
+      exclude_ingredients: ["chicken"],
+    });
+    expect(picks[0].dish.toLowerCase()).not.toMatch(/chicken/);
+    expect(picks.every((p) => !/chicken/i.test(p.dish))).toBe(true);
+  });
+});
+
+describe("ROE-018 catalog plate guard", () => {
+  const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 70 };
+
+  it("does not keep cuisine-bank invents off the menu", () => {
+    const r = mockRestaurant({
+      id: "thin",
+      name: "Dosa Only Kitchen",
+      cuisine: "Indian",
+      signature_dish: "Masala Dosa",
+      menu_items: [{ name: "Masala Dosa" }, { name: "Idli Sambar" }],
+    });
+    const picks = buildTripleOutcome(r, dials);
+    for (const p of picks) {
+      if (/chef's selection|jain-compliant/i.test(p.dish)) continue;
+      expect(p.dish.toLowerCase()).toMatch(/dosa|idli|sambar/);
+    }
+  });
+
+  it("Best Match prefers Clay-Pot Rice (Goat) when on menu for that Ask", () => {
+    const r = mockRestaurant({
+      id: "bamboo",
+      name: "Chennai Bamboo Garden",
+      cuisine: "Indian",
+      signature_dish: "Chicken 65",
+      menu_items: [
+        { name: "Chicken 65" },
+        { name: "Clay-Pot Rice (Goat)", description: "goat clay pot" },
+        { name: "Street Style Chicken 65 Noodles" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, { dish: "goat clay pot rice" });
+    expect(picks[0].dish.toLowerCase()).toMatch(/clay|goat/);
+    expect(picks[0].dish.toLowerCase()).not.toBe("chicken 65");
   });
 });
 

@@ -12,6 +12,7 @@ import {
   isSweetCravingTranscript,
   mergeBloodSugarLens,
   mergeDietary,
+  mergeExcludedIngredients,
   type StrictDietary,
 } from "../_shared/intent-sanitize.ts";
 
@@ -38,7 +39,8 @@ MAPPING RULES:
 - "quick", "alone", "grab something", "in a rush" → context 5-20
 - "healthy", "clean", "good for me", "organic" → purity 75-90. NEVER set filters.cuisine to "Healthy" from the word healthy alone (purity-only).
 - "indulgent", "treat", "comfort food" → purity 20-40
-- "sweet", "something sweet", "dessert", "mithai", "gulab jamun", "kheer" → purity 25-45 (treat band); set filters.dish to "dessert" or the named sweet. NEVER invent a savory dish. Do not treat "sweet potato" as dessert.
+- "sweet", "something sweet", "dessert", "mithai", "gulab jamun", "kheer" → purity 25-45 (treat band); set filters.dish to "dessert" or the named sweet. NEVER invent a savory dish. Do not treat "sweet potato" as dessert. Prefer mithai/dessert over dosa/curry.
+- "meat but not chicken", "no shrimp", "excluding pork", "without egg" → put the negated ingredient in filters.exclude_ingredients (hard ban). Still allow other proteins when user asked for meat.
 - "diabetic", "diabetes", "low sugar", "low carb", "blood sugar", "keto" → set lens="blood_sugar". Prefer explicit metabolic language; bare "no bread/naan" alone is not enough.
 - Explicit dollar amounts: $25 → budget 0, $35 → budget 25, $50 → budget 50, $75 → budget 70, $100+ → budget 85+
 - No budget mentioned → budget 50 (neutral)
@@ -158,6 +160,12 @@ const TOOL_SCHEMA = {
               description:
                 "Strict religious/lifestyle diet. REQUIRED when user mentions Jain, vegan, vegetarian, eggetarian, halal, jhatka, kosher, or non-veg. Never drop for birthday/event context.",
             },
+            exclude_ingredients: {
+              type: "array",
+              items: { type: "string" },
+              description:
+                "Hard-excluded ingredients from negation (e.g. 'not chicken' → ['chicken']). Always include when user says not/no/excluding/without for a food.",
+            },
           },
           additionalProperties: false,
         },
@@ -208,6 +216,7 @@ interface FilterPayload {
   wellness_tags?: WellnessTag[];
   culture_tag?: string;
   dietary?: StrictDietary;
+  exclude_ingredients?: string[];
 }
 
 interface ParsedPayload {
@@ -300,6 +309,7 @@ function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
   const transcriptCulture = extractCultureFromTranscript(transcript);
   const wellness_tags = mergeWellnessTags(raw.wellness_tags, transcript);
   const dietary = mergeDietary(raw.dietary, transcript);
+  const exclude_ingredients = mergeExcludedIngredients(raw.exclude_ingredients, transcript);
 
   let cuisine =
     typeof raw.cuisine === "string" && raw.cuisine.trim() ? normalizeCuisineLabel(raw.cuisine) : undefined;
@@ -392,6 +402,7 @@ function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
   if (wellness_tags.length) out.wellness_tags = wellness_tags;
   if (culture_tag) out.culture_tag = culture_tag;
   if (dietary) out.dietary = dietary;
+  if (exclude_ingredients?.length) out.exclude_ingredients = exclude_ingredients;
   return out;
 }
 

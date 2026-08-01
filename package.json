@@ -19,6 +19,7 @@
     "experimental:apify-push": "npm install --prefix scripts/experimental/apify-rasaoi-menu-sync && npx --yes apify-cli push --dir scripts/experimental/apify-rasaoi-menu-sync",
     "experimental:nutrition": "node scripts/experimental/nutrition-deconstruction.mjs",
     "experimental:telemetry-guardrails": "node scripts/experimental/telemetry-feedback-to-guardrails.mjs",
+    "experimental:verify-telemetry-loop": "node scripts/experimental/verify-telemetry-checkin-loop.mjs",
     "experimental:apify-stub": "node scripts/experimental/apify-webhook-stub.mjs",
     "experimental:apply-schema": "node scripts/experimental/apply-experimental-schema.mjs --yes",
     "experimental:backfill": "node scripts/experimental/backfill-culinary-knowledge.mjs",
