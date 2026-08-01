@@ -29,7 +29,9 @@ const DESSERT_FAMILY = [
   "falooda", "halwa", "ladoo", "laddu", "jalebi", "barfi", "burfi", "payasam",
   "ice", "cream", "cake", "pudding", "brownie", "cookie", "pastry", "sorbet",
   "cheesecake", "tiramisu", "mochi", "gelato", "sundae", "parfait", "custard",
-  "shrikhand", "basundi", "phirni", "modak", "mysore", "pak",
+  "shrikhand", "basundi", "phirni", "modak",
+  // ROE-017: do NOT add bare "mysore"/"pak" — they false-match "Mysore Masala Dosa".
+  // Full sweet "Mysore pak" is covered by DESSERT_NAME + multi-word expand below.
 ];
 
 /** Conceptual → concrete menu tokens. */
@@ -51,6 +53,8 @@ const DISH_SYNONYMS: Record<string, string[]> = {
   desserts: DESSERT_FAMILY,
   mithai: ["mithai", "gulab", "jamun", "kheer", "rasmalai", "ladoo", "laddu", "jalebi", "barfi", "halwa"],
   treat: ["dessert", "mithai", "sweet", ...DESSERT_FAMILY.slice(0, 12)],
+  // Multi-word dessert only (never bare "mysore")
+  "mysore pak": ["mysore pak", "mysorepak", "mithai", "dessert"],
 };
 
 const COASTAL_TOKEN = /^(oceany|ocean|coastal|seafood|fish|shrimp|prawn|prawns|crab|lobster|salmon)$/;
@@ -108,11 +112,26 @@ export function isSweetDishIntent(phrase?: string): boolean {
 }
 
 export function isDessertDish(name: string, desc = ""): boolean {
-  // Savory fried / curry names must not count as dessert via description tokens like "pastry"
-  if (/\b(samosa|pakora|bhaji|kebab|tikka|biryani|curry|tandoori|chicken|lamb|goat|fish|shrimp)\b/i.test(name)) {
+  // Savory fried / curry / tiffin names must not count as dessert
+  if (
+    /\b(samosa|pakora|bhaji|kebab|tikka|biryani|curry|tandoori|chicken|lamb|goat|fish|shrimp|dosa|dosai|idli|idly|uttapam|vada|sambar|rasam)\b/i.test(
+      name,
+    )
+  ) {
     return false;
   }
   return DESSERT_NAME.test(`${name} ${desc}`);
+}
+
+/** ROE-017: true when dish text hits a hard-excluded ingredient/token. */
+export function dishHitsExclusion(name: string, desc = "", exclusions?: string[]): boolean {
+  if (!exclusions?.length) return false;
+  const t = `${name} ${desc}`.toLowerCase();
+  return exclusions.some((ex) => {
+    const e = ex.trim().toLowerCase();
+    if (!e) return false;
+    return new RegExp(`\\b${e.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(t);
+  });
 }
 
 export function isLightSweetDish(name: string, desc = ""): boolean {

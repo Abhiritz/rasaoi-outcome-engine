@@ -4,8 +4,10 @@ import {
   celebratoryMoodDials,
   celebratoryRestatedIntent,
   clampDial,
+  extractExcludedIngredients,
   isCelebratoryMoodIntent,
   isDietaryIntent,
+  mergeExcludedIngredients,
   RESTATED_MAX_CHARS,
   WELLNESS_TAG_SLUGS,
 } from "@/lib/intentSanitize";
@@ -30,6 +32,8 @@ export interface ParsedIntent {
     )[];
     culture_tag?: string;
     dietary?: "jain" | "vegan" | "vegetarian" | "eggetarian" | "halal" | "jhatka" | "kosher" | "non_veg";
+    /** ROE-017: hard-excluded ingredients from negation ("not chicken", …). */
+    exclude_ingredients?: string[];
   };
   confidence: "high" | "medium" | "low";
   lens?: "blood_sugar";
@@ -94,6 +98,13 @@ export function normalizeParsedIntent(raw: unknown, transcript: string): ParsedI
   }
   if (isDietaryIntent(filtersRaw.dietary)) {
     filters.dietary = filtersRaw.dietary;
+  }
+  const excludeMerged = mergeExcludedIngredients(filtersRaw.exclude_ingredients, transcript);
+  if (excludeMerged?.length) {
+    filters.exclude_ingredients = excludeMerged;
+  } else {
+    const fromTx = extractExcludedIngredients(transcript);
+    if (fromTx.length) filters.exclude_ingredients = fromTx;
   }
   if (Array.isArray(filtersRaw.wellness_tags)) {
     const tags = WELLNESS_TAG_SLUGS.filter((t) =>

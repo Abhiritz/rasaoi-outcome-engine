@@ -122,7 +122,14 @@ export async function submitCheckin(opts: {
     p_digestion: opts.digestion ?? null,
     p_reorder: opts.reorder ?? null,
   });
-  if (error) console.error("submitCheckin error:", error);
+  if (error) {
+    console.error("submitCheckin error:", error);
+    console.warn("[ROE-016 telemetry] record_outcome_checkin failed", {
+      id: opts.id,
+      status: opts.status,
+      message: error.message,
+    });
+  }
 
   // ROE-016 EXP-T5: mirror check-in quality onto experimental feedback (staging closed-loop).
   const rating = checkinToRating({
@@ -131,25 +138,42 @@ export async function submitCheckin(opts: {
     digestion: opts.digestion,
   });
   if (rating != null) {
+    const notes = [
+      opts.status,
+      opts.energy ? `energy=${opts.energy}` : null,
+      opts.digestion ? `digestion=${opts.digestion}` : null,
+      opts.reorder != null ? `reorder=${opts.reorder}` : null,
+    ]
+      .filter(Boolean)
+      .join("|");
+    console.info("[ROE-016 telemetry] check-in → experimental_outcome_feedback", {
+      id: opts.id,
+      checkin_rating: rating,
+      checkin_notes: notes,
+    });
     void supabase
       .from("experimental_outcome_feedback" as never)
       .update({
         checkin_rating: rating,
-        checkin_notes: [
-          opts.status,
-          opts.energy ? `energy=${opts.energy}` : null,
-          opts.digestion ? `digestion=${opts.digestion}` : null,
-          opts.reorder != null ? `reorder=${opts.reorder}` : null,
-        ]
-          .filter(Boolean)
-          .join("|"),
+        checkin_notes: notes,
       } as never)
       .eq("id" as never, opts.id)
       .then(({ error: mirrorErr }) => {
         if (mirrorErr) {
-          console.debug("experimental checkin mirror skipped:", mirrorErr.message);
+          console.warn("[ROE-016 telemetry] checkin mirror FAILED", {
+            id: opts.id,
+            rating,
+            message: mirrorErr.message,
+          });
+        } else {
+          console.info("[ROE-016 telemetry] checkin mirror OK", { id: opts.id, rating });
         }
       });
+  } else {
+    console.info("[ROE-016 telemetry] check-in skipped mirror (no rating)", {
+      id: opts.id,
+      status: opts.status,
+    });
   }
 
   clearPending();

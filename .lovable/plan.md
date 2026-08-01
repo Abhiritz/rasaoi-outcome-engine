@@ -2,7 +2,8 @@
 
 | Priority | Ticket | Status |
 |----------|--------|--------|
-| — | **[ROE-016] Experimental infra (EXP-001)** | **Staging live** on `staging` + `feature/ROE-016-experimental-infra` → https://rasaoi-i8.vercel.app — sim **GATE PASS** 520@100%; **no develop merge** until formal plate soak + your approval |
+| — | **[ROE-017] Staging soak fixes** | Branch `feature/ROE-017-staging-soak-fixes` from staging — sweet/negation/catalog/telemetry; commit ready for staging push |
+| — | **[ROE-016] Experimental infra (EXP-001)** | **Staging live** → https://v0-rasaoi-staging.vercel.app — sim GATE PASS 520@100%; **no develop merge** until formal plate soak + your approval |
 | 1 | **[ROE-014] Intent situational layers** | Unmerged branch (queues ROE-015 Ask situational labels) |
 | — | Optional: ROE-006 **+perf** (matrix-first GL) | Later |
 
@@ -17,7 +18,7 @@
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-016-experimental-infra` |
 
 Rules:
-1. **ROE-NNN** is the global serial — never skip. Next free after this queue: **ROE-017**.
+1. **ROE-NNN** is the global serial — never skip. Next free after this queue: **ROE-018**.
 2. **ABC-NNN** is the workstream alias when one exists (`ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles use the **same** format.
 4. Commit subject: dual tags then a short imperative phrase.
@@ -32,7 +33,8 @@ Apify cron: `docs/experimental/APIFY_CLI_CRON_SETUP.md`
 Progress: `TODO_PROGRESS.md`
 
 ### In progress / shipping
-- **[ROE-016] Experimental infra (EXP-001)** — staging live (https://rasaoi-i8.vercel.app); EXP-T1–T11 done; Apify weekly cron live; **soak + develop merge** still locked
+- **[ROE-017] Staging soak fixes** — implemented on `feature/ROE-017-staging-soak-fixes` (sweet/negation/catalog/telemetry)
+- **[ROE-016] Experimental infra (EXP-001)** — staging live (https://v0-rasaoi-staging.vercel.app); EXP-T1–T11 done; Apify weekly cron live; **develop merge** still locked
 - **[ROE-014] Intent situational layers** — unmerged
 
 ### Board QA

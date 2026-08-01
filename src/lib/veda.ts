@@ -1,5 +1,5 @@
 import type { Tables } from "@/integrations/supabase/types";
-import { expandDishTokens } from "./dishIntent";
+import { dishHitsExclusion, expandDishTokens, isDessertDish, isSweetDishIntent } from "./dishIntent";
 
 export type Restaurant = Tables<"restaurants">;
 export type Promo = Tables<"active_promos">;
@@ -323,6 +323,7 @@ export function scoreRestaurants(
   intentCuisine?: string,
   intentWellnessTags?: WellnessTag[] | unknown[],
   intentDietary?: StrictDietaryTag | unknown,
+  excludeIngredients?: string[],
 ): ScoredRestaurant[] {
   const eState = energyState(dials.energy);
   const cState = contextState(dials.context);
@@ -331,6 +332,8 @@ export function scoreRestaurants(
   const cuisineIntent = intentCuisine?.trim();
   const wellnessTags = normalizeWellnessTags(intentWellnessTags);
   const strictDietary = normalizeDietaryIntent(intentDietary);
+  const exclusions = (excludeIngredients ?? []).map((x) => x.toLowerCase()).filter(Boolean);
+  const sweetIntent = isSweetDishIntent(intentDish);
 
   // --- Hard-exclusion gatekeeper: non-compliant venues never enter ranking ---
   const eligible = strictDietary
@@ -370,25 +373,49 @@ export function scoreRestaurants(
           : [];
         let nameHit = false;
         let descHit = false;
+        let dessertHit = false;
         for (const m of menu) {
+          if (dishHitsExclusion(m?.name ?? "", m?.description ?? "", exclusions)) continue;
           const n = (m?.name ?? "").toLowerCase();
           const d = (m?.description ?? "").toLowerCase();
+          if (sweetIntent && isDessertDish(m?.name ?? "", m?.description ?? "")) dessertHit = true;
+          // Sweet: only count dessert name hits as strong match (ROE-017)
+          if (sweetIntent) {
+            if (isDessertDish(m?.name ?? "", m?.description ?? "") && dTokens.some((t) => n.includes(t) || isDessertDish(m?.name ?? ""))) {
+              nameHit = true;
+              break;
+            }
+            continue;
+          }
           if (dTokens.some((t) => n.includes(t))) { nameHit = true; break; }
           if (!descHit && dTokens.some((t) => d.includes(t))) descHit = true;
         }
+        if (sweetIntent && !nameHit) {
+          for (const m of menu) {
+            if (dishHitsExclusion(m?.name ?? "", m?.description ?? "", exclusions)) continue;
+            if (isDessertDish(m?.name ?? "", m?.description ?? "")) {
+              dessertHit = true;
+              nameHit = true;
+              break;
+            }
+          }
+        }
         // Also check signature_dish text as a name-equivalent.
-        if (!nameHit) {
+        if (!nameHit && !sweetIntent) {
           const sig = (r.signature_dish ?? "").toLowerCase();
-          if (dTokens.some((t) => sig.includes(t))) nameHit = true;
+          if (!dishHitsExclusion(sig, "", exclusions) && dTokens.some((t) => sig.includes(t))) nameHit = true;
         }
         // Culinary matrix: dish listed under this venue even when menu_items is thin.
         if (!nameHit) {
           const mxRest = lookupRestaurant(r.name);
           if (mxRest) {
             for (const dish of Object.values(mxRest.dishes)) {
+              if (dishHitsExclusion(dish.name, "", exclusions)) continue;
+              if (sweetIntent && !isDessertDish(dish.name)) continue;
               const n = dish.name.toLowerCase();
-              if (dTokens.some((t) => n.includes(t))) {
+              if (sweetIntent ? isDessertDish(dish.name) : dTokens.some((t) => n.includes(t))) {
                 nameHit = true;
+                if (sweetIntent) dessertHit = true;
                 tags.push("Matrix dish");
                 break;
               }
@@ -396,15 +423,31 @@ export function scoreRestaurants(
           }
         }
         if (nameHit) {
-          score += 48;
-          tags.push(`Has ${dTokens[0]}`);
-        } else if (descHit) {
+          score += sweetIntent && dessertHit ? 56 : 48;
+          tags.push(sweetIntent ? "Has dessert" : `Has ${dTokens[0]}`);
+        } else if (descHit && !sweetIntent) {
           score += 22;
           tags.push(`Mentions ${dTokens[0]}`);
         } else {
           // Strong miss penalty so high-purity non-matches don't bury seafood kitchens (CRS-003a).
           score -= 28;
-          tags.push("No dish match");
+          tags.push(sweetIntent ? "No dessert match" : "No dish match");
+        }
+      }
+
+      // ROE-017: hard demote venues whose remaining protein hits are all excluded
+      if (exclusions.length) {
+        const menu = Array.isArray((r as Restaurant & { menu_items?: { name?: string; description?: string }[] }).menu_items)
+          ? (r as Restaurant & { menu_items?: { name?: string; description?: string }[] }).menu_items!
+          : [];
+        const survivors = menu.filter(
+          (m) => !dishHitsExclusion(m?.name ?? "", m?.description ?? "", exclusions),
+        );
+        if (menu.length > 0 && survivors.length === 0) {
+          score -= 60;
+          tags.push("Excluded ingredients only");
+        } else if (survivors.length < menu.length) {
+          tags.push("Exclusion applied");
         }
       }
 

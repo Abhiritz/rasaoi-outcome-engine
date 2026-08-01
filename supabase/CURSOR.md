@@ -40,7 +40,7 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 - `functions/_shared/dietary.ts` ↔ `src/lib/dietary.ts` — both must change together.
 - `functions/_shared/intent-sanitize.ts` ↔ `src/lib/intentSanitize.ts` — both must change together.
 
-**Experimental schema:** `supabase/migrations_experimental/` — apply on **staging** only (`npm run experimental:apply-schema`). Never `db push` experimental SQL to production (`kiugplotjcnmpwjlxajc`). Staging project: `aotlzhdgnvovvqxmgyyx`. Migrations include pgvector knowledge, staging RLS, nutrition quarantine upsert, feedback check-in update. Runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`. Apify cron: `docs/experimental/APIFY_CLI_CRON_SETUP.md` (knowledge-only; no auto `menu_items`).
+**Experimental schema:** `supabase/migrations_experimental/` — apply on **staging** only (`npm run experimental:apply-schema`). Never `db push` experimental SQL to production (`kiugplotjcnmpwjlxajc`). Staging project: `aotlzhdgnvovvqxmgyyx`. Migrations include pgvector knowledge, staging RLS, nutrition quarantine upsert, feedback check-in update. Runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`. Apify cron: `docs/experimental/APIFY_CLI_CRON_SETUP.md` (knowledge-only; no auto `menu_items`). Stakeholder URL: https://v0-rasaoi-staging.vercel.app. **ROE-017:** parse-intent sanitize adds `exclude_ingredients` (sync with `intent-sanitize.ts`).
 
 **Deno config:** `functions/deno.json`, `functions/import_map.json` (NPM imports for Gemini + Supabase JS).
 

@@ -5,6 +5,7 @@ import {
   extractCuisineFromTranscript,
   extractDietaryFromTranscript,
   extractDishFromTranscript,
+  extractExcludedIngredients,
   isCarrierOnlyDish,
   isCelebratoryMoodIntent,
   isSweetCravingTranscript,
@@ -127,6 +128,18 @@ describe("intentSanitize [ROE-008] (IP-FIX-002)", () => {
       });
       expect(r.toLowerCase()).toMatch(/vegetarian|sweet/);
       expect(r.length).toBeLessThanOrEqual(RESTATED_MAX_CHARS);
+    });
+  });
+
+  describe("exclude_ingredients [ROE-017]", () => {
+    it("extracts chicken from meat but not chicken", () => {
+      expect(extractExcludedIngredients("meat but not chicken")).toEqual(["chicken"]);
+    });
+
+    it("extracts multiple negations", () => {
+      expect(extractExcludedIngredients("no shrimp and excluding pork")).toEqual(
+        expect.arrayContaining(["shrimp", "pork"]),
+      );
     });
   });
 });

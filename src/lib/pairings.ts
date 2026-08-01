@@ -33,8 +33,10 @@ import {
   isStarchAccompaniment,
   isSweetDishIntent,
   needsPlateCarrier,
+  dishHitsExclusion,
   STARCH_COMPLETE,
 } from "./dishIntent";
+import { isDishOnRestaurantCatalog } from "./catalogGuard";
 
 export type DishRole = "Base" | "Booster" | "Carrier";
 
@@ -877,6 +879,8 @@ function whyFor(
 export interface IntentHint {
   dish?: string; // raw user phrase, e.g. "spicy shrimp curry with naan"
   dietary?: StrictDietaryTag;
+  /** ROE-017: hard-excluded ingredients from negation. */
+  exclude_ingredients?: string[];
 }
 
 const STOP = new Set([
@@ -927,24 +931,39 @@ function intentMatchScore(name: string, desc: string, tokens: string[]): number 
   return sharedIntentMatchScore(name, desc, tokens);
 }
 
-function pickByIntent(menu: MenuItem[], tokens: string[], exclude: Set<string>): MenuItem | undefined {
+function pickByIntent(
+  menu: MenuItem[],
+  tokens: string[],
+  exclude: Set<string>,
+  opts?: { sweet?: boolean; excludeIngredients?: string[] },
+): MenuItem | undefined {
   if (!tokens.length) return undefined;
   let best: MenuItem | undefined;
   let bestScore = 0;
   for (const m of menu) {
     if (exclude.has(m.name.toLowerCase())) continue;
     if (isCarrierOnlyDish(m.name, m.description ?? "")) continue;
+    if (dishHitsExclusion(m.name, m.description ?? "", opts?.excludeIngredients)) continue;
+    if (opts?.sweet && !isDessertDish(m.name, m.description ?? "")) continue;
     const s = intentMatchScore(m.name, m.description ?? "", tokens);
-    if (s > bestScore) { bestScore = s; best = m; }
+    if (s > bestScore) {
+      bestScore = s;
+      best = m;
+    }
   }
   return best;
 }
 
 export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: IntentHint): OutcomePick[] {
   const dietary = intent?.dietary;
+  const exclusions = intent?.exclude_ingredients ?? [];
   const safe = dietary ? sanitizeRestaurantForDietary(r, dietary) : r;
-  const menu = getMenu(safe, dietary);
-  const sigName = safe.signature_dish?.trim();
+  const menu = getMenu(safe, dietary).filter(
+    (m) => !dishHitsExclusion(m.name, m.description ?? "", exclusions),
+  );
+  const sigNameRaw = safe.signature_dish?.trim();
+  const sigName =
+    sigNameRaw && !dishHitsExclusion(sigNameRaw, "", exclusions) ? sigNameRaw : undefined;
   const purityTag = purityTagFor(safe);
   const used = new Set<string>();
   const southKitchen = isSouthIndianKitchen(safe);
@@ -953,6 +972,8 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const userCarrier = intentCarrierName(intent?.dish);
   const coastal = isCoastalDishIntent(intent?.dish);
   const sweet = isSweetDishIntent(intent?.dish);
+
+  const onCatalog = (name: string) => isDishOnRestaurantCatalog(name, safe.name, menu);
 
   // Helper: try menu first, then cuisine bank fallback (treated as "inferred")
   type Pick = {
@@ -970,6 +991,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     if (!m) return null;
     if (isCarrierOnlyDish(m.name, m.description ?? "")) return null;
     if (southKitchen && isNorthIndianInvention(m.name)) return null;
+    if (dishHitsExclusion(m.name, m.description ?? "", exclusions)) return null;
     if (!dishPassesGate(m.name, m.description ?? "", dietary, m)) return null;
     return { name: m.name, verified: true, description: m.description, ...menuDiet(m) };
   };
@@ -977,9 +999,12 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     if (!list) return null;
     const filtered = filterBankList(list, dietary)
       .filter((d) => !isCarrierOnlyDish(d))
-      .filter((d) => !(southKitchen && isNorthIndianInvention(d)));
+      .filter((d) => !dishHitsExclusion(d, "", exclusions))
+      .filter((d) => !(southKitchen && isNorthIndianInvention(d)))
+      // ROE-017: bank invents only if also on this venue's catalog
+      .filter((d) => onCatalog(d));
     const n = pickFromBank(filtered, used, dietary, southKitchen);
-    return n ? { name: n, verified: false } : null;
+    return n ? { name: n, verified: true } : null;
   };
 
   // Culinary matrix — real venue dishes when menu_items is thin
@@ -991,7 +1016,9 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
         d.course !== "registry" &&
         !used.has(d.name.toLowerCase()) &&
         !isCarrierOnlyDish(d.name) &&
+        !dishHitsExclusion(d.name, "", exclusions) &&
         !(southKitchen && isNorthIndianInvention(d.name)) &&
+        !(sweet && !isDessertDish(d.name)) &&
         dishPassesGate(d.name, "", dietary, { name: d.name }),
     );
     if (!mxDishes.length) return null;
@@ -1036,7 +1063,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   // actually has it (menu / matrix / cuisine bank).
   let best: Pick | null = null;
   if (dishTokens.length) {
-    const hit = pickByIntent(menu, dishTokens, used);
+    const hit = pickByIntent(menu, dishTokens, used, { sweet, excludeIngredients: exclusions });
     if (hit && !isCarrierOnlyDish(hit.name, hit.description ?? "")) {
       best = { name: hit.name, verified: true, ...menuDiet(hit) };
     } else {
@@ -1044,6 +1071,8 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       const mxHit = restaurantDishes(safe.name).find((d) => {
         if (used.has(d.name.toLowerCase())) return false;
         if (isCarrierOnlyDish(d.name)) return false;
+        if (dishHitsExclusion(d.name, "", exclusions)) return false;
+        if (sweet && !isDessertDish(d.name)) return false;
         if (!dishPassesGate(d.name, "", dietary, { name: d.name })) return false;
         return intentMatchScore(d.name, "", dishTokens) > 0;
       });
@@ -1052,25 +1081,48 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     if (!best && bank) {
       const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
         .filter((d) => !used.has(d.toLowerCase()) && !isCarrierOnlyDish(d))
+        .filter((d) => !dishHitsExclusion(d, "", exclusions))
         .filter((d) => !(southKitchen && isNorthIndianInvention(d)))
+        .filter((d) => onCatalog(d))
+        .filter((d) => !sweet || isDessertDish(d))
         .map((d) => ({ d, s: intentMatchScore(d, "", dishTokens) }))
         .filter((x) => x.s > 0)
         .sort((a, b) => b.s - a.s);
-      if (ranked[0]) best = { name: ranked[0].d, verified: false };
+      if (ranked[0]) best = { name: ranked[0].d, verified: true };
     }
     // Do NOT synthDishFromHint here — inventing "Seafood" on sparse kitchens / Mantra / Pizza
     // made every alternate card identical and wrong.
   }
   if (!best) best = tryMenu(pickBest(menu, dials, sigName, used));
+  // ROE-017: when sweet craving, never accept savory Best if a dessert exists on menu/matrix
+  if (best && sweet && !isDessertDish(best.name, best.description ?? "")) {
+    const dessertHit =
+      pickByIntent(menu, dishTokens.length ? dishTokens : ["dessert", "mithai", "sweet"], used, {
+        sweet: true,
+        excludeIngredients: exclusions,
+      }) ??
+      menu.find(
+        (m) =>
+          !used.has(m.name.toLowerCase()) &&
+          isDessertDish(m.name, m.description ?? "") &&
+          !dishHitsExclusion(m.name, m.description ?? "", exclusions),
+      );
+    if (dessertHit) {
+      best = { name: dessertHit.name, verified: true, ...menuDiet(dessertHit) };
+    }
+  }
   if (!best) best = tryMatrix("main_course");
   if (!best) best = trySignature();
   if (!best && bank) {
     const ranked = filterBankList([...bank.best, ...bank.heritage, ...bank.clean], dietary)
       .filter((d) => !used.has(d.toLowerCase()) && !isCarrierOnlyDish(d))
+      .filter((d) => !dishHitsExclusion(d, "", exclusions))
       .filter((d) => !(southKitchen && isNorthIndianInvention(d)))
+      .filter((d) => onCatalog(d))
+      .filter((d) => !sweet || isDessertDish(d))
       .map((d) => ({ d, s: scoreDishForDials(d, "", dials) }))
       .sort((a, b) => b.s - a.s);
-    if (ranked[0]) best = { name: ranked[0].d, verified: false };
+    if (ranked[0]) best = { name: ranked[0].d, verified: true };
   }
   if (best) used.add(best.name.toLowerCase());
 
@@ -1112,7 +1164,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   // 3) HERITAGE — coastal ocean / sweet mithai when present
   let heritage: Pick | null = null;
   if ((coastal || sweet) && dishTokens.length) {
-    const intentHit = pickByIntent(menu, dishTokens, used);
+    const intentHit = pickByIntent(menu, dishTokens, used, { sweet, excludeIngredients: exclusions });
     if (intentHit && intentHit.name.toLowerCase() !== best?.name.toLowerCase()) {
       if (!sweet || isDessertDish(intentHit.name, intentHit.description ?? "")) {
         heritage = { name: intentHit.name, verified: true, ...menuDiet(intentHit) };
@@ -1129,8 +1181,10 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const ensureUnique = (p: Pick | null, listKey: keyof CuisineBank): Pick => {
     const pickOk = (name: string, desc = "") =>
       !isCarrierOnlyDish(name, desc) &&
+      !dishHitsExclusion(name, desc, exclusions) &&
       !(southKitchen && isNorthIndianInvention(name)) &&
-      dishPassesGate(name, desc, dietary);
+      dishPassesGate(name, desc, dietary) &&
+      onCatalog(name);
 
     if (p && pickOk(p.name, p.description ?? "")) return p;
 
@@ -1145,14 +1199,20 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
         dietary,
       )
         .filter((d) => !isCarrierOnlyDish(d))
-        .filter((d) => !(southKitchen && isNorthIndianInvention(d)));
+        .filter((d) => !dishHitsExclusion(d, "", exclusions))
+        .filter((d) => !(southKitchen && isNorthIndianInvention(d)))
+        .filter((d) => onCatalog(d));
       const n = pickFromBank(pool, used, dietary, southKitchen);
-      if (n) { used.add(n.toLowerCase()); return { name: n, verified: false }; }
+      if (n) {
+        used.add(n.toLowerCase());
+        return { name: n, verified: true };
+      }
     }
     const menuFallback = menu.find(
       (m) =>
         !used.has(m.name.toLowerCase()) &&
         !isCarrierOnlyDish(m.name, m.description ?? "") &&
+        !dishHitsExclusion(m.name, m.description ?? "", exclusions) &&
         !(southKitchen && isNorthIndianInvention(m.name)) &&
         dishPassesGate(m.name, m.description ?? "", dietary, m),
     );
@@ -1168,11 +1228,24 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     if (
       sigName &&
       !isCarrierOnlyDish(sigName) &&
+      !dishHitsExclusion(sigName, "", exclusions) &&
       !(southKitchen && isNorthIndianInvention(sigName)) &&
       dishPassesGate(sigName, "", dietary) &&
+      onCatalog(sigName) &&
       !used.has(sigName.toLowerCase())
     ) {
       return { name: sigName, verified: true };
+    }
+    // Last resort: still prefer a real menu item over inventing a label
+    const anyMenu = menu.find(
+      (m) =>
+        !used.has(m.name.toLowerCase()) &&
+        !isCarrierOnlyDish(m.name, m.description ?? "") &&
+        !dishHitsExclusion(m.name, m.description ?? "", exclusions),
+    );
+    if (anyMenu) {
+      used.add(anyMenu.name.toLowerCase());
+      return { name: anyMenu.name, verified: true, ...menuDiet(anyMenu) };
     }
     return { name: dietary === "jain" ? "Jain-compliant selection" : "Chef's selection", verified: false };
   };
