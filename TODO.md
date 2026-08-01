@@ -9,6 +9,18 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-020] Exclusion aliases + Ask-align + auto soak — implemented
+
+Impact: `docs/ROE-020-exclusion-aliases-auto-soak-impact-analysis.md`
+
+- [x] Alias map (`murgi`/`murgh`/`kozhi` → chicken, …) sync pair
+- [x] Merge transcript + restated + dish into excludes
+- [x] ensureUnique strict Ask-align for meat/sweet/exclusions
+- [x] `npm run soak:exclusions` + fixture seeds + sim integrate
+- [ ] Push / merge staging; re-soak `meat not murgi`
+
+---
+
 ## [ROE-019] Ask-fulfillment ranking + matrix identity — implemented (staging path)
 
 Impact: `docs/ROE-019-ask-fulfillment-matrix-impact-analysis.md`  

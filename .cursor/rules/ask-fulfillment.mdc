@@ -38,5 +38,7 @@ When changing `veda.ts`, `pairings.ts`, `culinaryIndex.ts`, or matrix builders:
 ## References
 
 - `docs/ROE-019-ask-fulfillment-matrix-impact-analysis.md`
+- `docs/ROE-020-exclusion-aliases-auto-soak-impact-analysis.md`
 - `.cursor/rules/hallucination-guard.mdc`
-- Canvas: `meat-no-chicken-scoring-audit`
+- Canvas: `meat-not-murgi-underlying-issue`
+- Auto soak: `npm run soak:exclusions`

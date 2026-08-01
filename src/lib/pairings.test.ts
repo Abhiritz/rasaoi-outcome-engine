@@ -240,6 +240,45 @@ describe("ROE-001 sweet / dessert coherence", () => {
     expect(picks[0].dish.toLowerCase()).not.toMatch(/chicken/);
     expect(picks.every((p) => !/chicken/i.test(p.dish))).toBe(true);
   });
+
+  it("ROE-020: meat Ask without excludes still must not keep Chicken 65 as fulfilled Best", () => {
+    const r = mockRestaurant({
+      id: "chicken-only",
+      name: "Chicken Only",
+      cuisine: "Indian",
+      signature_dish: "Chicken 65",
+      menu_items: [
+        { name: "Chicken 65", diet_class: "non_veg" },
+        { name: "Butter Chicken", diet_class: "non_veg" },
+        { name: "Chicken Biryani", diet_class: "non_veg" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, {
+      dish: "meat",
+      dietary: "non_veg",
+    });
+    expect(picks[0].dish.toLowerCase()).not.toMatch(/chicken/);
+  });
+
+  it("ROE-020: murgi exclusion strips chicken plates", () => {
+    const r = mockRestaurant({
+      id: "murgi",
+      name: "Mixed Meats",
+      cuisine: "Indian",
+      signature_dish: "Chicken 65",
+      menu_items: [
+        { name: "Chicken 65", diet_class: "non_veg" },
+        { name: "Goat Curry", diet_class: "non_veg" },
+        { name: "Fish Tikka", diet_class: "non_veg" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, {
+      dish: "meat",
+      dietary: "non_veg",
+      exclude_ingredients: ["chicken"],
+    });
+    expect(picks[0].dish.toLowerCase()).toMatch(/goat|fish/);
+  });
 });
 
 describe("ROE-018 catalog plate guard", () => {

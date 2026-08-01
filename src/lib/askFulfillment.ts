@@ -188,13 +188,29 @@ export function askAlignedDishScore(
 
   if (preferred?.length) {
     const prots = id.proteins ?? inferProteinsFromName(name, desc);
-    const hit = preferred.some((p) => prots.includes(p) || (p === "goat" && prots.includes("mutton")));
+    const blob = `${name} ${desc}`.toLowerCase();
+    const hit =
+      preferred.some((p) => prots.includes(p) || (p === "goat" && prots.includes("mutton"))) ||
+      preferred.some((p) => p.length >= 3 && blob.includes(p)) ||
+      ((preferred.includes("fish") ||
+        preferred.includes("shrimp") ||
+        preferred.includes("crab") ||
+        preferred.includes("lobster")) &&
+        /\b(seafood|fish|shrimp|prawn|crab|lobster)\b/i.test(blob));
     if (hit) score += 36;
     else if (meatCat && prots.some((p) => p !== "chicken" && MEAT_ASK_PROTEINS.includes(p as (typeof MEAT_ASK_PROTEINS)[number]))) {
       score += 28;
     } else if (meatCat) {
       return score > 0 ? score : 0;
     }
+  }
+
+  // Coastal / oceany Ask — seafood vessel names count even without protein-family tags
+  if (
+    /\b(oceany|ocean|coastal|seafood)\b/i.test(opts.dish ?? "") &&
+    /\b(seafood|fish|shrimp|prawn|crab|lobster)\b/i.test(`${name} ${desc}`)
+  ) {
+    score += 36;
   }
 
   if (meatCat && !preferred?.length) {
