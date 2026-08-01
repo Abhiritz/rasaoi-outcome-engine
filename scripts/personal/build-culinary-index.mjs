@@ -10,12 +10,42 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildIdentity } from "./culinary-identity.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "../..");
 const MATRIX_PATH = join(ROOT, "el_dorado_folsom_culinary_matrix.json");
 const REGISTRY_PATH = join(ROOT, "dish_registry.json");
 const OUT_PATH = join(ROOT, "src/data/culinary-index.json");
+
+/** @param {Record<string, unknown>} dish @param {string} proteinFamily @param {string} course */
+function identityFields(dish, proteinFamily, course) {
+  const fromFile =
+    dish.identity && typeof dish.identity === "object"
+      ? /** @type {Record<string, unknown>} */ (dish.identity)
+      : {};
+  const inferred = buildIdentity(String(dish.name ?? ""), proteinFamily, course);
+  const proteins = Array.isArray(fromFile.proteins)
+    ? fromFile.proteins
+    : inferred.proteins;
+  return {
+    ...(Array.isArray(proteins) && proteins.length ? { proteins } : {}),
+    ...(typeof (fromFile.diet_class ?? inferred.diet_class) === "string"
+      ? { diet_class: fromFile.diet_class ?? inferred.diet_class }
+      : {}),
+    ...(typeof fromFile.cuisine_region === "string"
+      ? { cuisine_region: fromFile.cuisine_region }
+      : {}),
+    ...(typeof (fromFile.food_type ?? inferred.food_type) === "string"
+      ? { food_type: fromFile.food_type ?? inferred.food_type }
+      : {}),
+    ...(typeof (fromFile.dish_role ?? inferred.dish_role) === "string"
+      ? { dish_role: fromFile.dish_role ?? inferred.dish_role }
+      : {}),
+    ...(Array.isArray(fromFile.ingredients) ? { ingredients: fromFile.ingredients } : {}),
+    speculation_tier: fromFile.speculation_tier ?? inferred.speculation_tier ?? "inferred",
+  };
+}
 
 const COURSE_KEYS = ["appetizer", "starter", "main_course", "accompaniment_base"];
 const LOCAL_CITIES = new Set(["el-dorado-hills", "folsom", "el dorado hills"]);
@@ -145,6 +175,7 @@ function main() {
               name: dish.name,
               course,
               proteinFamilies: [proteinFamily],
+              ...identityFields(dish, proteinFamily, course),
               ...(priceUsd != null ? { priceUsd } : {}),
               ...slimNutrition(dish.nutrition),
             };
@@ -247,7 +278,7 @@ function main() {
   }
 
   const index = {
-    version: 1,
+    version: 2,
     generatedAt: new Date().toISOString().slice(0, 10),
     restaurants,
     byDish,

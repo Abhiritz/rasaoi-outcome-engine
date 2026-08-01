@@ -9,7 +9,26 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
-## [ROE-018] Catalog freshness & honest dish-match — implemented (staging path)
+## [ROE-019] Ask-fulfillment ranking + matrix identity — implemented (staging path)
+
+Impact: `docs/ROE-019-ask-fulfillment-matrix-impact-analysis.md`  
+Rule: `.cursor/rules/ask-fulfillment.mdc`  
+Canvas: `meat-no-chicken-scoring-audit`
+
+- [x] Audit soak pattern (clay-pot / meat·no chicken / sweet family) → AFR
+- [x] Matrix format correction proposed (`identity` block) + local defect counts
+- [x] Docs/rules sync (CONTEXT_PLAN, plan, project, CURSOR, hallucination-guard)
+- [x] Owner **approve** implementation
+- [x] Branch `feature/ROE-019-ask-fulfillment-matrix` from `origin/staging`
+- [x] fulfillmentScore + Ask-aligned plates; Limited menu (not Chef’s selection spam)
+- [x] culinary-index v2 identity via builder (`proteins`, `diet_class`, `food_type`, `dish_role`)
+- [x] `diet_class: unknown` + goat in MEAT_MARKERS (sync pair)
+- [ ] Push / PR merge to `staging`; stakeholder re-soak meat·no chicken
+- [ ] Optional: `npm run culinary:enrich-identity` to stamp identity onto source matrix JSON
+
+---
+
+## [ROE-018] Catalog freshness & honest dish-match — on staging (seed pending)
 
 Impact: `docs/ROE-018-catalog-freshness-honest-match-impact-analysis.md`  
 Branch: `feature/ROE-018-catalog-freshness-honest-match`
@@ -21,7 +40,8 @@ Branch: `feature/ROE-018-catalog-freshness-honest-match`
 - [x] Promote noise denylist (EXP-T11 sync)
 - [x] Staging SQL helper `scripts/personal/seed-bamboo-garden-clay-pot.sql`
 - [x] Vitest 120/120
-- [ ] Push feature branch; merge/push `staging`; run seed SQL on staging Supabase
+- [x] Push feature branch; merge to `staging` (PR #30)
+- [ ] Run seed SQL on staging Supabase (`seed-bamboo-garden-clay-pot.sql`)
 - [ ] Stakeholder re-soak “goat clay pot rice”
 - [ ] Still **no develop merge** until ROE-016 gate
 

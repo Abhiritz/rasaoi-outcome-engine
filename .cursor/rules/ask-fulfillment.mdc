@@ -1,0 +1,42 @@
+---
+description: Ask-fulfillment ranking — venue % and plates must maximize catalog fulfillment of the Ask
+alwaysApply: true
+---
+
+# Ask-fulfillment ranking (ROE-019)
+
+Soak pattern: high venue % with weak/empty Best while better kitchens sit in Alternatives.
+
+## Invariant
+
+**Rank venues and choose plates by how well the catalog fulfills the current Ask**, then apply dials/cuisine. Never present `Chef's selection` or an unrelated fallback as Ask fulfillment when an eligible catalog dish exists.
+
+## Ask axes (use when present)
+
+| Axis | Signals | Catalog / matrix |
+|------|---------|------------------|
+| Named dish | `filters.dish` concrete | Exact/partial on menu ∪ matrix (ROE-018) |
+| Protein prefer | meat, fish, paneer, egg… | `identity.proteins` / name heuristics — **not** tree-root alone |
+| Protein exclude | `exclude_ingredients` | Strip matches (ROE-017); prefer remaining Ask proteins |
+| Food type | sweet, biryani, clay-pot rice | `identity.food_type` / `dish_role` |
+| Cuisine region | south/north / kitchen | `identity.cuisine_region` + ROE-004 banks |
+| Diet | dietary filters | `diet_class`; `unknown` → regex fallback for meat markers |
+
+## Matrix identity
+
+Course records should carry additive `identity` (proteins, diet_class, cuisine_region, food_type, dish_role, optional ingredients[], speculation_tier). Builder emits into `culinary-index.json`. **Trust identity over protein-tree root when set.** Do not invent menu rows via identity backfill.
+
+## Agent checklist
+
+When changing `veda.ts`, `pairings.ts`, `culinaryIndex.ts`, or matrix builders:
+
+1. Would a chicken-only kitchen with empty Best outrank a goat/lamb kitchen for “meat no chicken”? If yes, fix fulfillment sort.
+2. Does Best invent or use Chef’s selection while eligible Ask-aligned dishes remain? Forbidden.
+3. Are new matrix fields speculation-tiered and never used as clinical claims?
+4. Rebuild index after matrix identity changes; update impact doc.
+
+## References
+
+- `docs/ROE-019-ask-fulfillment-matrix-impact-analysis.md`
+- `.cursor/rules/hallucination-guard.mdc`
+- Canvas: `meat-no-chicken-scoring-audit`

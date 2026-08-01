@@ -140,7 +140,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize), `_share
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-019** (ROE-018 = catalog freshness / honest match — **awaiting approval**; ROE-017 soak fixes; ROE-016 staging live).
+1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-020** (ROE-019 = ask-fulfillment ranking + matrix identity — **awaiting impl approval**; ROE-018 on staging; ROE-017 soak fixes; ROE-016 staging live).
 2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
@@ -154,8 +154,9 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
 | Ticket | Status | Impact |
 |--------|--------|--------|
-| **ROE-018** Catalog freshness & honest dish-match | Feature branch implemented; staging push + catalog seed pending | `docs/ROE-018-catalog-freshness-honest-match-impact-analysis.md` |
-| **ROE-017** Staging soak fixes | Branch `feature/ROE-017-staging-soak-fixes` (from staging); sweet/negation/catalog/telemetry | `docs/ROE-017-staging-soak-fixes-impact-analysis.md` |
+| **ROE-019** Ask-fulfillment ranking + matrix identity | Feature branch implemented; staging merge pending | `docs/ROE-019-ask-fulfillment-matrix-impact-analysis.md` |
+| **ROE-018** Catalog freshness & honest dish-match | Merged to staging (PR #30); seed/re-soak pending | `docs/ROE-018-catalog-freshness-honest-match-impact-analysis.md` |
+| **ROE-017** Staging soak fixes | On staging via ROE-018 tip | `docs/ROE-017-staging-soak-fixes-impact-analysis.md` |
 | **ROE-016** (EXP-001) Experimental infra | **Staging live** → https://v0-rasaoi-staging.vercel.app; EXP-T1–T11 + Apify cron; sim 520@100%; **no develop merge** until soak Pass | `docs/impact_analysis_experimental_infra.md` |
 | **ROE-014** Intent situational layers | Unmerged branch | (on `feature/ROE-014-intent-situational-layers`) |
 | **ROE-013** (ASK-001) Ask chips | Merged on develop | `docs/ROE-013-ask-intent-chips-impact-analysis.md` |
@@ -165,9 +166,9 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 | **ROE-009** (FUL-001) contacts | Merged PR #21; ops + QA | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
 | ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
 
-Next free serial: **ROE-019**.
+Next free serial: **ROE-020**.
 
-Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-ask-audit` canvas.
+Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-ask-audit` canvas. Ask-fulfillment soak: `meat-no-chicken-scoring-audit` canvas + `.cursor/rules/ask-fulfillment.mdc`.
 
 ---
 

@@ -117,11 +117,16 @@ export const HeroCard = ({ item, dials, vitality, intent, gl }: { item: ScoredRe
             {score}<span className="text-2xl sm:text-3xl">%</span>
           </div>
           <div className="text-[10px] uppercase tracking-[0.25em] text-gold/80 mt-1.5 font-semibold">
-            {item.dishMatch === "none" ? "Closest" : "Match"}
+            {item.dishMatch === "none" || item.fulfillment === "none" ? "Closest" : "Match"}
           </div>
           {item.dishMatch === "none" && (
             <div className="text-[9px] uppercase tracking-wider text-muted-foreground mt-1 max-w-[7.5rem]">
               No exact dish
+            </div>
+          )}
+          {item.fulfillment === "none" && item.dishMatch !== "none" && (
+            <div className="text-[9px] uppercase tracking-wider text-muted-foreground mt-1 max-w-[7.5rem]">
+              Limited for Ask
             </div>
           )}
         </div>

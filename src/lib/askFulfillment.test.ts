@@ -1,0 +1,138 @@
+import { describe, expect, it } from "vitest";
+import {
+  askAlignedDishScore,
+  isMeatCategoryAsk,
+  preferredProteinsFromAsk,
+  venueAskFulfillment,
+} from "./askFulfillment";
+import { scoreRestaurants, type DialState, type Restaurant } from "./veda";
+import { buildTripleOutcome } from "./pairings";
+import { passesDietaryGate } from "./dietary";
+
+const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 70 };
+
+function mockRestaurant(partial: Partial<Restaurant> & { id: string; name: string }): Restaurant {
+  return {
+    address: null,
+    anti_inflammatory: false,
+    context_tags: [],
+    created_at: "",
+    cuisine: "Indian",
+    dish_outcome: "balanced",
+    energy_tags: [],
+    google_place_id: null,
+    grain_profile: "standard",
+    id: partial.id,
+    image_url: null,
+    latitude: null,
+    longitude: null,
+    menu_items: partial.menu_items ?? [],
+    name: partial.name,
+    oil_profile: "standard",
+    phone: null,
+    price_tier: 2,
+    purity_tier: "conscious",
+    rating: 4,
+    signature_dish: partial.signature_dish ?? "Chicken 65",
+    sovereign_seal: false,
+    updated_at: "",
+    ...partial,
+  } as Restaurant;
+}
+
+describe("ROE-019 ask fulfillment", () => {
+  it("detects meat category Asks", () => {
+    expect(isMeatCategoryAsk("meat")).toBe(true);
+    expect(isMeatCategoryAsk("meat no chicken")).toBe(true);
+    expect(isMeatCategoryAsk("goat clay pot rice")).toBe(false);
+  });
+
+  it("prefers goat/lamb/fish proteins when chicken excluded", () => {
+    const prefs = preferredProteinsFromAsk("meat", ["chicken"]);
+    expect(prefs).toContain("goat");
+    expect(prefs).not.toContain("chicken");
+  });
+
+  it("scores Goat Curry aligned; Chicken 65 not when chicken excluded", () => {
+    const opts = { dish: "meat", exclusions: ["chicken"] };
+    expect(askAlignedDishScore("Goat Curry", "slow cooked", opts)).toBeGreaterThan(0);
+    expect(askAlignedDishScore("Chicken 65", "fried", opts)).toBe(0);
+  });
+
+  it("unknown diet_class + Goat Curry passes non_veg gate", () => {
+    expect(
+      passesDietaryGate({ name: "Goat Curry", diet_class: "unknown" }, "non_veg"),
+    ).toBe(true);
+  });
+
+  it("Best Match is goat when menu has goat+chicken and Ask excludes chicken", () => {
+    const r = mockRestaurant({
+      id: "meat-house",
+      name: "Meat House",
+      signature_dish: "Chicken 65",
+      menu_items: [
+        { name: "Chicken 65", description: "spicy fried chicken", diet_class: "non_veg" },
+        { name: "Lamb Rogan Josh", description: "goat curry", diet_class: "non_veg" },
+        { name: "Fish Tikka", description: "tandoor fish", diet_class: "non_veg" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, {
+      dish: "meat",
+      dietary: "non_veg",
+      exclude_ingredients: ["chicken"],
+    });
+    expect(picks[0].dish.toLowerCase()).toMatch(/lamb|fish|goat/);
+    expect(picks[0].dish.toLowerCase()).not.toMatch(/chicken/);
+    expect(picks.every((p) => !/chef's selection/i.test(p.dish))).toBe(true);
+  });
+
+  it("goat-capable venue ranks above chicken-only for meat no chicken", () => {
+    const chickenOnly = mockRestaurant({
+      id: "c1",
+      name: "Chicken Shack",
+      signature_dish: "Chicken 65",
+      menu_items: [
+        { name: "Chicken 65", diet_class: "non_veg" },
+        { name: "Butter Chicken", diet_class: "non_veg" },
+        { name: "Chicken Biryani", diet_class: "non_veg" },
+      ],
+    });
+    const goatKitchen = mockRestaurant({
+      id: "g1",
+      name: "Goat Palace",
+      signature_dish: "Goat Curry",
+      menu_items: [
+        { name: "Goat Curry", diet_class: "non_veg" },
+        { name: "Lamb Vindaloo", diet_class: "non_veg" },
+        { name: "Fish Fry", diet_class: "non_veg" },
+      ],
+    });
+    const ranked = scoreRestaurants(
+      [chickenOnly, goatKitchen],
+      dials,
+      [],
+      undefined,
+      "meat",
+      undefined,
+      undefined,
+      "non_veg",
+      ["chicken"],
+    );
+    expect(ranked[0].restaurant.name).toBe("Goat Palace");
+    expect(ranked[0].fulfillment).toMatch(/full|partial/);
+    expect(ranked.find((x) => x.restaurant.name === "Chicken Shack")?.fulfillment).toBe("none");
+  });
+
+  it("venueAskFulfillment counts aligned dishes", () => {
+    const f = venueAskFulfillment(
+      "Test",
+      [
+        { name: "Chicken 65" },
+        { name: "Goat Biryani" },
+      ],
+      { dish: "meat", exclusions: ["chicken"] },
+    );
+    expect(f.alignedCount).toBeGreaterThanOrEqual(1);
+    expect(f.level).not.toBe("none");
+  });
+});

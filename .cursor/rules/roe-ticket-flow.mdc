@@ -15,7 +15,7 @@ Agents follow this sequence for every new ROE ticket **without the user restatin
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` — or `[ROE-NNN] message` if no alias |
 | Branch | `feature/ROE-NNN-kebab-slug` from fresh `origin/develop` |
 
-**ROE-NNN** is the global serial (never skip). Next free is tracked in `project.md` / `.lovable/plan.md`.
+**ROE-NNN** is the global serial (never skip). Next free is tracked in `project.md` / `.lovable/plan.md` (**ROE-020** after ROE-019).
 
 ## Sequence
 

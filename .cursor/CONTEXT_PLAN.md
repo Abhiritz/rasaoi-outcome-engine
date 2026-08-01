@@ -4,17 +4,15 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-017
+last_verified_commit: pending-ROE-019-impl
 last_verified_date: 2026-08-01
-branch: feature/ROE-017-staging-soak-fixes
+branch: feature/ROE-019-ask-fulfillment-matrix
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-017 staging soak fixes on top of ROE-016: sweet-token mysore/pak fix,
-  exclude_ingredients negation, catalog plate gate, telemetry verify loop.
-  Staging URL for stakeholders: https://v0-rasaoi-staging.vercel.app.
-  ROE-018: catalog freshness + honest dish-match (clay-pot RCA) on
-  feature/ROE-018-catalog-freshness-honest-match — dishMatch honesty, rice-as-main
-  tokens, promote noise filter, Bamboo Garden seed SQL. Next free: ROE-019.
+  ROE-019 implemented: Ask-fulfillment ranking (venue sort + Ask-aligned plates),
+  culinary-index v2 identity fields, diet_class unknown + goat MEAT_MARKERS,
+  Limited menu for this Ask instead of Chef's selection spam. Staging merge pending.
+  Next free: ROE-020.
 ```
 
 ---
@@ -31,7 +29,8 @@ recent_notes: >
 | Dials | Four sliders (0–100): energy, context, budget, purity |
 | Reading | Outcome screen — ranked restaurants + hero/alternate dishes |
 | Triple Outcome | Three labeled picks per venue (Best / Clean & Vital / Heritage) + carrier — see `buildTripleOutcome` |
-| Culinary matrix | Offline EDH/Folsom dish index (`src/data/culinary-index.json`) — prices, macros, course, no Gemini at score time |
+| Culinary matrix | Offline EDH/Folsom dish index (`src/data/culinary-index.json`) — prices, macros, course; **ROE-019:** per-dish `identity` (proteins, diet_class, cuisine_region, food_type, dish_role) — trust over tree-root protein family when set; no Gemini at score time |
+| Ask-fulfillment | Venue rank + Best plate maximize catalog fulfillment of the Ask (ROE-019); vibe dials secondary |
 | Purity tiers | `sovereign` / `standard` / `satellite` — oil/grain/integrity scoring |
 | Vitality Twin | Local bio-aware memory (cuisine prefs, vitality score) |
 | Blood-sugar lens | Glycemic re-ranking + carrier swaps |
@@ -89,7 +88,8 @@ sequenceDiagram
 |--------|-----------------|
 | Intent parsing | `src/lib/intent.ts`, `src/lib/intentSanitize.ts`, `supabase/functions/parse-intent/index.ts` (ROE-017 `exclude_ingredients`) |
 | Restaurant scoring | `src/lib/veda.ts`, `src/lib/vedaDishes.ts` |
-| Culinary matrix index | `src/lib/culinaryIndex.ts`, `src/data/culinary-index.json` (built by `scripts/personal/build-culinary-index.mjs`) |
+| Culinary matrix index | `src/lib/culinaryIndex.ts`, `src/data/culinary-index.json` (built by `scripts/personal/build-culinary-index.mjs`; **ROE-019** identity via `enrich-culinary-identity.mjs` + matrix course `identity`) |
+| Ask-fulfillment ranking | `veda.ts` fulfillmentScore + `pairings.ts` Ask-aligned picks — see `.cursor/rules/ask-fulfillment.mdc` |
 | Catalog plate gate | `src/lib/catalogGuard.ts` — menu ∪ matrix membership before plate return |
 | Experimental dynamic knowledge **(SANDBOX)** | `src/lib/experimental/culinaryKnowledge.ts` — static default; Postgres/vector only when flagged |
 | Experimental nutrition loop **(SANDBOX)** | `src/lib/experimental/nutrition.ts`, `nutritionQuarantine.ts`, `glycemicLensAdapter.ts`, `scripts/experimental/nutrition-deconstruction.mjs` |

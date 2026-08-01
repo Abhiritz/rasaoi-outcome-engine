@@ -39,6 +39,14 @@ import {
   namedDishMatchStrength,
   STARCH_COMPLETE,
 } from "./dishIntent";
+import {
+  askAlignedDishScore,
+  isMeatCategoryAsk,
+  isLimitedAskPlate,
+  isPlaceholderPlate,
+  LIMITED_ASK_PLATE,
+  preferredProteinsFromAsk,
+} from "./askFulfillment";
 import { isDishOnRestaurantCatalog } from "./catalogGuard";
 
 export type DishRole = "Base" | "Booster" | "Carrier";
@@ -978,6 +986,37 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const userCarrier = intentCarrierName(intent?.dish);
   const coastal = isCoastalDishIntent(intent?.dish);
   const sweet = isSweetDishIntent(intent?.dish);
+  const meatAsk = isMeatCategoryAsk(intent?.dish);
+  const preferProteins = preferredProteinsFromAsk(intent?.dish, exclusions);
+  const askFulfillMode =
+    meatAsk ||
+    sweet ||
+    isNamedDishAsk(intent?.dish) ||
+    exclusions.length > 0 ||
+    Boolean(preferProteins?.length);
+
+  const pickAskAlignedMenu = (usedSet: Set<string>): MenuItem | undefined => {
+    if (!askFulfillMode) return undefined;
+    return [...menu]
+      .filter(
+        (m) =>
+          !usedSet.has(m.name.toLowerCase()) &&
+          !isCarrierOnlyDish(m.name, m.description ?? "") &&
+          !dishHitsExclusion(m.name, m.description ?? "", exclusions) &&
+          !(southKitchen && isNorthIndianInvention(m.name)) &&
+          dishPassesGate(m.name, m.description ?? "", dietary, m),
+      )
+      .map((m) => ({
+        m,
+        s: askAlignedDishScore(m.name, m.description ?? "", {
+          dish: intent?.dish,
+          exclusions,
+          dietary,
+        }, safe.name),
+      }))
+      .filter((x) => x.s > 0)
+      .sort((a, b) => b.s - a.s)[0]?.m;
+  };
 
   const onCatalog = (name: string) => isDishOnRestaurantCatalog(name, safe.name, menu);
 
@@ -1068,7 +1107,12 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   // on every restaurant. Only surface an intent dish when this kitchen
   // actually has it (menu / matrix / cuisine bank).
   let best: Pick | null = null;
-  if (dishTokens.length) {
+  // ROE-019: Ask-aligned catalog dish first (meat·no chicken, sweet, named, …)
+  {
+    const aligned = pickAskAlignedMenu(used);
+    if (aligned) best = { name: aligned.name, verified: true, ...menuDiet(aligned) };
+  }
+  if (!best && dishTokens.length) {
     const hit = pickByIntent(menu, dishTokens, used, { sweet, excludeIngredients: exclusions });
     if (hit && !isCarrierOnlyDish(hit.name, hit.description ?? "")) {
       best = { name: hit.name, verified: true, ...menuDiet(hit) };
@@ -1214,14 +1258,27 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       dishPassesGate(name, desc, dietary) &&
       onCatalog(name);
 
-    if (p && pickOk(p.name, p.description ?? "")) return p;
+    if (p && pickOk(p.name, p.description ?? "") && !isPlaceholderPlate(p.name)) return p;
+
+    // ROE-019: prefer another Ask-aligned menu line before generic fallbacks
+    const aligned = pickAskAlignedMenu(used);
+    if (aligned) {
+      used.add(aligned.name.toLowerCase());
+      return { name: aligned.name, verified: true, ...menuDiet(aligned) };
+    }
 
     const mx = tryMatrix(listKey === "clean" ? "light" : "main_course");
     if (mx && pickOk(mx.name)) {
-      used.add(mx.name.toLowerCase());
-      return mx;
+      // When Ask-fulfillment mode, only accept matrix if Ask-aligned
+      if (
+        !askFulfillMode ||
+        askAlignedDishScore(mx.name, "", { dish: intent?.dish, exclusions, dietary }, safe.name) > 0
+      ) {
+        used.add(mx.name.toLowerCase());
+        return mx;
+      }
     }
-    if (bank) {
+    if (bank && !askFulfillMode) {
       const pool = filterBankList(
         [...bank[listKey], ...bank.best, ...bank.clean, ...bank.heritage],
         dietary,
@@ -1242,7 +1299,13 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
         !isCarrierOnlyDish(m.name, m.description ?? "") &&
         !dishHitsExclusion(m.name, m.description ?? "", exclusions) &&
         !(southKitchen && isNorthIndianInvention(m.name)) &&
-        dishPassesGate(m.name, m.description ?? "", dietary, m),
+        dishPassesGate(m.name, m.description ?? "", dietary, m) &&
+        (!askFulfillMode ||
+          askAlignedDishScore(m.name, m.description ?? "", {
+            dish: intent?.dish,
+            exclusions,
+            dietary,
+          }, safe.name) > 0),
     );
     if (menuFallback) {
       used.add(menuFallback.name.toLowerCase());
@@ -1254,6 +1317,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       };
     }
     if (
+      !askFulfillMode &&
       sigName &&
       !isCarrierOnlyDish(sigName) &&
       !dishHitsExclusion(sigName, "", exclusions) &&
@@ -1264,18 +1328,22 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     ) {
       return { name: sigName, verified: true };
     }
-    // Last resort: still prefer a real menu item over inventing a label
-    const anyMenu = menu.find(
-      (m) =>
-        !used.has(m.name.toLowerCase()) &&
-        !isCarrierOnlyDish(m.name, m.description ?? "") &&
-        !dishHitsExclusion(m.name, m.description ?? "", exclusions),
-    );
-    if (anyMenu) {
-      used.add(anyMenu.name.toLowerCase());
-      return { name: anyMenu.name, verified: true, ...menuDiet(anyMenu) };
+    // Last resort: any unused non-carrier (non-Ask mode) OR honest limited plate
+    if (!askFulfillMode) {
+      const anyMenu = menu.find(
+        (m) =>
+          !used.has(m.name.toLowerCase()) &&
+          !isCarrierOnlyDish(m.name, m.description ?? "") &&
+          !dishHitsExclusion(m.name, m.description ?? "", exclusions),
+      );
+      if (anyMenu) {
+        used.add(anyMenu.name.toLowerCase());
+        return { name: anyMenu.name, verified: true, ...menuDiet(anyMenu) };
+      }
     }
-    return { name: dietary === "jain" ? "Jain-compliant selection" : "Chef's selection", verified: false };
+    // ROE-019: never spam Chef's selection when Ask cannot be fulfilled
+    const limitedName = dietary === "jain" ? "Jain-compliant selection" : LIMITED_ASK_PLATE;
+    return { name: askFulfillMode ? limitedName : dietary === "jain" ? "Jain-compliant selection" : "Chef's selection", verified: false };
   };
 
   best = ensureUnique(best, "best");
@@ -1296,8 +1364,10 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     dishPassesGate(matrixCarrier.name, "", dietary, { name: matrixCarrier.name });
 
   const useLowCarb = safe.grain_profile === "grain-free";
-  return slots.map(({ key, label, pick }) => {
-    const carrierSpec = carrierFor(pick.name, safe.cuisine);
+  const outcomes = slots.map(({ key, label, pick }) => {
+    const limited = isLimitedAskPlate(pick.name);
+    const placeholder = isPlaceholderPlate(pick.name);
+    const carrierSpec = placeholder ? null : carrierFor(pick.name, safe.cuisine);
     let carrierName = carrierSpec
       ? (useLowCarb ? carrierSpec.lowCarbAlt : carrierSpec.primary)
       : undefined;
@@ -1307,7 +1377,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     }
     // If the user explicitly requested a carrier (e.g. "with naan"), honor it
     // on the headline best-match dish — even if the cultural default differs.
-    if (key === "best-match" && userCarrier) {
+    if (key === "best-match" && userCarrier && !placeholder) {
       carrierName = userCarrier;
     }
     return {
@@ -1316,10 +1386,18 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       dish: pick.name,
       carrier: carrierName,
       purityTag,
-      why: whyFor(key, pick.name, dials, safe, carrierSpec, carrierName, dietary),
+      why: limited
+        ? "This kitchen's stored menu does not have enough eligible dishes for your Ask."
+        : whyFor(key, pick.name, dials, safe, carrierSpec, carrierName, dietary),
       verified: pick.verified,
       diet_class: pick.diet_class,
       dietary_modifiers: pick.dietary_modifiers,
     };
   });
+
+  // ROE-019: drop trailing limited-Ask placeholders (keep Chef's selection triple for non-Ask mode)
+  while (outcomes.length > 1 && isLimitedAskPlate(outcomes[outcomes.length - 1]!.dish)) {
+    outcomes.pop();
+  }
+  return outcomes;
 }

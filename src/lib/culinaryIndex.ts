@@ -8,6 +8,14 @@ export interface CulinaryDishMeta {
   name: string;
   course: string;
   proteinFamilies?: string[];
+  /** ROE-019 identity — prefer over tree-root proteinFamilies when set */
+  proteins?: string[];
+  diet_class?: string;
+  cuisine_region?: string;
+  food_type?: string;
+  dish_role?: string;
+  ingredients?: string[];
+  speculation_tier?: "verified" | "inferred" | "speculative";
   priceUsd?: number;
   calories_kcal?: number;
   protein_g?: number;

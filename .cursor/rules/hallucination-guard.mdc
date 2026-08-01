@@ -18,6 +18,7 @@ Agents MUST enforce these rules when changing intent parsing, scoring, pairings,
 7. **Negation hard-exclude (ROE-017)** — “not / no / excluding / without / but not \<ingredient\>” → `filters.exclude_ingredients`; plates and ranking must strip matching dishes.
 8. **Catalog plate gate (ROE-017)** — every Best/Clean/Heritage dish must exist on that venue’s `menu_items` or culinary matrix; cuisine-bank invents without catalog ID are dropped.
 9. **Honest named-dish miss (ROE-018)** — when a concrete dish Ask has no catalog hit, do not present ~100% as exact-dish success; prefer Closest / No exact dish. Refresh menus via promote — never invent the missing dish onto another kitchen.
+10. **Ask-fulfillment ranking (ROE-019)** — venue rank and Best plate maximize **catalog fulfillment of the Ask** (named dish, protein prefer/exclude, food type, diet, cuisine region). Never show `Chef's selection` / unrelated fallback as fulfillment when an eligible Ask-aligned dish exists; do not let a high vibe-% bury better-fulfilling kitchens in Alternatives. Matrix `identity` (proteins, diet_class, cuisine_region, food_type, dish_role) beats tree-root protein family when set — see `.cursor/rules/ask-fulfillment.mdc`.
 ## Speculation tiers (nutrition & knowledge)
 
 | Tier | Meaning | Allowed in UI/ranking |
@@ -51,6 +52,8 @@ When touching `parse-intent`, `model-router`, `pairings`, `veda`, `glycemic`, `e
 6. Confirm sweet intent never false-matches via bare tokens like `mysore` on dosa names.
 7. Confirm negated ingredients appear in `exclude_ingredients` and are stripped from plates.
 8. Document findings in impact analysis §Post-implementation audit.
+9. Confirm Ask-fulfillment sort: zero-fulfillment venues do not outrank kitchens that can plate the Ask.
+10. Confirm matrix identity / culinary-index fields are not inventing dishes — annotate only.
 
 ## References
 
@@ -60,3 +63,5 @@ When touching `parse-intent`, `model-router`, `pairings`, `veda`, `glycemic`, `e
 - `scripts/experimental/fixtures/negative_guardrails.xml`
 - `docs/experimental/tickets/README.md` (EXP-T1–T11)
 - `docs/ROE-017-staging-soak-fixes-impact-analysis.md` (sweet / negation / catalog / telemetry soak fixes)
+- `docs/ROE-019-ask-fulfillment-matrix-impact-analysis.md` (AFR + matrix identity)
+- `.cursor/rules/ask-fulfillment.mdc`
