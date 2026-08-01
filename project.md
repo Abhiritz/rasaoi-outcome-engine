@@ -140,7 +140,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize), `_share
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-018** (ROE-017 = staging soak fixes; ROE-014 unmerged; ROE-016 staging live, develop merge locked on soak).
+1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-019** (ROE-018 = catalog freshness / honest match — **awaiting approval**; ROE-017 soak fixes; ROE-016 staging live).
 2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
@@ -148,12 +148,13 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize), `_share
 
 Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
-1. Audit → 2. Impact doc `docs/ROE-NNN-*-impact-analysis.md` → 3. User approval → 4. Branch from `origin/develop` → 5. Implement + Vitest → 6. Update plan/TODO/CONTEXT/CURSOR → 7. Commit / push / PR / board → 8. Ops redeploy if needed → QA Pass → Done
+1. Audit → 2. Impact doc `docs/ROE-NNN-*-impact-analysis.md` → 3. User approval → 4. Branch from `origin/develop` (or `origin/staging` for ROE-016 soak follow-ons) → 5. Implement + Vitest → 6. Update plan/TODO/CONTEXT/CURSOR → 7. Commit / push / PR / board → 8. Ops redeploy if needed → QA Pass → Done
 
 ### Queue
 
 | Ticket | Status | Impact |
 |--------|--------|--------|
+| **ROE-018** Catalog freshness & honest dish-match | Feature branch implemented; staging push + catalog seed pending | `docs/ROE-018-catalog-freshness-honest-match-impact-analysis.md` |
 | **ROE-017** Staging soak fixes | Branch `feature/ROE-017-staging-soak-fixes` (from staging); sweet/negation/catalog/telemetry | `docs/ROE-017-staging-soak-fixes-impact-analysis.md` |
 | **ROE-016** (EXP-001) Experimental infra | **Staging live** → https://v0-rasaoi-staging.vercel.app; EXP-T1–T11 + Apify cron; sim 520@100%; **no develop merge** until soak Pass | `docs/impact_analysis_experimental_infra.md` |
 | **ROE-014** Intent situational layers | Unmerged branch | (on `feature/ROE-014-intent-situational-layers`) |
@@ -164,7 +165,7 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 | **ROE-009** (FUL-001) contacts | Merged PR #21; ops + QA | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
 | ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
 
-Next free serial: **ROE-018**.
+Next free serial: **ROE-019**.
 
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-ask-audit` canvas.
 

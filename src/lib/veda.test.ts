@@ -75,6 +75,58 @@ describe("scoreRestaurants cuisine routing", () => {
     expect(scored[0].restaurant.cuisine).toBe("Thai");
     expect(scored[0].score).toBeGreaterThan(scored[1].score);
   });
+
+  it("ROE-018: caps score and tags No exact dish when named dish missing", () => {
+    const dasara = mockRestaurant({
+      id: "dasara",
+      name: "DASARA",
+      cuisine: "Indian",
+      signature_dish: "Chicken 65",
+      menu_items: [{ name: "Chicken 65" }, { name: "Apollo Fish" }],
+    });
+    const scored = scoreRestaurants(
+      [dasara],
+      baseDials,
+      [],
+      undefined,
+      "goat clay pot rice",
+      "Indian",
+    );
+    expect(scored[0].dishMatch).toBe("none");
+    expect(scored[0].score).toBeLessThanOrEqual(72);
+    expect(scored[0].inferenceTags).toContain("No exact dish");
+  });
+
+  it("ROE-018: exact match ranks Bamboo Garden above Dasara for clay pot rice", () => {
+    const bamboo = mockRestaurant({
+      id: "bamboo",
+      name: "Chennai Bamboo Garden",
+      cuisine: "Indian",
+      signature_dish: "Clay-Pot Rice (Goat)",
+      menu_items: [
+        { name: "Clay-Pot Rice (Goat)" },
+        { name: "Chicken 65" },
+      ],
+    });
+    const dasara = mockRestaurant({
+      id: "dasara2",
+      name: "DASARA",
+      cuisine: "Indian",
+      signature_dish: "Chicken 65",
+      menu_items: [{ name: "Chicken 65" }, { name: "Apollo Fish" }],
+    });
+    const scored = scoreRestaurants(
+      [dasara, bamboo],
+      baseDials,
+      [],
+      undefined,
+      "goat clay pot rice",
+      "Indian",
+    );
+    expect(scored[0].restaurant.name).toBe("Chennai Bamboo Garden");
+    expect(scored[0].dishMatch).toBe("exact");
+    expect(scored[1].dishMatch).toBe("none");
+  });
 });
 
 describe("normalizeWellnessTags", () => {

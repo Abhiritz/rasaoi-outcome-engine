@@ -12,7 +12,9 @@ recent_notes: >
   ROE-017 staging soak fixes on top of ROE-016: sweet-token mysore/pak fix,
   exclude_ingredients negation, catalog plate gate, telemetry verify loop.
   Staging URL for stakeholders: https://v0-rasaoi-staging.vercel.app.
-  Develop merge still locked. Next free after ROE-017: ROE-018.
+  ROE-018: catalog freshness + honest dish-match (clay-pot RCA) on
+  feature/ROE-018-catalog-freshness-honest-match — dishMatch honesty, rice-as-main
+  tokens, promote noise filter, Bamboo Garden seed SQL. Next free: ROE-019.
 ```
 
 ---

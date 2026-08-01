@@ -242,7 +242,7 @@ describe("ROE-001 sweet / dessert coherence", () => {
   });
 });
 
-describe("ROE-017 catalog plate guard", () => {
+describe("ROE-018 catalog plate guard", () => {
   const dials: DialState = { energy: 50, context: 40, budget: 50, purity: 70 };
 
   it("does not keep cuisine-bank invents off the menu", () => {
@@ -258,6 +258,23 @@ describe("ROE-017 catalog plate guard", () => {
       if (/chef's selection|jain-compliant/i.test(p.dish)) continue;
       expect(p.dish.toLowerCase()).toMatch(/dosa|idli|sambar/);
     }
+  });
+
+  it("Best Match prefers Clay-Pot Rice (Goat) when on menu for that Ask", () => {
+    const r = mockRestaurant({
+      id: "bamboo",
+      name: "Chennai Bamboo Garden",
+      cuisine: "Indian",
+      signature_dish: "Chicken 65",
+      menu_items: [
+        { name: "Chicken 65" },
+        { name: "Clay-Pot Rice (Goat)", description: "goat clay pot" },
+        { name: "Street Style Chicken 65 Noodles" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, { dish: "goat clay pot rice" });
+    expect(picks[0].dish.toLowerCase()).toMatch(/clay|goat/);
+    expect(picks[0].dish.toLowerCase()).not.toBe("chicken 65");
   });
 });
 

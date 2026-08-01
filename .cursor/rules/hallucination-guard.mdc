@@ -17,6 +17,7 @@ Agents MUST enforce these rules when changing intent parsing, scoring, pairings,
 6. **No Healthy cuisine** — “something healthy” elevates purity only; never `filters.cuisine = Healthy` (ROE-007).
 7. **Negation hard-exclude (ROE-017)** — “not / no / excluding / without / but not \<ingredient\>” → `filters.exclude_ingredients`; plates and ranking must strip matching dishes.
 8. **Catalog plate gate (ROE-017)** — every Best/Clean/Heritage dish must exist on that venue’s `menu_items` or culinary matrix; cuisine-bank invents without catalog ID are dropped.
+9. **Honest named-dish miss (ROE-018)** — when a concrete dish Ask has no catalog hit, do not present ~100% as exact-dish success; prefer Closest / No exact dish. Refresh menus via promote — never invent the missing dish onto another kitchen.
 ## Speculation tiers (nutrition & knowledge)
 
 | Tier | Meaning | Allowed in UI/ranking |

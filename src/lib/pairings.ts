@@ -34,6 +34,9 @@ import {
   isSweetDishIntent,
   needsPlateCarrier,
   dishHitsExclusion,
+  isRiceAsMainIntent,
+  isNamedDishAsk,
+  namedDishMatchStrength,
   STARCH_COMPLETE,
 } from "./dishIntent";
 import { isDishOnRestaurantCatalog } from "./catalogGuard";
@@ -923,8 +926,11 @@ function intentCarrierName(hint?: string): string | undefined {
 
 // Carrier tokens shouldn't drive *dish* matching (otherwise "naan" would
 // pull a Naan side dish into the headline). We separate them out.
+// ROE-018: keep "rice" when the Ask is a rice-as-main plate (clay pot rice, biryani, …).
 function dishOnlyTokens(hint?: string): string[] {
-  return expandDishTokens(hint).filter((t) => !(t in CARRIER_WORDS));
+  const expanded = expandDishTokens(hint);
+  if (isRiceAsMainIntent(hint)) return expanded;
+  return expanded.filter((t) => !(t in CARRIER_WORDS));
 }
 
 function intentMatchScore(name: string, desc: string, tokens: string[]): number {
@@ -1094,6 +1100,28 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     // made every alternate card identical and wrong.
   }
   if (!best) best = tryMenu(pickBest(menu, dials, sigName, used));
+  // ROE-018: if named dish Ask and Best has zero token overlap, prefer any better catalog hit
+  if (
+    best &&
+    isNamedDishAsk(intent?.dish) &&
+    dishTokens.length &&
+    namedDishMatchStrength(best.name, best.description ?? "", dishTokens) === "none"
+  ) {
+    const better = [...menu]
+      .filter(
+        (m) =>
+          !used.has(m.name.toLowerCase()) &&
+          !isCarrierOnlyDish(m.name, m.description ?? "") &&
+          !dishHitsExclusion(m.name, m.description ?? "", exclusions) &&
+          namedDishMatchStrength(m.name, m.description ?? "", dishTokens) !== "none",
+      )
+      .sort(
+        (a, b) =>
+          intentMatchScore(b.name, b.description ?? "", dishTokens) -
+          intentMatchScore(a.name, a.description ?? "", dishTokens),
+      )[0];
+    if (better) best = { name: better.name, verified: true, ...menuDiet(better) };
+  }
   // ROE-017: when sweet craving, never accept savory Best if a dessert exists on menu/matrix
   if (best && sweet && !isDessertDish(best.name, best.description ?? "")) {
     const dessertHit =

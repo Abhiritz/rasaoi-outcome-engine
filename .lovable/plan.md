@@ -2,9 +2,10 @@
 
 | Priority | Ticket | Status |
 |----------|--------|--------|
-| — | **[ROE-017] Staging soak fixes** | Branch `feature/ROE-017-staging-soak-fixes` from staging — sweet/negation/catalog/telemetry; commit ready for staging push |
+| 1 | **[ROE-018] Catalog freshness & honest dish-match** | Implemented on `feature/ROE-018-catalog-freshness-honest-match` — push + staging SQL seed / re-soak |
+| — | **[ROE-017] Staging soak fixes** | Branch `feature/ROE-017-staging-soak-fixes` — commit ready; push/merge to staging still open |
 | — | **[ROE-016] Experimental infra (EXP-001)** | **Staging live** → https://v0-rasaoi-staging.vercel.app — sim GATE PASS 520@100%; **no develop merge** until formal plate soak + your approval |
-| 1 | **[ROE-014] Intent situational layers** | Unmerged branch (queues ROE-015 Ask situational labels) |
+| — | **[ROE-014] Intent situational layers** | Unmerged branch (queues ROE-015 Ask situational labels) |
 | — | Optional: ROE-006 **+perf** (matrix-first GL) | Later |
 
 **ROE-012** — superseded (folded into ROE-011).
@@ -18,7 +19,7 @@
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-016-experimental-infra` |
 
 Rules:
-1. **ROE-NNN** is the global serial — never skip. Next free after this queue: **ROE-018**.
+1. **ROE-NNN** is the global serial — never skip. Next free after this queue: **ROE-019**.
 2. **ABC-NNN** is the workstream alias when one exists (`ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles use the **same** format.
 4. Commit subject: dual tags then a short imperative phrase.
@@ -30,10 +31,12 @@ Experimental tickets: `docs/experimental/tickets/README.md`
 Hallucination guard: `docs/ROE-016-hallucination-guard-impact-analysis.md` + `.cursor/rules/hallucination-guard.mdc`  
 Staging runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`  
 Apify cron: `docs/experimental/APIFY_CLI_CRON_SETUP.md`  
+ROE-018 impact: `docs/ROE-018-catalog-freshness-honest-match-impact-analysis.md`  
 Progress: `TODO_PROGRESS.md`
 
 ### In progress / shipping
-- **[ROE-017] Staging soak fixes** — implemented on `feature/ROE-017-staging-soak-fixes` (sweet/negation/catalog/telemetry)
+- **[ROE-018] Catalog freshness & honest match** — coded on feature branch (honesty + rice-main + noise filter + Bamboo Garden seed SQL)
+- **[ROE-017] Staging soak fixes** — included under ROE-018 branch tip (sweet/negation/catalog/telemetry)
 - **[ROE-016] Experimental infra (EXP-001)** — staging live (https://v0-rasaoi-staging.vercel.app); EXP-T1–T11 done; Apify weekly cron live; **develop merge** still locked
 - **[ROE-014] Intent situational layers** — unmerged
 

@@ -189,6 +189,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - `CuisineFilter` subtitle: “Catalog · Indian nearby” when only one cuisine chip exists.
 - Impact analyses: `docs/CRS-003-oceany-impact-analysis.md`, `docs/ROE-001-sweet-dessert-impact-analysis.md`, `docs/ROE-003-mood-feeling-plates-impact-analysis.md`. Keep `.cursor/CONTEXT_PLAN.md` updated on pushes.
 - Sweet ask (“something sweet”) → `filters.dish` dessert signal; Best Match must be a real mithai/dessert when on menu. **ROE-017:** bare `mysore`/`pak` tokens removed so Mysore Masala Dosa is not a false sweet hit.
+- **[ROE-018]:** named-dish Ask with no catalog hit → `dishMatch: none`, score capped, UI shows **Closest / No exact dish** (not naked 100%). Rice-as-main Asks keep `rice` as a dish token. Catalog refresh via EXP-T11 promote + `seed-bamboo-garden-clay-pot.sql`.
 - Feeling ask (“Celebrating mood with friends”) → high context, **no** dish chip; Best Match is a shareable main — never roti/naan alone.
 - South Indian venues (e.g. Mylapore) → dosa/idli/sambar plates; never pan-Indian bank Dal Tadka / Butter Chicken.
 - **Mythaai** demo venue removed from catalog (ROE-005 A) — do not re-seed as a Folsom restaurant.

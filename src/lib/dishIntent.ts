@@ -165,3 +165,49 @@ export function intentMatchScore(name: string, desc: string, tokens: string[]): 
   }
   return score;
 }
+
+/** ROE-018: rice is the vessel of the Ask (biryani / clay-pot rice / fried rice), not a side. */
+export const RICE_AS_MAIN_PATTERN =
+  /\b(clay[- ]?pot\s+rice|biryani|fried\s+rice|pulao|pilaf|khichdi|khichri|claypot)\b/i;
+
+export function isRiceAsMainIntent(phrase?: string): boolean {
+  if (!phrase) return false;
+  return RICE_AS_MAIN_PATTERN.test(phrase);
+}
+
+/**
+ * ROE-018: concrete named-dish Ask (not mood-only / bare craving words).
+ * Used to trigger honest "no exact dish" venue scoring.
+ */
+export function isNamedDishAsk(phrase?: string): boolean {
+  if (!phrase) return false;
+  const lc = phrase.toLowerCase().trim();
+  if (!lc || lc.length < 4) return false;
+  // Craving-only / category words alone are not "named dish" honesty mode
+  if (
+    /^(something\s+)?(sweet|spicy|healthy|light|oceany|coastal|seafood)\s*$/i.test(lc) ||
+    /^(dessert|mithai|treat)$/i.test(lc)
+  ) {
+    return false;
+  }
+  const tokens = expandDishTokens(phrase).filter((t) => t.length >= 3);
+  return tokens.length >= 2 || /\b(clay|pot|biryani|tikka|dosa|curry|noodle|pizza|burger|soup|salad)\b/i.test(lc);
+}
+
+/** Score how well a menu line matches intent tokens (0 = none). */
+export function namedDishMatchStrength(
+  name: string,
+  desc: string,
+  tokens: string[],
+): "exact" | "partial" | "none" {
+  if (!tokens.length) return "none";
+  const t = `${name} ${desc}`.toLowerCase();
+  const hits = tokens.filter((tok) => t.includes(tok));
+  if (!hits.length) return "none";
+  const ratio = hits.length / tokens.length;
+  // Multi-token asks (goat + clay + pot + rice): need majority overlap for exact
+  if (tokens.length >= 2 && ratio >= 0.5 && hits.length >= 2) return "exact";
+  if (tokens.length === 1 && hits.length === 1) return "exact";
+  if (ratio >= 0.34) return "partial";
+  return "none";
+}
