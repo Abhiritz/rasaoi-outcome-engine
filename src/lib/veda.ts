@@ -473,7 +473,7 @@ export function scoreRestaurants(
         exclusions,
         dietary: strictDietary,
       });
-      let fulfillment: FulfillmentLevel | undefined =
+      const fulfillment: FulfillmentLevel | undefined =
         fulfill.level === "n/a" ? undefined : fulfill.level;
       if (fulfill.level !== "n/a") {
         score += fulfill.delta;
