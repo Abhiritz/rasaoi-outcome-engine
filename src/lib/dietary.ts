@@ -39,7 +39,7 @@ export interface DishDietFields {
 }
 
 const MEAT_MARKERS =
-  /\b(chicken|mutton|lamb|beef|pork|bacon|ham|sausage|turkey|duck|fish|seafood|shrimp|prawn|crab|lobster|salmon|tuna|anchovy|gelatin|lard|tandoori chicken|butter chicken|tikka masala|chicken tikka|mutton kebab|chicken kebab|boti kebab|gosht|meat)\b/i;
+  /\b(chicken|goat|mutton|lamb|beef|pork|bacon|ham|sausage|turkey|duck|fish|seafood|shrimp|prawn|crab|lobster|salmon|tuna|anchovy|gelatin|lard|tandoori chicken|butter chicken|tikka masala|chicken tikka|mutton kebab|chicken kebab|boti kebab|gosht|meat)\b/i;
 
 const EGG_MARKERS = /\b(egg|eggs|omelette|bhurji|anda)\b/i;
 
@@ -204,23 +204,30 @@ function passesRegexGate(blob: string, intent: DietaryIntent): boolean {
 function passesTagGate(item: DishDietFields, intent: DietaryIntent): boolean | null {
   const diet_class = isDietClass(item.diet_class) ? item.diet_class : undefined;
   const mods = item.dietary_modifiers ?? [];
+  // ROE-019: unknown must fall through to regex — do not hard-fail non_veg
+  if ((!diet_class || diet_class === "unknown") && mods.length === 0) return null;
   if (!diet_class && mods.length === 0) return null;
 
   const hasMod = (m: DietaryModifier) => mods.includes(m);
 
   switch (intent) {
     case "non_veg":
+      if (diet_class === "unknown") return null;
       return diet_class === "non_veg";
     case "eggetarian":
+      if (diet_class === "unknown") return null;
       if (diet_class === "non_veg") return false;
       return diet_class === "eggetarian" || Boolean(item.contains_eggs);
     case "vegetarian":
+      if (diet_class === "unknown") return null;
       if (diet_class === "non_veg") return false;
       if (diet_class === "eggetarian") return false;
       return diet_class === "vegetarian" || diet_class === "vegan" || hasMod("jain");
     case "vegan":
+      if (diet_class === "unknown") return null;
       return diet_class === "vegan";
     case "jain":
+      if (diet_class === "unknown") return null;
       if (diet_class === "non_veg" || diet_class === "eggetarian") return false;
       return hasMod("jain") || (diet_class === "vegan" || diet_class === "vegetarian");
     case "halal":

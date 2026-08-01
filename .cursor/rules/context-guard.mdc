@@ -34,6 +34,10 @@ Run `npm test` when changing `src/lib/` scoring, dietary, or pairings logic.
 
 Read `.cursor/rules/hallucination-guard.mdc` when touching intent, pairings, scoring, culinary data, nutrition, or experimental AI paths. Impact doc: `docs/ROE-016-hallucination-guard-impact-analysis.md`.
 
+## Ask-fulfillment ranking (ROE-019)
+
+Read `.cursor/rules/ask-fulfillment.mdc` when changing `veda.ts`, `pairings.ts`, or culinary matrix/index. Venue % and Best plate must maximize catalog fulfillment of the Ask; matrix course `identity` beats tree-root protein family when set. Impact: `docs/ROE-019-ask-fulfillment-matrix-impact-analysis.md`.
+
 ## Experimental sandbox (ROE-016)
 
 - Code under `src/lib/experimental/`, `scripts/experimental/`, `supabase/migrations_experimental/` is **sandboxed** from production.

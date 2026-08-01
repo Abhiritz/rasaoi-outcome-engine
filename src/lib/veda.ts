@@ -7,6 +7,10 @@ import {
   isSweetDishIntent,
   namedDishMatchStrength,
 } from "./dishIntent";
+import {
+  type FulfillmentLevel,
+  venueAskFulfillment,
+} from "./askFulfillment";
 
 export type Restaurant = Tables<"restaurants">;
 export type Promo = Tables<"active_promos">;
@@ -33,6 +37,8 @@ export interface ScoredRestaurant {
   promo?: Promo;
   /** ROE-018: how well this venue's catalog matches a named dish Ask. */
   dishMatch?: "exact" | "partial" | "none";
+  /** ROE-019: catalog Ask-fulfillment level (named / protein / sweet / exclusions). */
+  fulfillment?: FulfillmentLevel;
 }
 
 /** Canonical wellness slugs from parse-intent (must stay in sync with edge function). */
@@ -456,6 +462,24 @@ export function scoreRestaurants(
         }
       }
 
+      // ROE-019: Ask-fulfillment — catalog capability before vibe dials dominate
+      const menuForFulfill = Array.isArray(
+        (r as Restaurant & { menu_items?: { name?: string; description?: string }[] }).menu_items,
+      )
+        ? (r as Restaurant & { menu_items?: { name?: string; description?: string }[] }).menu_items!
+        : [];
+      const fulfill = venueAskFulfillment(r.name, menuForFulfill, {
+        dish: intentDish,
+        exclusions,
+        dietary: strictDietary,
+      });
+      let fulfillment: FulfillmentLevel | undefined =
+        fulfill.level === "n/a" ? undefined : fulfill.level;
+      if (fulfill.level !== "n/a") {
+        score += fulfill.delta;
+        if (fulfill.tag && !tags.includes(fulfill.tag)) tags.push(fulfill.tag);
+      }
+
       // --- Purity alignment (Sovereign Seal weighting) ---
       const userPurity = dials.purity;
       const rPurity = PURITY_RANK[r.purity_tier] ?? 50;
@@ -587,6 +611,10 @@ export function scoreRestaurants(
         score = Math.min(score, 72);
         if (!tags.includes("No exact dish")) tags.push("No exact dish");
       }
+      // ROE-019: category Asks with zero catalog fulfillment also cap confidence
+      if (fulfillment === "none" && !namedAsk) {
+        score = Math.min(score, 68);
+      }
 
       const stateLabel = lowRecovery
         ? "low recovery state"
@@ -605,14 +633,31 @@ export function scoreRestaurants(
       const honestySuffix =
         namedAsk && dishMatch === "none"
           ? ` Note: "${intentDish}" was not found on this kitchen's stored menu — showing a closest fit, not an exact dish match.`
-          : "";
+          : fulfillment === "none"
+            ? ` Note: this kitchen's stored menu cannot fulfill your Ask with an eligible plate — ranking prefers kitchens that can.`
+            : "";
 
       const why = sigInMenu
         ? `I've selected the ${r.signature_dish} from ${r.name} because it provides ${r.dish_outcome} — aligned to your ${stateLabel}, ${cState} context, and ${purityLabel}-tier purity preference.${promoSuffix}${honestySuffix}`
         : `Fetching verified menu data for ${r.name}… In the meantime, ${r.name} aligns to your ${stateLabel}, ${cState} context, and ${purityLabel}-tier purity preference.${promoSuffix}${honestySuffix}`;
 
       const restaurantOut = strictDietary ? sanitizeRestaurantForDietary(r, strictDietary) : r;
-      return { restaurant: restaurantOut, score, why, inferenceTags: tags, promo, dishMatch };
+      return {
+        restaurant: restaurantOut,
+        score,
+        why,
+        inferenceTags: tags,
+        promo,
+        dishMatch,
+        fulfillment,
+      };
     })
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => {
+      // ROE-019: fulfillment tier first, then composite score
+      const rank = (f?: FulfillmentLevel) =>
+        f === "full" ? 3 : f === "partial" ? 2 : f === "none" ? 0 : 1;
+      const d = rank(b.fulfillment) - rank(a.fulfillment);
+      if (d !== 0) return d;
+      return b.score - a.score;
+    });
 }

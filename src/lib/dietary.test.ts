@@ -71,6 +71,12 @@ describe("passesDietaryGate", () => {
   it("infers non_veg from name when diet_class unknown (regex fallback)", () => {
     expect(passesDietaryGate({ name: "Tandoori Chicken" }, "vegetarian")).toBe(false);
   });
+
+  it("ROE-019: diet_class unknown + meat name passes non_veg via regex", () => {
+    expect(
+      passesDietaryGate({ name: "Goat Curry", diet_class: "unknown" }, "non_veg"),
+    ).toBe(true);
+  });
 });
 
 describe("inferDietClass", () => {
