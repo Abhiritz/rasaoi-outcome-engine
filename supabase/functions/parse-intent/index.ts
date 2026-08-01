@@ -302,14 +302,24 @@ function mergeWellnessTags(modelTags: unknown, transcript: string): WellnessTag[
   return WELLNESS_TAG_SLUGS.filter((t) => merged.has(t));
 }
 
-function sanitizeFilters(filters: unknown, transcript: string): FilterPayload {
+function sanitizeFilters(
+  filters: unknown,
+  transcript: string,
+  modelRestated?: string,
+): FilterPayload {
   const raw = filters && typeof filters === "object" ? (filters as Record<string, unknown>) : {};
   const transcriptCuisine = extractCuisineFromTranscript(transcript);
   const transcriptDish = extractDishFromTranscript(transcript);
   const transcriptCulture = extractCultureFromTranscript(transcript);
   const wellness_tags = mergeWellnessTags(raw.wellness_tags, transcript);
   const dietary = mergeDietary(raw.dietary, transcript);
-  const exclude_ingredients = mergeExcludedIngredients(raw.exclude_ingredients, transcript);
+  const dishPreview = typeof raw.dish === "string" && raw.dish.trim() ? raw.dish.trim() : undefined;
+  const exclude_ingredients = mergeExcludedIngredients(
+    raw.exclude_ingredients,
+    transcript,
+    modelRestated ?? "",
+    dishPreview ?? "",
+  );
 
   let cuisine =
     typeof raw.cuisine === "string" && raw.cuisine.trim() ? normalizeCuisineLabel(raw.cuisine) : undefined;
@@ -417,7 +427,11 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
     purity: clampDial(dialsRaw.purity, 70),
   };
 
-  const filters = sanitizeFilters(obj.filters, transcript);
+  const modelRestated =
+    typeof obj.restated_intent === "string" && obj.restated_intent.trim()
+      ? obj.restated_intent.trim()
+      : undefined;
+  const filters = sanitizeFilters(obj.filters, transcript, modelRestated);
 
   const transcriptLower = transcript.toLowerCase();
   const sweetCraving = isSweetCravingTranscript(transcript);

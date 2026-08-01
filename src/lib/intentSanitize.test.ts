@@ -11,6 +11,7 @@ import {
   isSweetCravingTranscript,
   mergeBloodSugarLens,
   mergeDietary,
+  mergeExcludedIngredients,
   RESTATED_MAX_CHARS,
 } from "./intentSanitize";
 
@@ -140,6 +141,23 @@ describe("intentSanitize [ROE-008] (IP-FIX-002)", () => {
       expect(extractExcludedIngredients("no shrimp and excluding pork")).toEqual(
         expect.arrayContaining(["shrimp", "pork"]),
       );
+    });
+
+    it("ROE-020: meat not murgi → chicken", () => {
+      expect(extractExcludedIngredients("meat not murgi")).toEqual(["chicken"]);
+      expect(extractExcludedIngredients("meat not murgh")).toEqual(["chicken"]);
+      expect(extractExcludedIngredients("non-murgi biryani")).toEqual(["chicken"]);
+    });
+
+    it("ROE-020: parenthetical no chicken in restated", () => {
+      expect(extractExcludedIngredients("Non_veg · Meat (no chicken)")).toEqual(["chicken"]);
+      expect(extractExcludedIngredients("Meat (no murgi)")).toEqual(["chicken"]);
+    });
+
+    it("ROE-020: merge transcript murgi + restated no chicken", () => {
+      expect(
+        mergeExcludedIngredients(undefined, "meat not murgi", "Meat (no chicken)"),
+      ).toEqual(["chicken"]);
     });
   });
 });

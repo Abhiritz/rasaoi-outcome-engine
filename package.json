@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "culinary:build-index": "node scripts/personal/build-culinary-index.mjs",
     "culinary:enrich-identity": "node scripts/personal/enrich-culinary-identity.mjs",
+    "soak:exclusions": "node scripts/experimental/soak-exclusions.mjs",
     "experimental:sim": "node scripts/experimental/adversarial-simulator.mjs",
     "experimental:expand-corpus": "node scripts/experimental/expand-chaotic-corpus.mjs",
     "experimental:export-menu-targets": "node scripts/experimental/export-menu-targets.mjs",

@@ -130,6 +130,7 @@ export function isSweetCravingTranscript(transcript: string): boolean {
 /**
  * ROE-017: Culinary keywords negated by "not" / "no" / "excluding" / "without" / "but not".
  * Pushed into filters.exclude_ingredients — hard strip from ranking + plates.
+ * ROE-020: vernacular aliases resolve to English canons before allowlist check.
  */
 const EXCLUDABLE_INGREDIENTS = [
   "chicken",
@@ -155,6 +156,40 @@ const EXCLUDABLE_INGREDIENTS = [
   "shellfish",
 ] as const;
 
+/** Alias / vernacular → canonical exclude token (ROE-020). */
+export const EXCLUDE_ALIASES: Record<string, string> = {
+  murgi: "chicken",
+  murgh: "chicken",
+  murg: "chicken",
+  kozhi: "chicken",
+  kodi: "chicken",
+  bakra: "goat",
+  bakri: "goat",
+  khasi: "mutton",
+  erachi: "mutton",
+  macchi: "fish",
+  machli: "fish",
+  jhinga: "shrimp",
+  jheenga: "shrimp",
+};
+
+/** Resolve raw token (alias or canon) → canonical exclude slug, or undefined. */
+export function canonicalizeExcludeToken(raw: string): string | undefined {
+  const s = raw.trim().toLowerCase().replace(/[^a-z-]/g, "");
+  if (!s || s === "veg" || s === "vegetarian") return undefined;
+  if (s === "eggs") return "egg";
+  const aliased = EXCLUDE_ALIASES[s];
+  if (aliased) return aliased;
+  if ((EXCLUDABLE_INGREDIENTS as readonly string[]).includes(s)) {
+    return s === "eggs" ? "egg" : s;
+  }
+  const plural = EXCLUDABLE_INGREDIENTS.find(
+    (c) => c === `${s}` || c === `${s}s` || `${c}s` === s || (c === "prawn" && s === "prawns"),
+  );
+  if (plural) return plural === "eggs" ? "egg" : plural;
+  return undefined;
+}
+
 const NEGATION_EXCLUDE_PATTERNS: RegExp[] = [
   /\b(?:but\s+)?not\s+(\w[\w-]*)/gi,
   /\bno\s+(\w[\w-]*)/gi,
@@ -170,43 +205,50 @@ export function extractExcludedIngredients(transcript: string): string[] {
     re.lastIndex = 0;
     let m: RegExpExecArray | null;
     while ((m = re.exec(t)) !== null) {
-      const raw = (m[1] ?? "").toLowerCase().replace(/[^a-z-]/g, "");
-      if (!raw || raw === "veg" || raw === "vegetarian") continue;
-      // Map plurals / aliases onto canonical exclude list
-      const canonical = EXCLUDABLE_INGREDIENTS.find(
-        (c) => c === raw || c === `${raw}s` || `${c}s` === raw || (c === "prawn" && raw === "prawns"),
-      );
-      if (canonical) found.add(canonical === "eggs" ? "egg" : canonical);
-      else if (EXCLUDABLE_INGREDIENTS.includes(raw as (typeof EXCLUDABLE_INGREDIENTS)[number])) {
-        found.add(raw === "eggs" ? "egg" : raw);
-      }
+      const canon = canonicalizeExcludeToken(m[1] ?? "");
+      if (canon) found.add(canon);
     }
   }
-  // Phrase: "meat but not chicken" already caught; also "non-chicken" style
+  // "non-chicken" / "non-murgi" style
   for (const c of EXCLUDABLE_INGREDIENTS) {
+    if (c === "eggs") continue;
     if (new RegExp(`\\bnon[- ]?${c}\\b`, "i").test(t)) found.add(c === "eggs" ? "egg" : c);
+  }
+  for (const [alias, canon] of Object.entries(EXCLUDE_ALIASES)) {
+    if (new RegExp(`\\bnon[- ]?${alias}\\b`, "i").test(t)) found.add(canon);
+  }
+  // Parenthetical: "meat (no chicken)" / "meat (no murgi)"
+  const paren = t.matchAll(/\(\s*no\s+(\w[\w-]*)\s*\)/gi);
+  for (const m of paren) {
+    const canon = canonicalizeExcludeToken(m[1] ?? "");
+    if (canon) found.add(canon);
   }
   return [...found];
 }
 
+/**
+ * Merge model excludes + all text surfaces (transcript, restated, dish).
+ * ROE-020: restated may say "no chicken" while transcript said "not murgi".
+ */
 export function mergeExcludedIngredients(
   modelList: unknown,
-  transcript: string,
+  ...texts: string[]
 ): string[] | undefined {
-  const fromTx = extractExcludedIngredients(transcript);
-  const fromModel: string[] = [];
+  const found = new Set<string>();
+  for (const text of texts) {
+    if (typeof text === "string" && text.trim()) {
+      for (const x of extractExcludedIngredients(text)) found.add(x);
+    }
+  }
   if (Array.isArray(modelList)) {
     for (const x of modelList) {
       if (typeof x === "string" && x.trim()) {
-        const s = x.trim().toLowerCase();
-        if (EXCLUDABLE_INGREDIENTS.includes(s as (typeof EXCLUDABLE_INGREDIENTS)[number]) || s === "egg") {
-          fromModel.push(s === "eggs" ? "egg" : s);
-        }
+        const canon = canonicalizeExcludeToken(x);
+        if (canon) found.add(canon);
       }
     }
   }
-  const merged = [...new Set([...fromTx, ...fromModel])];
-  return merged.length ? merged : undefined;
+  return found.size ? [...found] : undefined;
 }
 
 /**

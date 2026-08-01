@@ -55,6 +55,40 @@ function heuristicParse(transcript) {
   }
   if (/\b(birthday|celebrat)/.test(t)) out.dials.context = 80;
 
+  // ROE-020: exclusion aliases (murgi → chicken) — keep aligned with soak:exclusions
+  const excl = [];
+  const aliasMap = {
+    murgi: "chicken",
+    murgh: "chicken",
+    murg: "chicken",
+    kozhi: "chicken",
+    kodi: "chicken",
+    bakra: "goat",
+    bakri: "goat",
+  };
+  const canons = new Set(["chicken", "lamb", "goat", "mutton", "pork", "shrimp", "fish", "beef", "egg"]);
+  const negRes = [
+    /\b(?:but\s+)?not\s+(\w+)/gi,
+    /\bno\s+(\w+)/gi,
+    /\bexcluding\s+(\w+)/gi,
+    /\bwithout\s+(\w+)/gi,
+  ];
+  for (const re of negRes) {
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(t)) !== null) {
+      const raw = (m[1] || "").toLowerCase();
+      const canon = aliasMap[raw] || (canons.has(raw) ? raw : null);
+      if (canon) excl.push(canon);
+    }
+  }
+  for (const m of t.matchAll(/\(\s*no\s+(\w+)\s*\)/gi)) {
+    const raw = (m[1] || "").toLowerCase();
+    const canon = aliasMap[raw] || (canons.has(raw) ? raw : null);
+    if (canon) excl.push(canon);
+  }
+  if (excl.length) out.filters.exclude_ingredients = [...new Set(excl)];
+
   // Carrier-only asks must not become dish filters (ROE-003)
   if (/\b(just|only)\b.*\b(naan|roti)\b/.test(t) || /\bnaan and roti\b/.test(t)) {
     // leave filters.dish unset
@@ -130,6 +164,14 @@ function evaluate(seed, parsed) {
   if (e.mood === "celebratory" && parsed.dials.context < 70) {
     failures.push("celebratory context dial too low");
   }
+  if (e.exclude_contains) {
+    const got = (parsed.filters.exclude_ingredients || []).map((x) => String(x).toLowerCase());
+    for (const x of e.exclude_contains) {
+      if (!got.includes(String(x).toLowerCase())) {
+        failures.push(`exclude missing ${x} got=${JSON.stringify(got)}`);
+      }
+    }
+  }
 
   return failures;
 }
@@ -157,11 +199,20 @@ function main() {
   const golden = existsSync(GOLDEN_PATH)
     ? JSON.parse(readFileSync(GOLDEN_PATH, "utf8"))
     : [];
+  const exclSeedsPath = join(FIX, "exclusion-alias-seeds.json");
+  const exclSeeds = existsSync(exclSeedsPath)
+    ? JSON.parse(readFileSync(exclSeedsPath, "utf8")).map((s) => ({
+        id: s.id,
+        transcript: s.transcript,
+        expect: { exclude_contains: s.expect_exclude },
+      }))
+    : [];
+  const allSeeds = [...SEEDS, ...exclSeeds];
   let pass = 0;
   let fail = 0;
   const failIds = [];
 
-  for (const seed of SEEDS) {
+  for (const seed of allSeeds) {
     const parsed = heuristicParse(seed.transcript);
     const failures = evaluate(seed, parsed);
     if (failures.length) {
@@ -186,7 +237,7 @@ function main() {
 
   const total = pass + fail;
   const pct = total ? Math.round((pass / total) * 1000) / 10 : 0;
-  console.log(`\nAdversarial summary: ${pass}/${total} pass (${pct}%). Target ≥${MIN_PASS_PCT}% (corpus ${SEEDS.length}).`);
+  console.log(`\nAdversarial summary: ${pass}/${total} pass (${pct}%). Target ≥${MIN_PASS_PCT}% (corpus ${allSeeds.length}).`);
   console.log(`Golden → ${GOLDEN_PATH}`);
   console.log(`Negatives → ${NEG_PATH}`);
   if (fail > 20) console.log(`(showing first 20 fails; total fails=${fail})`);

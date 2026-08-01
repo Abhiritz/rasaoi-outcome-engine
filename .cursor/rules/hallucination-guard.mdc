@@ -15,10 +15,10 @@ Agents MUST enforce these rules when changing intent parsing, scoring, pairings,
 4. **Catalog integrity** — Do not re-seed or invent venues (ROE-005 Mythaai retired).
 5. **Intent grounding** — `parse-intent` output MUST pass `_shared/intent-sanitize.ts` (`mergeDietary`, carrier strip, transcript cuisine/dish extract, **`exclude_ingredients` from negation**). Any model router MUST still call `validateAndSanitize` / `sanitizeFilters` after LLM output.
 6. **No Healthy cuisine** — “something healthy” elevates purity only; never `filters.cuisine = Healthy` (ROE-007).
-7. **Negation hard-exclude (ROE-017)** — “not / no / excluding / without / but not \<ingredient\>” → `filters.exclude_ingredients`; plates and ranking must strip matching dishes.
+7. **Negation hard-exclude (ROE-017 / ROE-020)** — “not / no / excluding / without / but not \<ingredient\>” → `filters.exclude_ingredients`. Vernacular aliases (`murgi`/`murgh`/`kozhi` → chicken, …) via `EXCLUDE_ALIASES`. Merge transcript + restated + dish. Plates and ranking must strip matches. New synonym soak miss → add `exclusion-alias-seeds.json` + alias row (not screenshot-only hotfix).
 8. **Catalog plate gate (ROE-017)** — every Best/Clean/Heritage dish must exist on that venue’s `menu_items` or culinary matrix; cuisine-bank invents without catalog ID are dropped.
 9. **Honest named-dish miss (ROE-018)** — when a concrete dish Ask has no catalog hit, do not present ~100% as exact-dish success; prefer Closest / No exact dish. Refresh menus via promote — never invent the missing dish onto another kitchen.
-10. **Ask-fulfillment ranking (ROE-019)** — venue rank and Best plate maximize **catalog fulfillment of the Ask** (named dish, protein prefer/exclude, food type, diet, cuisine region). Never show `Chef's selection` / unrelated fallback as fulfillment when an eligible Ask-aligned dish exists; do not let a high vibe-% bury better-fulfilling kitchens in Alternatives. Matrix `identity` (proteins, diet_class, cuisine_region, food_type, dish_role) beats tree-root protein family when set — see `.cursor/rules/ask-fulfillment.mdc`.
+10. **Ask-fulfillment ranking (ROE-019 / ROE-020)** — venue rank and Best plate maximize catalog Ask fulfillment. In AFR mode, `ensureUnique` must not keep dial Best that fails Ask-align. Matrix `identity` beats tree-root protein family when set — see `.cursor/rules/ask-fulfillment.mdc`.
 ## Speculation tiers (nutrition & knowledge)
 
 | Tier | Meaning | Allowed in UI/ranking |

@@ -99,11 +99,20 @@ export function normalizeParsedIntent(raw: unknown, transcript: string): ParsedI
   if (isDietaryIntent(filtersRaw.dietary)) {
     filters.dietary = filtersRaw.dietary;
   }
-  const excludeMerged = mergeExcludedIngredients(filtersRaw.exclude_ingredients, transcript);
+  const excludeMerged = mergeExcludedIngredients(
+    filtersRaw.exclude_ingredients,
+    transcript,
+    typeof obj.restated_intent === "string" ? obj.restated_intent : "",
+    typeof filtersRaw.dish === "string" ? filtersRaw.dish : "",
+  );
   if (excludeMerged?.length) {
     filters.exclude_ingredients = excludeMerged;
   } else {
-    const fromTx = extractExcludedIngredients(transcript);
+    const fromTx = extractExcludedIngredients(
+      [transcript, typeof obj.restated_intent === "string" ? obj.restated_intent : ""]
+        .filter(Boolean)
+        .join(" · "),
+    );
     if (fromTx.length) filters.exclude_ingredients = fromTx;
   }
   if (Array.isArray(filtersRaw.wellness_tags)) {

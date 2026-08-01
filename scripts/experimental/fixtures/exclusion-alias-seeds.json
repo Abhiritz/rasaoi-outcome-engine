@@ -1,0 +1,42 @@
+[
+  {
+    "id": "excl-chicken-en",
+    "transcript": "meat not chicken",
+    "expect_exclude": ["chicken"]
+  },
+  {
+    "id": "excl-murgi",
+    "transcript": "meat not murgi",
+    "expect_exclude": ["chicken"]
+  },
+  {
+    "id": "excl-murgh",
+    "transcript": "I want meat but not murgh",
+    "expect_exclude": ["chicken"]
+  },
+  {
+    "id": "excl-kozhi",
+    "transcript": "non veg no kozhi",
+    "expect_exclude": ["chicken"]
+  },
+  {
+    "id": "excl-paren-restated",
+    "transcript": "Non_veg · Meat (no chicken) · Indian",
+    "expect_exclude": ["chicken"]
+  },
+  {
+    "id": "excl-paren-murgi",
+    "transcript": "Meat (no murgi)",
+    "expect_exclude": ["chicken"]
+  },
+  {
+    "id": "excl-bakra",
+    "transcript": "curry without bakra",
+    "expect_exclude": ["goat"]
+  },
+  {
+    "id": "excl-multi",
+    "transcript": "no shrimp and excluding pork",
+    "expect_exclude": ["shrimp", "pork"]
+  }
+]

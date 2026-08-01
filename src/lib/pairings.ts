@@ -1258,7 +1258,23 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       dishPassesGate(name, desc, dietary) &&
       onCatalog(name);
 
-    if (p && pickOk(p.name, p.description ?? "") && !isPlaceholderPlate(p.name)) return p;
+    if (p && pickOk(p.name, p.description ?? "") && !isPlaceholderPlate(p.name)) {
+      // ROE-020: strict Ask-align for meat / sweet / exclusions — soft otherwise (coastal miss → dial Best OK)
+      const alignedScore = askAlignedDishScore(
+        p.name,
+        p.description ?? "",
+        { dish: intent?.dish, exclusions, dietary },
+        safe.name,
+      );
+      const namedOk =
+        isNamedDishAsk(intent?.dish) &&
+        dishTokens.length > 0 &&
+        namedDishMatchStrength(p.name, p.description ?? "", dishTokens) !== "none";
+      const strictAlign = meatAsk || sweet || exclusions.length > 0;
+      if (!askFulfillMode || !strictAlign || alignedScore > 0 || namedOk) {
+        return p;
+      }
+    }
 
     // ROE-019: prefer another Ask-aligned menu line before generic fallbacks
     const aligned = pickAskAlignedMenu(used);

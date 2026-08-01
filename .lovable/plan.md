@@ -2,7 +2,8 @@
 
 | Priority | Ticket | Status |
 |----------|--------|--------|
-| 1 | **[ROE-019] Ask-fulfillment ranking + matrix identity** | Implemented on feature branch — push / merge to staging |
+| 1 | **[ROE-020] Exclusion aliases + Ask-align + auto soak** | Implemented — push / merge to staging |
+| — | **[ROE-019] Ask-fulfillment ranking + matrix identity** | On staging (after lint fix PR #32) |
 | — | **[ROE-018] Catalog freshness & honest dish-match** | Merged to `staging` (PR #30); staging SQL seed / re-soak still open |
 | — | **[ROE-017] Staging soak fixes** | Merged via ROE-018 PR tip |
 | — | **[ROE-016] Experimental infra (EXP-001)** | **Staging live** → https://v0-rasaoi-staging.vercel.app — sim GATE PASS 520@100%; **no develop merge** until formal plate soak + your approval |
