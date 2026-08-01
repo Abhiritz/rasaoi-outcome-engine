@@ -38,5 +38,20 @@
     "id": "excl-multi",
     "transcript": "no shrimp and excluding pork",
     "expect_exclude": ["shrimp", "pork"]
+  },
+  {
+    "id": "excl-no-meat-murgi",
+    "transcript": "no meat murgi",
+    "expect_exclude": ["chicken"]
+  },
+  {
+    "id": "excl-no-chicken-meat",
+    "transcript": "no chicken meat",
+    "expect_exclude": ["chicken"]
+  },
+  {
+    "id": "excl-no-meat-kozhi",
+    "transcript": "no meat kozhi",
+    "expect_exclude": ["chicken"]
   }
 ]

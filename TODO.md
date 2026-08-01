@@ -9,6 +9,18 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-021] `no meat murgi` disambiguation — implemented
+
+Impact: `docs/ROE-021-no-meat-murgi-disambiguation-impact-analysis.md`
+
+- [x] `no meat <protein>` → non_veg + dish meat + exclude (not vegetarian)
+- [x] Bare `no meat` remains vegetarian
+- [x] Restated `Meat (no chicken)` when meat Ask + animal exclude
+- [x] Soak seeds + Vitest
+- [ ] Merge staging; redeploy `parse-intent`; re-soak `no meat murgi`
+
+---
+
 ## [ROE-020] Exclusion aliases + Ask-align + auto soak — implemented
 
 Impact: `docs/ROE-020-exclusion-aliases-auto-soak-impact-analysis.md`

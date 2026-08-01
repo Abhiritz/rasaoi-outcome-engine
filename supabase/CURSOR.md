@@ -32,7 +32,7 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 |------|------|
 | `functions/_shared/ai-client.ts` | Gemini client (`geminiToolCall`, `geminiJsonObject`); reads `GEMINI_API_KEY` |
 | `functions/_shared/dietary.ts` | DIET-001 taxonomy: diet classes, modifiers, normalization, gatekeeper logic |
-| `functions/_shared/intent-sanitize.ts` | [ROE-007]/[ROE-008] transcript grounding, celebratory/carrier, `buildRestatedIntent` — sync with `src/lib/intentSanitize.ts` |
+| `functions/_shared/intent-sanitize.ts` | [ROE-007]/[ROE-008]/[ROE-020]/[ROE-021] transcript grounding, exclusion aliases, `no meat murgi` disambiguation, `buildRestatedIntent` — sync with `src/lib/intentSanitize.ts` |
 | `functions/_shared/model-router.ts` | **[ROE-016]** LiteLLM-class gateway — **wired** into `parse-intent`, `estimate-glycemic`, `ingest-menu` on staging (Gemini fallback always). Non-Gemini providers only when staging secrets + `EXPERIMENTAL_MODEL_ROUTER=true` |
 | `functions/experimental-apify-webhook/` | **[ROE-016]** Apify normalize/upsert → `experimental_dish_knowledge` (`speculative`); supports batch payloads from Actor cron |
 

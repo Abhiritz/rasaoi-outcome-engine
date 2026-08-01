@@ -70,9 +70,20 @@ const NEGATION = [
   /\bexcept\s+(?:for\s+)?(\w[\w-]*)/gi,
 ];
 
+/** ROE-021: "no meat murgi" before generic `\bno meat` drops the protein. */
+const MEAT_SCOPED = [/\bno\s+meat\s+(\w[\w-]*)/gi, /\bno\s+(\w[\w-]*)\s+meat\b/gi];
+
 function extractExcluded(transcript) {
   const found = new Set();
   const t = String(transcript).toLowerCase();
+  for (const re of MEAT_SCOPED) {
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(t)) !== null) {
+      const c = canonicalize(m[1]);
+      if (c) found.add(c);
+    }
+  }
   for (const re of NEGATION) {
     re.lastIndex = 0;
     let m;

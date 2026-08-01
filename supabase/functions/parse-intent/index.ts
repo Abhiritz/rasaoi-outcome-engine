@@ -41,6 +41,7 @@ MAPPING RULES:
 - "indulgent", "treat", "comfort food" → purity 20-40
 - "sweet", "something sweet", "dessert", "mithai", "gulab jamun", "kheer" → purity 25-45 (treat band); set filters.dish to "dessert" or the named sweet. NEVER invent a savory dish. Do not treat "sweet potato" as dessert. Prefer mithai/dessert over dosa/curry.
 - "meat but not chicken", "no shrimp", "excluding pork", "without egg" → put the negated ingredient in filters.exclude_ingredients (hard ban). Still allow other proteins when user asked for meat.
+- "no meat murgi" / "no meat chicken" / "no chicken meat" → dietary non_veg, dish meat, exclude chicken — NOT vegetarian. Bare "no meat" alone → vegetarian.
 - "diabetic", "diabetes", "low sugar", "low carb", "blood sugar", "keto" → set lens="blood_sugar". Prefer explicit metabolic language; bare "no bread/naan" alone is not enough.
 - Explicit dollar amounts: $25 → budget 0, $35 → budget 25, $50 → budget 50, $75 → budget 70, $100+ → budget 85+
 - No budget mentioned → budget 50 (neutral)
@@ -485,6 +486,8 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
     culture_tag: filters.culture_tag,
     cuisine: filters.cuisine,
     wellness_tags: filters.wellness_tags,
+    exclude_ingredients: filters.exclude_ingredients,
+    dish: filters.dish,
   });
 
   const payload: ParsedPayload = { restated_intent: restated, dials, filters, confidence };

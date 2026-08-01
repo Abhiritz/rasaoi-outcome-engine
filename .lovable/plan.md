@@ -2,7 +2,8 @@
 
 | Priority | Ticket | Status |
 |----------|--------|--------|
-| 1 | **[ROE-020] Exclusion aliases + Ask-align + auto soak** | Implemented — push / merge to staging |
+| 1 | **[ROE-021] `no meat murgi` disambiguation** | Implemented — push / merge to staging |
+| — | **[ROE-020] Exclusion aliases + Ask-align + auto soak** | On staging path |
 | — | **[ROE-019] Ask-fulfillment ranking + matrix identity** | On staging (after lint fix PR #32) |
 | — | **[ROE-018] Catalog freshness & honest dish-match** | Merged to `staging` (PR #30); staging SQL seed / re-soak still open |
 | — | **[ROE-017] Staging soak fixes** | Merged via ROE-018 PR tip |
@@ -21,7 +22,7 @@
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-016-experimental-infra` |
 
 Rules:
-1. **ROE-NNN** is the global serial — never skip. Next free after this queue: **ROE-020**.
+1. **ROE-NNN** is the global serial — never skip. Next free after this queue: **ROE-022**.
 2. **ABC-NNN** is the workstream alias when one exists (`ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles use the **same** format.
 4. Commit subject: dual tags then a short imperative phrase.

@@ -165,7 +165,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters. **ROE-019:** fulfillmentScore — rank by catalog Ask fulfillment before vibe composite |
 | `catalogGuard.ts` | **[ROE-017]** menu ∪ matrix membership check before plate return |
 | `intent.ts` | Intent client + 90s parse cache; RateLimitError + backoff (ROE-002); **celebratory offline dials on exhausted 429** (ROE-003); **`normalizeParsedIntent`** (ROE-008 / IP-FIX-002) |
-| `intentSanitize.ts` | Transcript grounding + celebratory/carrier + **`buildRestatedIntent`** + **`extractExcludedIngredients`** / **`EXCLUDE_ALIASES`** **(SYNC PAIR** with `_shared/intent-sanitize.ts`) — ROE-007 / ROE-008 / ROE-017 / **ROE-020** |
+| `intentSanitize.ts` | Transcript grounding + celebratory/carrier + **`buildRestatedIntent`** + **`extractExcludedIngredients`** / **`EXCLUDE_ALIASES`** / **`isMeatProteinScopedNegation`** **(SYNC PAIR** with `_shared/intent-sanitize.ts`) — ROE-007 / ROE-008 / ROE-017 / ROE-020 / **ROE-021** |
 | `google-places.ts` | Places search with mock interceptor |
 | `glycemic.ts` | Glycemic estimates + localStorage cache (matrix heuristics before edge, N≤8). Staging: optional experimental lens bind via `glycemicLensAdapter` |
 | `memory.ts` | Vitality Twin, consent, Mitra Pact — Twin counter is **twin syncs**, not restaurant outcomes |

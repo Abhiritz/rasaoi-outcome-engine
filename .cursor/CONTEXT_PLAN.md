@@ -4,15 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-019-impl
+last_verified_commit: pending-ROE-021-impl
 last_verified_date: 2026-08-01
-branch: feature/ROE-019-ask-fulfillment-matrix
+branch: feature/ROE-021-no-meat-murgi-disambiguation
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-019 implemented: Ask-fulfillment ranking (venue sort + Ask-aligned plates),
-  culinary-index v2 identity fields, diet_class unknown + goat MEAT_MARKERS,
-  Limited menu for this Ask instead of Chef's selection spam. Staging merge pending.
-  Next free: ROE-020.
+  ROE-021: "no meat murgi" → non_veg + dish meat + exclude chicken (not vegetarian).
+  ROE-020 exclusion aliases + Ask-align on staging path. Next free: ROE-022.
 ```
 
 ---
