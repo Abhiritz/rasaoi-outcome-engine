@@ -9,6 +9,17 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-027] Pareto + softmax plates — implemented (feature)
+
+Impact: `docs/ROE-027-pareto-softmax-plates-impact-analysis.md`  
+Story: `docs/ROE-upgrade-story.md`
+
+- [x] Softmax + cuisine diversify MiniCard alts
+- [x] Pareto front on Ask×spice plate candidates
+- [ ] Staging soak / merge
+
+---
+
 ## [ROE-026] Edge score-reading dual-run — implemented (feature)
 
 Impact: `docs/ROE-026-score-reading-dual-run-impact-analysis.md`  

@@ -161,6 +161,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script). Optional overlay via `setCulinaryLookupOverlay` when staging dynamic culinary is on. **ROE-019:** emit/consume per-dish `identity` (proteins, diet_class, cuisine_region, food_type, dish_role) — trust over tree-root protein family |
 | `culinaryCache.ts` | **[ROE-025]** Static culinary facts facade + optional experimental hydrate (`ensureCulinaryFactsHydrated`) |
 | `scoreWeights.ts` | **[ROE-025]** Named J weights F/D/P/B/W/**S**/G — SYNC PAIR with `_shared/score-weights.ts`; `npm run ci:twins` |
+| `paretoSoftmax.ts` | **[ROE-027]** Softmax alternate order + Pareto plate candidate filter |
 | `scoreReading.ts` | **[ROE-026]** Edge dual-run client (`VITE_SCORE_READING_MODE`); soft-fail compare |
 | `dishIntent.ts` | Oceany/coastal + sweet/dessert + **carrier-only / celebratory mood** helpers (CRS-003, ROE-001, ROE-003); rice-as-main (ROE-018); **ROE-024** spice preference |
 | `vedaDishes.ts` | Dish-level scoring; `cravingSweet` includes/boosts Dessert category |

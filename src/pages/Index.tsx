@@ -21,6 +21,7 @@ import {
   invokeScoreReading,
   mergeEdgeScores,
 } from "@/lib/scoreReading";
+import { orderAlternatesSoftmax } from "@/lib/paretoSoftmax";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ArrowLeft, Info, Droplet } from "lucide-react";
 
@@ -387,6 +388,8 @@ const Index = () => {
     } else {
       alternates = top;
     }
+    // ROE-027: softmax + cuisine diversify MiniCard order
+    alternates = orderAlternatesSoftmax(alternates, TOP_N, 10);
   }
 
   return (

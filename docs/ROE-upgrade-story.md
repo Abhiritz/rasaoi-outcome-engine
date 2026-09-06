@@ -26,8 +26,8 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 | 023 | Named-dish F() match rules | Pushed |
 | 024 | Choice dim **S** (spice/mild) soft in Ask scoring | Pushed |
 | 025 | Shared scoring package + culinary cache facade | Shipped PR [#36](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/36) |
-| 026 | `score-reading` dual-run (Edge hosts J) | **Shipped** PR [#37](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/37) |
-| 027 | Pareto / softmax plates | Queued |
+| 026 | `score-reading` dual-run (Edge hosts J) | Shipped PR [#37](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/37) |
+| 027 | Pareto / softmax plates | **Shipped** (this branch) |
 | 028 | Intent cache | Queued |
 | 029 | Telemetry / GL soft | Queued |
 
@@ -55,6 +55,11 @@ Fat/garnish-only token overlap no longer crowns ~100% heroes (Butter Dosai ≠ B
 - Client `VITE_SCORE_READING_MODE=off|dual|edge` (default off); dual logs drift; edge merges Edge scores
 - Soft-fail to local compare; rate-limit on invoke; no dish invention
 - Branch: `feature/ROE-026-score-reading-dual-run` · PR #37
+
+### ROE-027 — Pareto + softmax (2026-09-07)
+- Softmax + cuisine diversify for MiniCard alternates
+- Pareto front on Ask-align × spice for Ask-aligned plate picks
+- Branch: `feature/ROE-027-pareto-softmax-plates`
 
 ---
 

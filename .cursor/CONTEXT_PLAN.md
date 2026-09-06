@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-026-impl
+last_verified_commit: pending-ROE-027-impl
 last_verified_date: 2026-09-07
-branch: feature/ROE-026-score-reading-dual-run
+branch: feature/ROE-027-pareto-softmax-plates
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-026 score-reading dual-run (VITE_SCORE_READING_MODE); Edge J from jComponents +S.
-  Story: docs/ROE-upgrade-story.md. Next free: ROE-027 Pareto.
+  ROE-027 softmax alts + Pareto plate candidates. Story docs/ROE-upgrade-story.md.
+  Next free: ROE-028 intent cache.
 ```
 
 ---
@@ -288,7 +288,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch → implement + tests → sync plan/TODO/CONTEXT/CURSOR + **`docs/ROE-upgrade-story.md`** → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-027**.
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact → approve → branch → implement + tests → sync plan/TODO/CONTEXT/CURSOR + **`docs/ROE-upgrade-story.md`** → PR/board. Next free serial: **ROE-028**.
 
 | Trigger | Action |
 |---------|--------|
