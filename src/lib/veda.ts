@@ -11,6 +11,11 @@ import {
   type FulfillmentLevel,
   venueAskFulfillment,
 } from "./askFulfillment";
+import {
+  J_WEIGHTS_LENS_OFF,
+  scaleByWeight,
+  type JComponents,
+} from "./scoreWeights";
 
 export type Restaurant = Tables<"restaurants">;
 export type Promo = Tables<"active_promos">;
@@ -39,6 +44,8 @@ export interface ScoredRestaurant {
   dishMatch?: "exact" | "partial" | "none";
   /** ROE-019: catalog Ask-fulfillment level (named / protein / sweet / exclusions). */
   fulfillment?: FulfillmentLevel;
+  /** ROE-022: named J component snapshot (0–1) for explain / parity. */
+  jComponents?: JComponents;
 }
 
 /** Canonical wellness slugs from parse-intent (must stay in sync with edge function). */
@@ -476,7 +483,7 @@ export function scoreRestaurants(
       const fulfillment: FulfillmentLevel | undefined =
         fulfill.level === "n/a" ? undefined : fulfill.level;
       if (fulfill.level !== "n/a") {
-        score += fulfill.delta;
+        score += scaleByWeight(fulfill.delta, "F", J_WEIGHTS_LENS_OFF);
         if (fulfill.tag && !tags.includes(fulfill.tag)) tags.push(fulfill.tag);
       }
 
@@ -484,7 +491,7 @@ export function scoreRestaurants(
       const userPurity = dials.purity;
       const rPurity = PURITY_RANK[r.purity_tier] ?? 50;
       const purityDelta = 100 - Math.abs(userPurity - rPurity);
-      score += (purityDelta - 50) * 0.4;
+      score += scaleByWeight((purityDelta - 50) * 0.4, "P", J_WEIGHTS_LENS_OFF);
 
       if (dials.purity > 70 && r.sovereign_seal) {
         score += 12;
@@ -642,6 +649,21 @@ export function scoreRestaurants(
         : `Fetching verified menu data for ${r.name}… In the meantime, ${r.name} aligns to your ${stateLabel}, ${cState} context, and ${purityLabel}-tier purity preference.${promoSuffix}${honestySuffix}`;
 
       const restaurantOut = strictDietary ? sanitizeRestaurantForDietary(r, strictDietary) : r;
+      const jComponents: JComponents = {
+        F:
+          fulfill.level === "full"
+            ? 1
+            : fulfill.level === "partial"
+              ? 0.65
+              : fulfill.level === "none"
+                ? 0.15
+                : 0.5,
+        D: Math.max(0, Math.min(1, (dials.context + dials.energy) / 200)),
+        P: Math.max(0, Math.min(1, purityDelta / 100)),
+        B: Math.max(0, Math.min(1, 1 - Math.abs(r.price_tier - (1 + (dials.budget / 100) * 2)) / 3)),
+        W: wellnessTags.length ? Math.min(1, 0.55 + wellnessTags.length * 0.1) : 0.5,
+        G: 0, // populated when blood-sugar lens path raises soft GL (ROE-027)
+      };
       return {
         restaurant: restaurantOut,
         score,
@@ -650,6 +672,7 @@ export function scoreRestaurants(
         promo,
         dishMatch,
         fulfillment,
+        jComponents,
       };
     })
     .sort((a, b) => {
