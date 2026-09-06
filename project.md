@@ -140,7 +140,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize), `_share
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-031** (ROE-030 = salvage 021/022; ROE-029 = GL soft; epic 023–029 on staging).
+1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-032** (ROE-031 = low-oil Ask plates; ROE-030 = salvage 021/022).
 2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
