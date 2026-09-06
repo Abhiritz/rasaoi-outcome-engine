@@ -2,6 +2,12 @@
 
 import { routedJsonObject } from "../_shared/model-router.ts";
 import { normalizeDishDiet } from "../_shared/dietary.ts";
+import {
+  checkRateLimit,
+  clientKeyFromRequest,
+  envInt,
+  rateLimitJsonResponse,
+} from "../_shared/rate-limit.ts";
 // The /lab harness reviews + commits via service role.
 //
 // Request body: { restaurant_id: string, restaurant_name: string, source_url: string }
@@ -161,6 +167,15 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const rl = checkRateLimit(clientKeyFromRequest(req, "ingest-menu"), {
+    limit: envInt("RATE_LIMIT_INGEST_MENU", 10),
+    windowMs: envInt("RATE_LIMIT_WINDOW_MS", 60_000),
+  });
+  if (!rl.allowed) {
+    return rateLimitJsonResponse(corsHeaders, rl.retry_after_ms);
+  }
+
   try {
     const { restaurant_id, restaurant_name, source_url, model } = await req.json();
     if (!restaurant_id || !restaurant_name || !source_url) {

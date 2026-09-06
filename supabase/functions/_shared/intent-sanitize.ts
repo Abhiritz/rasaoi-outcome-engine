@@ -45,6 +45,7 @@ export const TRANSCRIPT_DIETARY_PATTERNS: { dietary: StrictDietary; pattern: Reg
   { dietary: "jhatka", pattern: /\bjhatka\b|jatka\b/i },
   { dietary: "kosher", pattern: /\bkosher\b/i },
   { dietary: "non_veg", pattern: /\bnon[- ]?veg\b|meat only\b|chicken only\b/i },
+  // Bare "no meat" → vegetarian. "no meat murgi" handled by isMeatProteinScopedNegation (ROE-021).
   { dietary: "vegetarian", pattern: /\bvegetarian\b|pure veg\b|eggless\b|no meat\b|no eggs?\b/i },
 ];
 
@@ -94,6 +95,8 @@ export function extractCuisineFromTranscript(transcript: string): string | undef
 }
 
 export function extractDietaryFromTranscript(transcript: string): StrictDietary | undefined {
+  // ROE-021: "no meat murgi" is a meat Ask with chicken excluded — not vegetarian.
+  if (isMeatProteinScopedNegation(transcript)) return "non_veg";
   for (const { dietary, pattern } of TRANSCRIPT_DIETARY_PATTERNS) {
     const m = pattern.exec(transcript);
     if (m && m.index != null && !isNegatedAt(transcript, m.index)) return dietary;
@@ -173,6 +176,38 @@ export const EXCLUDE_ALIASES: Record<string, string> = {
   jheenga: "shrimp",
 };
 
+/** Animal proteins used for meat-Ask / exclusion restated (ROE-021). */
+export const ANIMAL_PROTEIN_EXCLUDES = [
+  "chicken",
+  "mutton",
+  "lamb",
+  "goat",
+  "beef",
+  "pork",
+  "fish",
+  "shrimp",
+  "prawn",
+  "seafood",
+] as const;
+
+function proteinExcludeTokenAlt(): string {
+  const keys = [...Object.keys(EXCLUDE_ALIASES), ...ANIMAL_PROTEIN_EXCLUDES];
+  return [...new Set(keys)].sort((a, b) => b.length - a.length).join("|");
+}
+
+/**
+ * ROE-021: "no meat murgi" / "no chicken meat" — exclude that protein; meat Ask, not veg.
+ * Bare "no meat" alone is still vegetarian (TRANSCRIPT_DIETARY_PATTERNS).
+ */
+export function isMeatProteinScopedNegation(transcript: string): boolean {
+  const alt = proteinExcludeTokenAlt();
+  const t = transcript.toLowerCase();
+  return (
+    new RegExp(`\\bno\\s+meat\\s+(?:${alt})\\b`, "i").test(t) ||
+    new RegExp(`\\bno\\s+(?:${alt})\\s+meat\\b`, "i").test(t)
+  );
+}
+
 /** Resolve raw token (alias or canon) → canonical exclude slug, or undefined. */
 export function canonicalizeExcludeToken(raw: string): string | undefined {
   const s = raw.trim().toLowerCase().replace(/[^a-z-]/g, "");
@@ -198,9 +233,23 @@ const NEGATION_EXCLUDE_PATTERNS: RegExp[] = [
   /\bexcept\s+(?:for\s+)?(\w[\w-]*)/gi,
 ];
 
+/** ROE-021: capture protein after/before "meat" before generic `\bno <word>` grabs "meat". */
+const MEAT_SCOPED_EXCLUDE_PATTERNS: RegExp[] = [
+  /\bno\s+meat\s+(\w[\w-]*)/gi,
+  /\bno\s+(\w[\w-]*)\s+meat\b/gi,
+];
+
 export function extractExcludedIngredients(transcript: string): string[] {
   const found = new Set<string>();
   const t = transcript.toLowerCase();
+  for (const re of MEAT_SCOPED_EXCLUDE_PATTERNS) {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(t)) !== null) {
+      const canon = canonicalizeExcludeToken(m[1] ?? "");
+      if (canon) found.add(canon);
+    }
+  }
   for (const re of NEGATION_EXCLUDE_PATTERNS) {
     re.lastIndex = 0;
     let m: RegExpExecArray | null;
@@ -209,6 +258,7 @@ export function extractExcludedIngredients(transcript: string): string[] {
       if (canon) found.add(canon);
     }
   }
+  // "non-chicken" / "non-murgi" style
   for (const c of EXCLUDABLE_INGREDIENTS) {
     if (c === "eggs") continue;
     if (new RegExp(`\\bnon[- ]?${c}\\b`, "i").test(t)) found.add(c === "eggs" ? "egg" : c);
@@ -216,6 +266,7 @@ export function extractExcludedIngredients(transcript: string): string[] {
   for (const [alias, canon] of Object.entries(EXCLUDE_ALIASES)) {
     if (new RegExp(`\\bnon[- ]?${alias}\\b`, "i").test(t)) found.add(canon);
   }
+  // Parenthetical: "meat (no chicken)" / "meat (no murgi)"
   const paren = t.matchAll(/\(\s*no\s+(\w[\w-]*)\s*\)/gi);
   for (const m of paren) {
     const canon = canonicalizeExcludeToken(m[1] ?? "");
@@ -262,6 +313,16 @@ export function extractDishFromTranscript(transcript: string): string | undefine
   }
   if (/\b(dessert|desserts|something sweet|sweet tooth|mithai)\b/i.test(t)) {
     return "dessert";
+  }
+  // ROE-021 / ROE-019: category meat Ask when meat + animal exclusion (incl. "no meat murgi")
+  if (
+    isMeatProteinScopedNegation(t) ||
+    (/\bmeat\b/i.test(t) &&
+      extractExcludedIngredients(t).some((x) =>
+        (ANIMAL_PROTEIN_EXCLUDES as readonly string[]).includes(x),
+      ))
+  ) {
+    return "meat";
   }
   // Bare “sweet” only when not a compound food/deal (sweet potato, sweet corn, …)
   if (/\bsweet\b/i.test(t) && !/\bsweet\s+(potato|potatoes|corn|pea|peas|deal|spot)\b/i.test(t)) {
@@ -323,6 +384,9 @@ export interface BuildRestatedInput {
   culture_tag?: string;
   cuisine?: string;
   wellness_tags?: WellnessTag[];
+  /** ROE-021: surface hard exclusions in Heard (e.g. Meat (no chicken)). */
+  exclude_ingredients?: string[];
+  dish?: string;
 }
 
 /**
@@ -349,7 +413,18 @@ export function buildRestatedIntent(input: BuildRestatedInput): string {
     segments.push(s);
   };
 
-  if (input.dietary) {
+  const animalExcludes = (input.exclude_ingredients ?? []).filter((x) =>
+    (ANIMAL_PROTEIN_EXCLUDES as readonly string[]).includes(x),
+  );
+  const meatAsk =
+    input.dish === "meat" ||
+    input.dietary === "non_veg" ||
+    isMeatProteinScopedNegation(input.transcript ?? "") ||
+    /\bmeat\b/i.test(input.transcript ?? "");
+
+  if (meatAsk && animalExcludes.length) {
+    push(`Meat (no ${animalExcludes[0]})`);
+  } else if (input.dietary) {
     push(input.dietary.charAt(0).toUpperCase() + input.dietary.slice(1));
   }
 

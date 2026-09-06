@@ -23,7 +23,8 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 
 | ROE | Theme | Status |
 |-----|--------|--------|
-| 022 | Phase 0 safety net + identity / alias parity | Feature branch |
+| 021 | `no meat murgi` disambiguation | Salvaged → **ROE-030** (PR #34 closed conflict) |
+| 022 | Phase 0 safety net + identity / alias parity | Salvaged unique bits → **ROE-030** (PR #35 closed conflict) |
 | 023 | Named-dish F() match rules | **Merged staging** (via #40) |
 | 024 | Choice dim **S** (spice/mild) soft in Ask scoring | **Merged staging** (via #40) |
 | 025 | Shared scoring package + culinary cache facade | Merged staging PR [#36](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/36) |
@@ -31,6 +32,7 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 | 027 | Pareto / softmax plates | Merged staging PR [#38](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/38) |
 | 028 | Intent cache | Merged staging PR [#39](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/39) |
 | 029 | Telemetry / GL soft | **Merged staging** PR [#40](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/40) |
+| 030 | Salvage 021+022 clean onto staging | **This branch** |
 
 **Rev 1.2 math epic queue (023–029) complete** on feature branches / PRs. Staging merges + soak remain.
 
@@ -74,6 +76,12 @@ Fat/garnish-only token overlap no longer crowns ~100% heroes (Butter Dosai ≠ B
 - Lens on → populate `jComponents.G` from signature GL band; soft `scaleByWeight` penalty; lens-on weights
 - Session telemetry ring for intent_cache_hit / score_reading_dual
 - Branch: `feature/ROE-029-telemetry-gl-soft` · PR #40
+
+### ROE-030 — Salvage 021 + 022 (2026-09-07)
+- Closed conflicting PRs #34/#35; re-landed unique bits on clean staging branch
+- 021: `no meat murgi` meat Ask + chicken exclude (sanitize twin)
+- 022: Gemini 3.5 Flash, MitraPact a11y, client singleton, alias check, twin CI step, RL on ingest/glycemic
+- Branch: `feature/ROE-030-salvage-021-022-clean`
 
 ---
 

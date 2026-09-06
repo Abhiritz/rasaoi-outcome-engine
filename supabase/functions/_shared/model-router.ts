@@ -36,12 +36,12 @@ export interface RouterToolDef {
 }
 
 const DEFAULT_MODELS: Record<RouterPurpose, string> = {
-  parse_intent: "gemini/gemini-flash-latest",
-  ingest_parse: "gemini/gemini-flash-latest",
+  parse_intent: "gemini/gemini-3.5-flash",
+  ingest_parse: "gemini/gemini-3.5-flash",
   recipe_invert: "openai/gpt-4o-mini",
   adversarial_user: "anthropic/claude-3-5-sonnet-latest",
   evaluate: "openai/gpt-4o",
-  glycemic_estimate: "gemini/gemini-flash-latest",
+  glycemic_estimate: "gemini/gemini-3.5-flash",
 };
 
 function envFlag(name: string): boolean {
