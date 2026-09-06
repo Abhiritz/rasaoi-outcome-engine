@@ -292,3 +292,54 @@ export function isWeakNamedDishOverlap(
   const tokens = expandDishTokens(dishPhrase);
   return namedDishMatchStrength(name, desc, tokens) === "none";
 }
+
+/** ROE-024 — soft flavor/heat preference from Ask (not a hard gate). */
+export type SpicePreference = "mild" | "hot";
+
+const MILD_ASK =
+  /\b(non[- ]?spicy|not\s+spicy|less\s+spicy|mild|no\s+spice|without\s+(much\s+)?spice|low\s+spice)\b/i;
+const HOT_ASK =
+  /\b(extra\s+(hot|spicy)|very\s+spicy|spicy|hot\s+and\s+spicy)\b/i;
+
+/** Detect mild vs hot preference from dish phrase and/or restated Ask text. */
+export function spicePreferenceFromAsk(...parts: (string | undefined)[]): SpicePreference | undefined {
+  const t = parts.filter(Boolean).join(" ").toLowerCase();
+  if (!t.trim()) return undefined;
+  if (MILD_ASK.test(t)) return "mild";
+  if (HOT_ASK.test(t) && !/\bnot\s+spicy|non[- ]?spicy\b/.test(t)) return "hot";
+  return undefined;
+}
+
+/** Name/desc heuristics until spice_level tags are dense (inferred tier). */
+export const HOT_DISH_NAME =
+  /\b(65|andra|vijayawada|chettinad|vindaloo|phaal|madras|jalfrezi|schezwan|sichuan|pepper\s*fry|chilli|chili|gunpowder|spicy|extra\s*hot)\b/i;
+export const MILD_DISH_NAME =
+  /\b(butter\s*chicken|korma|malai|pasanda|stew|soup|mild|makhani|cream\s*chicken|coconut\s*curry)\b/i;
+
+export type SpiceHeatHint = "mild" | "hot" | "unknown";
+
+export function inferSpiceHeat(name: string, desc = ""): SpiceHeatHint {
+  const blob = `${name} ${desc}`;
+  if (HOT_DISH_NAME.test(blob)) return "hot";
+  if (MILD_DISH_NAME.test(blob)) return "mild";
+  return "unknown";
+}
+
+/** Soft align score for spice preference (−24…+18). */
+export function spiceAlignDelta(
+  name: string,
+  desc: string,
+  pref?: SpicePreference,
+): number {
+  if (!pref) return 0;
+  const heat = inferSpiceHeat(name, desc);
+  if (pref === "mild") {
+    if (heat === "hot") return -24;
+    if (heat === "mild") return 18;
+    return 4; // unknown: slight prefer over known-hot when ranking among chicken
+  }
+  // hot pref
+  if (heat === "hot") return 16;
+  if (heat === "mild") return -8;
+  return 0;
+}

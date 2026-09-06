@@ -6,6 +6,8 @@ import {
   isNamedDishAsk,
   isSweetDishIntent,
   namedDishMatchStrength,
+  spiceAlignDelta,
+  spicePreferenceFromAsk,
 } from "./dishIntent";
 import {
   type FulfillmentLevel,
@@ -339,6 +341,8 @@ export function scoreRestaurants(
   intentWellnessTags?: WellnessTag[] | unknown[],
   intentDietary?: StrictDietaryTag | unknown,
   excludeIngredients?: string[],
+  /** ROE-024: restated Ask / transcript for soft choice dims (spice → S). */
+  askText?: string,
 ): ScoredRestaurant[] {
   const eState = energyState(dials.energy);
   const cState = contextState(dials.context);
@@ -350,6 +354,7 @@ export function scoreRestaurants(
   const exclusions = (excludeIngredients ?? []).map((x) => x.toLowerCase()).filter(Boolean);
   const sweetIntent = isSweetDishIntent(intentDish);
   const namedAsk = isNamedDishAsk(intentDish);
+  const spicePref = spicePreferenceFromAsk(intentDish, askText);
 
   // --- Hard-exclusion gatekeeper: non-compliant venues never enter ranking ---
   const eligible = strictDietary
@@ -472,12 +477,27 @@ export function scoreRestaurants(
         dish: intentDish,
         exclusions,
         dietary: strictDietary,
+        ask_text: askText,
+        spice: spicePref,
       });
       const fulfillment: FulfillmentLevel | undefined =
         fulfill.level === "n/a" ? undefined : fulfill.level;
       if (fulfill.level !== "n/a") {
         score += fulfill.delta;
         if (fulfill.tag && !tags.includes(fulfill.tag)) tags.push(fulfill.tag);
+      }
+
+      // ROE-024: soft choice dimension S (spice) — best catalog line delta
+      if (spicePref) {
+        let bestS = -99;
+        for (const m of menuForFulfill) {
+          if (!m?.name) continue;
+          bestS = Math.max(bestS, spiceAlignDelta(m.name, m.description ?? "", spicePref));
+        }
+        if (bestS === -99) bestS = 0;
+        score += bestS * 0.35;
+        if (bestS >= 12) tags.push(spicePref === "mild" ? "Milder plates" : "Heat-forward plates");
+        else if (bestS <= -12) tags.push("Spice mismatch");
       }
 
       // --- Purity alignment (Sovereign Seal weighting) ---

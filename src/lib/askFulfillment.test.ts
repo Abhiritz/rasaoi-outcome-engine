@@ -174,4 +174,34 @@ describe("ROE-019 ask fulfillment", () => {
     expect(ranked[0].fulfillment).toBe("full");
     expect(ranked.find((x) => x.restaurant.name === "Mylapore")?.dishMatch).toBe("none");
   });
+
+  it("ROE-024: chicken non-spicy prefers Butter Chicken over Vijayawada / 65", () => {
+    const r = mockRestaurant({
+      id: "mix",
+      name: "Mixed Kitchen",
+      menu_items: [
+        { name: "Chicken 65", diet_class: "non_veg" },
+        { name: "Vijayawada Chicken Dosa", diet_class: "non_veg" },
+        { name: "Butter Chicken", diet_class: "non_veg" },
+        { name: "Fish Amritsari", diet_class: "non_veg" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, {
+      dish: "chicken",
+      dietary: "non_veg",
+      ask_text: "Non-veg · Chicken · non-spicy",
+    });
+    expect(picks[0].dish.toLowerCase()).toMatch(/butter chicken/);
+    expect(picks.every((p) => !/fish/i.test(p.dish))).toBe(true);
+    expect(askAlignedDishScore("Fish Amritsari", "", {
+      dish: "chicken",
+      ask_text: "non-spicy",
+    })).toBe(0);
+    expect(askAlignedDishScore("Butter Chicken", "", {
+      dish: "chicken",
+      ask_text: "non-spicy",
+    })).toBeGreaterThan(
+      askAlignedDishScore("Chicken 65", "", { dish: "chicken", ask_text: "non-spicy" }),
+    );
+  });
 });

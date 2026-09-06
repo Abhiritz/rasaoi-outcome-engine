@@ -173,6 +173,7 @@ const Index = () => {
   const glOrder: Record<string, number> = { low: 0, med: 1, high: 2 };
 
   const scored = useMemo(() => {
+    const askText = [intent?.restated_intent, intent?.filters?.dish].filter(Boolean).join(" · ");
     const all = scoreRestaurants(
       restaurants,
       dials,
@@ -183,6 +184,7 @@ const Index = () => {
       intent?.filters?.wellness_tags,
       intent?.filters?.dietary,
       intent?.filters?.exclude_ingredients,
+      askText || undefined,
     );
     const filtered = cuisineFilter ? all.filter((s) => s.restaurant.cuisine === cuisineFilter) : all;
     const needsSort = (!cuisineFilter && intentCuisine) || lens;
@@ -204,11 +206,12 @@ const Index = () => {
       }
       return b.score - a.score;
     });
-  }, [restaurants, dials, promos, twin, cuisineFilter, intentCuisine, lens, glMap]);
+  }, [restaurants, dials, promos, twin, cuisineFilter, intentCuisine, lens, glMap, intent]);
 
   // When lens is on, estimate GL for top-N visible signature dishes.
   useEffect(() => {
     if (!lens) return;
+    const askText = [intent?.restated_intent, intent?.filters?.dish].filter(Boolean).join(" · ");
     const all = scoreRestaurants(
       restaurants,
       dials,
@@ -219,6 +222,7 @@ const Index = () => {
       intent?.filters?.wellness_tags,
       intent?.filters?.dietary,
       intent?.filters?.exclude_ingredients,
+      askText || undefined,
     );
     const topRestaurants = all.slice(0, 8).map((s) => s.restaurant);
     const dishes = topRestaurants
@@ -295,6 +299,7 @@ const Index = () => {
     // Score the pinned restaurant against current dials regardless of cuisine filter
     const pinnedRestaurant = restaurants.find((r) => r.id === pinnedId);
     if (pinnedRestaurant) {
+      const askText = [intent?.restated_intent, intent?.filters?.dish].filter(Boolean).join(" · ");
       const pinnedScored = scoreRestaurants(
         [pinnedRestaurant],
         dials,
@@ -305,6 +310,7 @@ const Index = () => {
         intent?.filters?.wellness_tags,
         intent?.filters?.dietary,
         intent?.filters?.exclude_ingredients,
+        askText || undefined,
       )[0];
       if (pinnedScored) hero = pinnedScored;
     }
@@ -455,7 +461,10 @@ const Index = () => {
                 item={hero}
                 dials={dials}
                 vitality={vitality}
-                intent={intent?.filters}
+                intent={{
+                  ...intent?.filters,
+                  ask_text: [intent?.restated_intent, intent?.filters?.dish].filter(Boolean).join(" · ") || undefined,
+                }}
                 gl={lens ? glMap[hero.restaurant.signature_dish?.toLowerCase() ?? ""] : undefined}
               />
 
@@ -484,7 +493,10 @@ const Index = () => {
                           item={alt}
                           rank={i + 1}
                           dials={dials}
-                          intent={intent?.filters}
+                          intent={{
+                            ...intent?.filters,
+                            ask_text: [intent?.restated_intent, intent?.filters?.dish].filter(Boolean).join(" · ") || undefined,
+                          }}
                           gl={lens ? glMap[alt.restaurant.signature_dish?.toLowerCase() ?? ""] : undefined}
                           onPromote={() => setHeroIdOverride(alt.restaurant.id)}
                         />

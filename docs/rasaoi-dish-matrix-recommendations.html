@@ -119,21 +119,21 @@
 
   <main class="wrap">
     <header class="hero">
-      <p class="eyebrow">Principal recommendations · Simple language · <strong>Rev 1.1</strong></p>
+      <p class="eyebrow">Principal recommendations · Simple language · <strong>Rev 1.2</strong></p>
       <h1>Dish Matrix Recommendations</h1>
       <p class="lede">
         Answers three questions: why vague Asks look the same today, how much a full Database move helps,
         and whether to split many sequential filter tables. Opinion is adjusted to how Rasaoi actually works —
         not a literal copy of the sketch.
-        <strong>Rev 1.1</strong> corrects over-optimistic named-dish assumptions, adds Ask-match / F() gates
-        (audit §9b), and reorders phases so match rules ship before math host moves.
+        <strong>Rev 1.2</strong> maps your table-chain <strong>flavor/spice</strong> concern into soft choice dimension
+        <strong>S</strong> inside outcome math J, and tickets it as <strong>ROE-024</strong> (after ROE-023 match rules).
       </p>
       <div class="meta">
         <div><kbd>Grounded in</kbd><p>Combined upgrade + registry audit Rev 1.1</p></div>
         <div><kbd>Q1</kbd><p>Vague Ask sameness</p></div>
         <div><kbd>Q2</kbd><p>Full DB transition</p></div>
         <div><kbd>Q3</kbd><p>Tags &amp; gates (not 10 joins)</p></div>
-        <div><kbd>Doc date</kbd><p>6 Sep 2026 · Rev 1.1</p></div>
+        <div><kbd>Doc date</kbd><p>7 Sep 2026 · Rev 1.2</p></div>
         <div><kbd>Status</kbd><p>Recommendation only</p></div>
       </div>
       <div class="call warn">
@@ -517,15 +517,16 @@
       <div class="math">
         <span class="lbl">Eligible then rank (same idea as upgrade J)</span>
         Eligible = dishes/kitchens that pass diet ∩ ethic ∩ exclude ∩ regional ∩ catalog ∩ <strong>named-Ask F policy</strong><br/>
-        Maximize J = w_F·F + w_D·D + w_P·P + w_B·B + w_W·W − w_G·G<br/>
-        Soft tags change weights — they do not override a failed named-dish / protein gate (Rev 1.1 R1–R5).
+        Maximize J = w_F·F + w_D·D + w_P·P + w_B·B + w_W·W + <strong>w_S·S</strong> − w_G·G<br/>
+        Soft choice dimensions from the sketch (occasion, macro, <strong>flavor/spice</strong>, wellness, household)
+        feed <strong>W / S / D</strong> — they do not each require a join table, and they do not override hard gates or named F (Rev 1.2).
       </div>
 
       <h3>Data shape (lean)</h3>
       <div class="ascii"><span class="ok">dishes</span> / culinary knowledge   (live rows)
     │
     └── <span class="hi">dish_tags</span> (dish_id, dimension, tag, speculation_tier)
-              dimension ∈ { diet, ethic, macro, wellness, therapeutic, allergen, food_type, … }
+              dimension ∈ { diet, ethic, macro, wellness, spice, therapeutic, allergen, food_type, … }
 
 <span class="mu">Optional profile (prefs only):</span>
   location · household (kid/adult) · default occasion
@@ -544,7 +545,7 @@
           </tr>
           <tr>
             <td><strong>Soft score</strong></td>
-            <td>Celebration dial, light/fresh tags, keto-ish, purity, budget, GL lens</td>
+            <td>Celebration dial, light/fresh tags, keto-ish, purity, budget, GL lens, <strong>mild/non-spicy (S)</strong></td>
             <td>Reorder Eligible; never invent dishes.</td>
           </tr>
           <tr>
@@ -631,6 +632,12 @@
             <td>Tags + nutrition fields; speculation_tier</td>
           </tr>
           <tr>
+            <td><strong>Flavor / spice</strong> (mild, non-spicy, hot…)</td>
+            <td>Stop-words today — <strong>not scored</strong> (soak: “chicken, non spicy”)</td>
+            <td>Soft (Rev 1.2)</td>
+            <td><code>spice_level</code> / <code>dish_tags.spice</code> + Ask pref in <strong>J</strong> (w_S·S); name heuristics until tags dense</td>
+          </tr>
+          <tr>
             <td>Therapeutic (DASH, Low-FODMAP…)</td>
             <td>Experimental / sparse</td>
             <td>Soft + caveated</td>
@@ -648,36 +655,37 @@
 
     <!-- 8 -->
     <section id="s8">
-      <h2 class="sec"><i>08</i> Phased advice — Rev 1.1</h2>
+      <h2 class="sec"><i>08</i> Phased advice — Rev 1.2</h2>
       <ol>
-        <li><strong>P0 — Named-dish / F() match rules</strong> — implement audit M-01…M-06 / rules R1–R6; Vitest soak Butter chicken, Mysore pak, ghee roast. <em>Blocks false 100% heroes.</em></li>
-        <li><strong>Maintain identity + alias parity</strong> — ROE-022 raised proteins/diet; finish cuisine_region / food_type; keep <code>culinary:check-aliases</code> green.</li>
-        <li><strong>Live culinary in Postgres + <code>score-reading</code></strong> — freshness and phone speed (combined proposal). Carry <em>fixed</em> F() into Edge. Keep Lab gate.</li>
-        <li><strong>Tag model</strong> — <code>dish_tags</code> for ethic / diet / macro / wellness / therapeutic with <code>speculation_tier</code>. Hard vs soft rules in one place.</li>
-        <li><strong>Vague-Ask UX</strong> — Pareto plates + alternate diversity; show “why” bars; honest Closest when catalog is thin <em>or</em> match is weak.</li>
-        <li><strong>Defer</strong> — gender hard-gates; clinical therapeutic ranking until data + legal copy exist.</li>
+        <li><strong>P0 — Named-dish / F() match rules</strong> — <strong>ROE-023</strong> (R1–R6). <em>Blocks false 100% heroes.</em></li>
+        <li><strong>Choice dimensions in J (spice/flavor first)</strong> — <strong>ROE-024</strong>: stop ignoring mild/non-spicy; soft <code>S</code> in outcome math; tag/heuristic spice_level; keep protein Ask-align on all triple slots.</li>
+        <li><strong>Maintain identity + alias parity</strong> — cuisine_region / food_type; <code>culinary:check-aliases</code>.</li>
+        <li><strong>Shared scoring + live cache + <code>score-reading</code></strong> — <strong>ROE-025+</strong>: host the <em>same</em> J (incl. S) on Edge; Lab gate.</li>
+        <li><strong>Full tag model</strong> — <code>dish_tags</code> ethic / diet / macro / wellness / spice / therapeutic + speculation_tier.</li>
+        <li><strong>Vague-Ask UX</strong> — Pareto + “why” bars; honest Closest.</li>
+        <li><strong>Defer</strong> — gender hard-gates; clinical therapeutic ranking.</li>
       </ol>
 
       <div class="kpi">
-        <div><strong>Do now</strong><span>P0 match rules · soak pack · keep enrich/aliases</span></div>
-        <div><strong>Do next</strong><span>Live DB cache · score-reading (with fixed F)</span></div>
-        <div><strong>Do with care</strong><span>Tags · GL · therapeutic caveats</span></div>
-        <div><strong>Don’t</strong><span>10-table AND · invent plates · math-before-match</span></div>
+        <div><strong>Do now</strong><span>ROE-023 match · ROE-024 spice/S in J</span></div>
+        <div><strong>Do next</strong><span>Shared J on Edge · live cache</span></div>
+        <div><strong>Do with care</strong><span>Full tags · GL · therapeutic</span></div>
+        <div><strong>Don’t</strong><span>10-table AND · invent plates · math without S/F</span></div>
       </div>
 
       <div class="call ok">
         Bottom line: fix sameness with <em>better real choices + clearer gates + soft ranking math</em>.
-        Fix named-dish false heroes with <em>honest F() first</em>.
-        Move cognition to the Database for speed and freshness — encode the checklist as tags and weights, not a long forced join.
+        Fix named-dish false heroes with <em>honest F()</em>. Fix “non spicy” with <em>choice-dimension S in J</em> — not a 10-table join.
+        Move cognition to the Database for speed — encode the sketch as tags and weights.
       </div>
     </section>
 
     <footer>
-      Rasaoi Outcome Engine · Dish Matrix Recommendations · <strong>Rev 1.1</strong> · 6 Sep 2026 ·
+      Rasaoi Outcome Engine · Dish Matrix Recommendations · <strong>Rev 1.2</strong> · 6–7 Sep 2026 ·
       Grounded in <code>docs/rasaoi-combined-audit-upgrade-proposal.pdf</code> and
       <code>docs/rasaoi-dish-registry-audit-report.pdf</code> Rev 1.1
-      (plus dials / DIET-001 / Ask-fulfillment / catalog gate / ROE-018…022).
-      Recommendation only — no schema shipped in this doc.
+      (plus dials / DIET-001 / Ask-fulfillment / catalog gate / ROE-018…024).
+      Recommendation only — schema for spice tags ships with ROE-024+.
       <span class="no-print"> Print → Save as PDF (A4).</span>
     </footer>
   </main>

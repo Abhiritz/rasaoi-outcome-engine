@@ -35,6 +35,7 @@ When changing `veda.ts`, `pairings.ts`, `culinaryIndex.ts`, `dishIntent.ts`, or 
 3. Are new matrix fields speculation-tiered and never used as clinical claims?
 4. Rebuild index after matrix identity changes; update impact doc.
 5. **ROE-023:** Would a fat/garnish-only token overlap (e.g. Butter Dosai for “Butter chicken”) score partial/exact or crown a ~100% hero? Forbidden — require Ask protein / required tokens; honesty-cap weak matches.
+6. **ROE-024:** Would “non spicy” / mild be ignored as a stop-word with no J soft weight **S**? Forbidden — detect spice preference and soft-rank; keep protein slots Ask-aligned.
 
 ## References
 

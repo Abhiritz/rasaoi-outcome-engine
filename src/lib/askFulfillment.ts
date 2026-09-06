@@ -14,6 +14,9 @@ import {
   isSweetDishIntent,
   namedDishMatchStrength,
   RICE_AS_MAIN_PATTERN,
+  spiceAlignDelta,
+  spicePreferenceFromAsk,
+  type SpicePreference,
 } from "./dishIntent";
 import { lookupDish, lookupRestaurant, type CulinaryDishMeta } from "./culinaryIndex";
 
@@ -150,6 +153,9 @@ export interface AskFulfillmentOpts {
   dish?: string;
   exclusions?: string[];
   dietary?: string;
+  /** ROE-024: restated Ask / transcript for soft choice dims (spice). */
+  ask_text?: string;
+  spice?: SpicePreference;
 }
 
 /** Score how well one dish line fulfills the Ask (0 = not aligned). */
@@ -203,8 +209,15 @@ export function askAlignedDishScore(
       score += 28;
     } else if (meatCat) {
       return score > 0 ? score : 0;
+    } else if (preferred.length && !meatCat && !sweet) {
+      // Protein Ask (e.g. chicken) with no protein hit — zero out (ROE-024 Clean-slot fish miss)
+      return 0;
     }
   }
+
+  const spice =
+    opts.spice ?? spicePreferenceFromAsk(opts.dish, opts.ask_text);
+  score += spiceAlignDelta(name, desc, spice);
 
   // Coastal / oceany Ask — seafood vessel names count even without protein-family tags
   if (
