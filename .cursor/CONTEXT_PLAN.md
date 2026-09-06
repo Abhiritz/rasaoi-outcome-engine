@@ -4,15 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-019-impl
-last_verified_date: 2026-08-01
-branch: feature/ROE-019-ask-fulfillment-matrix
+last_verified_commit: pending-ROE-029-impl
+last_verified_date: 2026-09-07
+branch: feature/ROE-029-telemetry-gl-soft
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-019 implemented: Ask-fulfillment ranking (venue sort + Ask-aligned plates),
-  culinary-index v2 identity fields, diet_class unknown + goat MEAT_MARKERS,
-  Limited menu for this Ask instead of Chef's selection spam. Staging merge pending.
-  Next free: ROE-020.
+  ROE-029 GL soft G in J when lens on + score telemetry ring.
+  Rev 1.2 epic 023–029 feature-complete. Next free: ROE-030. Story: docs/ROE-upgrade-story.md.
 ```
 
 ---
@@ -170,8 +168,9 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 | `places-search` | `supabase/functions/places-search/index.ts` | Google Places or mock fixtures | `GOOGLE_PLACES_API_KEY` (optional) |
 | `ingest-menu` | `supabase/functions/ingest-menu/index.ts` | Firecrawl scrape → Gemini parse | `GEMINI_API_KEY`, `FIRECRAWL_API_KEY` (optional) |
 | `commit-dishes` | `supabase/functions/commit-dishes/index.ts` | Insert dishes + rebuild `menu_items` | Auto: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` |
+| `score-reading` | `supabase/functions/score-reading/index.ts` | **[ROE-026]** J recompute from `jComponents` (dual-run) | none (rate-limited) |
 
-**Shared:** `supabase/functions/_shared/ai-client.ts`, `supabase/functions/_shared/dietary.ts`, `supabase/functions/_shared/intent-sanitize.ts`, experimental `supabase/functions/_shared/model-router.ts` (unused by prod deploy until promotion).
+**Shared:** `supabase/functions/_shared/ai-client.ts`, `supabase/functions/_shared/dietary.ts`, `supabase/functions/_shared/intent-sanitize.ts`, `supabase/functions/_shared/score-weights.ts` (ROE-025 J incl. S; Edge score-reading ROE-026), experimental `supabase/functions/_shared/model-router.ts` (unused by prod deploy until promotion).
 
 **Deploy:** `npm run supabase:deploy:all` (prod 5). Staging also: `npm run supabase:deploy:experimental` (+ `experimental-apify-webhook`).
 
@@ -186,6 +185,9 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 2b. **`intentSanitize` sync pair** — transcript cuisine / dietary / lens / sweet helpers:
    - `src/lib/intentSanitize.ts`
    - `supabase/functions/_shared/intent-sanitize.ts`
+2c. **`scoreWeights` sync pair** — named J (F/D/P/B/W/**S**/G); gate: `npm run ci:twins`:
+   - `src/lib/scoreWeights.ts`
+   - `supabase/functions/_shared/score-weights.ts`
 3. **Mock fixtures sync pair:**
    - `src/testing/mock-places.json`
    - `supabase/functions/places-search/fixtures/mock-places.json`
@@ -286,7 +288,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` (or `origin/staging` for ROE-016 soak hotfixes) → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-018** (ROE-017 = staging soak fixes; ROE-016 staging live; develop merge locked on soak).
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact → approve → branch → implement + tests → sync plan/TODO/CONTEXT/CURSOR + **`docs/ROE-upgrade-story.md`** → PR/board. Next free serial: **ROE-030**.
 
 | Trigger | Action |
 |---------|--------|

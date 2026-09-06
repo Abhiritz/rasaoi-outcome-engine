@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rasaoi — Dish Matrix Recommendations</title>
+  <style>
+    :root {
+      --ink: #111827; --muted: #4b5563; --line: #d1d5db; --bg: #f3f4f6; --card: #fff;
+      --head: #0f3d2e; --accent: #1d4ed8; --accent-soft: #eff6ff; --gold: #b45309;
+      --ok: #047857; --danger: #b91c1c; --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+      --font: "Segoe UI", Calibri, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font); font-size: 14.5px; line-height: 1.5; color: var(--ink); background: var(--bg); }
+    .bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 0.7rem 1.1rem; background: #0b1220; color: #e5e7eb; border-bottom: 2px solid var(--accent); }
+    .bar b { color: #fff; font-size: 0.92rem; }
+    .bar span { display: block; font-size: 0.68rem; color: #94a3b8; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.1rem; }
+    .btn { appearance: none; border: none; border-radius: 6px; padding: 0.5rem 0.9rem; font: 600 0.72rem/1 var(--font);
+      letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; background: var(--accent); color: #fff; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 1.4rem 1.1rem 3rem; }
+    .hero { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.2rem 1.3rem; margin-bottom: 1rem; }
+    .eyebrow { margin: 0 0 0.4rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+    h1 { margin: 0 0 0.5rem; font-size: clamp(1.35rem, 3vw, 1.85rem); line-height: 1.15; color: var(--head); letter-spacing: -0.02em; }
+    .lede { margin: 0 0 1rem; color: var(--muted); max-width: 50rem; }
+    .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; }
+    .meta div { background: #f8fafc; border: 1px solid var(--line); border-radius: 6px; padding: 0.5rem 0.65rem; }
+    .meta kbd { display: block; font-family: var(--font); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.12rem; }
+    .meta p { margin: 0; font-size: 0.82rem; font-weight: 600; }
+    nav.toc { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 0.85rem 1rem; margin-bottom: 1.1rem; }
+    nav.toc h2 { margin: 0 0 0.45rem; font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    nav.toc ol { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.28rem 0.8rem; }
+    nav.toc a { color: var(--ink); text-decoration: none; font-size: 0.84rem; }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.1rem 1.2rem; margin-bottom: 0.9rem; page-break-inside: avoid; }
+    h2.sec { margin: 0 0 0.7rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--head); font-size: 1.1rem; color: var(--head);
+      display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; }
+    h2.sec i { font-style: normal; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em; color: var(--accent); }
+    h3 { margin: 0.95rem 0 0.35rem; font-size: 0.95rem; color: var(--ink); border-left: 3px solid var(--gold); padding-left: 0.55rem; }
+    h4 { margin: 0.55rem 0 0.25rem; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+    p, li { color: #374151; } p { margin: 0 0 0.55rem; }
+    ul, ol { margin: 0 0 0.65rem; padding-left: 1.15rem; } li { margin: 0.2rem 0; }
+    strong { color: var(--ink); }
+    code { font-family: var(--mono); font-size: 0.78em; background: #f3f4f6; padding: 0.05em 0.28em; border-radius: 3px; }
+    .call { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 0.55rem 0.7rem; margin: 0.55rem 0; font-size: 0.86rem; }
+    .call.warn { border-left-color: var(--gold); background: #fffbeb; }
+    .call.ok { border-left-color: var(--ok); background: #ecfdf5; }
+    .call.danger { border-left-color: var(--danger); background: #fef2f2; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.76rem; margin: 0.4rem 0 0.7rem; border: 1px solid var(--line); }
+    th, td { text-align: left; padding: 0.4rem 0.45rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: var(--head); color: #f8fafc; font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+    tr:nth-child(even) td { background: #f8fafc; } tr:last-child td { border-bottom: none; }
+    .ascii { background: #0b1220; color: #d1e0ff; border-radius: 6px; padding: 0.75rem 0.85rem; overflow-x: auto;
+      font: 500 0.62rem/1.42 var(--mono); margin: 0.5rem 0 0.7rem; white-space: pre; }
+    .ascii .hi { color: #60a5fa; } .ascii .ok { color: #34d399; } .ascii .mu { color: #94a3b8; } .ascii .warn { color: #fbbf24; }
+    .pill { display: inline-block; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0.1rem 0.35rem; border-radius: 3px; white-space: nowrap; }
+    .pill.ok { background: #d1fae5; color: var(--ok); }
+    .pill.warn { background: #fef3c7; color: var(--gold); }
+    .pill.bad { background: #fee2e2; color: var(--danger); }
+    .pill.high { background: #fee2e2; color: var(--danger); }
+    .pill.med { background: #fef3c7; color: var(--gold); }
+    .pill.low { background: #d1fae5; color: var(--ok); }
+    .kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.45rem; margin: 0.45rem 0 0.7rem; }
+    .kpi div { border: 1px solid var(--line); border-radius: 6px; padding: 0.5rem 0.6rem; background: #f8fafc; }
+    .kpi strong { display: block; font-size: 1.05rem; color: var(--head); }
+    .kpi span { display: block; font-size: 0.66rem; color: var(--muted); margin-top: 0.1rem; }
+    .chart-wrap { border: 1px solid var(--line); border-radius: 6px; padding: 0.7rem 0.8rem; margin: 0.45rem 0 0.75rem; background: #fff; }
+    .chart-title { margin: 0 0 0.45rem; font-size: 0.78rem; font-weight: 700; color: var(--head); }
+    .cap { margin: 0.35rem 0 0; font-size: 0.66rem; color: var(--muted); }
+    .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0 0 0.5rem; font-size: 0.72rem; color: var(--muted); }
+    .legend i { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 2px; margin-right: 0.28rem; vertical-align: -0.05rem; }
+    .legend .t { background: #94a3b8; } .legend .a { background: #6366f1; } .legend .c { background: #047857; }
+    .bars { display: grid; gap: 0.4rem; }
+    .bar-row { display: grid; grid-template-columns: 9rem 1fr 3.4rem; gap: 0.4rem; align-items: center; font-size: 0.74rem; }
+    .bar-row .label { color: var(--muted); font-weight: 600; }
+    .bar-row .val { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .track { height: 0.65rem; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+    .fill { height: 100%; border-radius: 3px; background: var(--accent); }
+    .fill.ok { background: var(--ok); } .fill.warn { background: var(--gold); } .fill.bad { background: var(--danger); }
+    .fill.muted { background: #94a3b8; } .fill.a { background: #6366f1; }
+    .tri { display: grid; gap: 0.5rem; }
+    .tri-row { display: grid; grid-template-columns: 8.5rem 1fr; gap: 0.4rem; align-items: start; font-size: 0.74rem; }
+    .tri-row .lab { color: var(--muted); font-weight: 600; padding-top: 0.1rem; }
+    .stack { display: grid; gap: 0.26rem; }
+    .sbar { display: grid; grid-template-columns: 4.5rem 1fr 2.6rem; gap: 0.35rem; align-items: center; }
+    .sbar .tag { font-size: 0.64rem; font-weight: 700; color: var(--muted); }
+    .sbar .val { text-align: right; font-weight: 700; font-size: 0.7rem; font-variant-numeric: tabular-nums; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; margin: 0.5rem 0; }
+    @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } .bar { flex-wrap: wrap; } }
+    .card { border: 1px solid var(--line); border-radius: 6px; padding: 0.6rem 0.7rem; background: #fff; }
+    .card h4 { margin: 0 0 0.25rem; }
+    .card p { margin: 0; font-size: 0.84rem; }
+    .math { background: #f8fafc; border: 1px solid var(--line); border-radius: 6px; padding: 0.65rem 0.8rem; margin: 0.45rem 0 0.7rem;
+      font-family: var(--mono); font-size: 0.74rem; line-height: 1.55; color: #1e293b; overflow-x: auto; }
+    .math .lbl { display: block; font-family: var(--font); font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; }
+    footer { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--line); font-size: 0.74rem; color: var(--muted); }
+    svg.flow { width: 100%; height: auto; margin: 0.35rem 0 0.6rem; }
+    @media print {
+      @page { size: A4; margin: 10mm 11mm; }
+      body { background: #fff; font-size: 9.1pt; }
+      .bar, .no-print { display: none !important; }
+      .wrap { max-width: none; padding: 0; }
+      section, .hero, nav.toc, .chart-wrap, .card { break-inside: avoid; border-color: #ccc; }
+      th, .ascii, .call, .pill, .fill, .math { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      a { color: inherit; text-decoration: none; }
+      .ascii { font-size: 6.2pt; } table { font-size: 7.5pt; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bar no-print">
+    <div>
+      <b>Rasaoi Outcome Engine</b>
+      <span>Dish Matrix Recommendations · Vague Ask · DB · Tag Model</span>
+    </div>
+    <button type="button" class="btn" id="printBtn">Print / Save as PDF</button>
+  </div>
+
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Principal recommendations · Simple language · <strong>Rev 1.2</strong></p>
+      <h1>Dish Matrix Recommendations</h1>
+      <p class="lede">
+        Answers three questions: why vague Asks look the same today, how much a full Database move helps,
+        and whether to split many sequential filter tables. Opinion is adjusted to how Rasaoi actually works —
+        not a literal copy of the sketch.
+        <strong>Rev 1.2</strong> maps your table-chain <strong>flavor/spice</strong> concern into soft choice dimension
+        <strong>S</strong> inside outcome math J, and tickets it as <strong>ROE-024</strong> (after ROE-023 match rules).
+      </p>
+      <div class="meta">
+        <div><kbd>Grounded in</kbd><p>Combined upgrade + registry audit Rev 1.1</p></div>
+        <div><kbd>Q1</kbd><p>Vague Ask sameness</p></div>
+        <div><kbd>Q2</kbd><p>Full DB transition</p></div>
+        <div><kbd>Q3</kbd><p>Tags &amp; gates (not 10 joins)</p></div>
+        <div><kbd>Doc date</kbd><p>7 Sep 2026 · Rev 1.2</p></div>
+        <div><kbd>Status</kbd><p>Recommendation only</p></div>
+      </div>
+      <div class="call warn">
+        <strong>Sequence:</strong> registry audit Rev 1.1 (§9b M-01…M-06) → this doc → ticket P0 match rules (**ROE-023**) → then ROE-024+ math/host.
+      </div>
+    </header>
+
+    <nav class="toc">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#s1">1. Short answers</a></li>
+        <li><a href="#s2">2. Q1 — Vague prompts &amp; “same” results</a></li>
+        <li><a href="#s3">3. Confusion scorecard</a></li>
+        <li><a href="#s3b">3b. Named-dish match rules (Rev 1.1)</a></li>
+        <li><a href="#s4">4. Q2 — Full Database transition</a></li>
+        <li><a href="#s5">5. Q3 — Sequential tables: opinion</a></li>
+        <li><a href="#s6">6. Recommended model (hard gates + soft tags)</a></li>
+        <li><a href="#s7">7. Sketch → Rasaoi mapping</a></li>
+        <li><a href="#s8">8. Phased advice</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2 class="sec"><i>01</i> Short answers</h2>
+      <table>
+        <thead><tr><th>Question</th><th>Plain answer</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Vague prompt → same outcomes?</strong></td>
+            <td><span class="pill high">High confusion risk</span> when the Ask is mood-only and the local menus are thin or similar. Not “AI broken” — soft dials + weak catalog signal.</td>
+          </tr>
+          <tr>
+            <td><strong>2. Go fully to Database?</strong></td>
+            <td><span class="pill ok">Large win</span> for freshness, payload, and phone speed. <span class="pill warn">Medium only</span> for vague-Ask variety unless you also add tags + score math. <span class="pill bad">Does not</span> fix bad named-dish match rules by itself.</td>
+          </tr>
+          <tr>
+            <td><strong>3. Many sequential tables?</strong></td>
+            <td><span class="pill bad">Do not</span> build a mandatory join chain (location→gender→health→…→dish). Use <strong>hard gates + soft tags</strong> on live dishes instead.</td>
+          </tr>
+          <tr>
+            <td><strong>4. Named dish → correct hero?</strong></td>
+            <td><span class="pill high">Not guaranteed today</span> — soft token F() can crown Butter Dosai for “Butter chicken.” Fix match rules (P0) before celebrating math moves.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="call ok">
+        Keep forever: real menus only, catalog plate gate, sanitize after AI, Ask-fulfillment first <em>with honest F()</em>, Lab promote gate, no clinical over-claims.
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2 class="sec"><i>02</i> Q1 — Vague prompts &amp; “same” results</h2>
+      <p>
+        When someone says “something nice” or only moves mood dials, the system has little hard signal.
+        Dials sit near the middle. Many EDH/Folsom kitchens share similar North Indian staples.
+        Ranking then leans on soft vibe math — so Readings look alike.
+      </p>
+
+      <h3>Why it feels the same (today)</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4>Ask side</h4>
+          <p>Vague text → default dials. Few filters. No named dish, protein, or exclusion. Soft scores dominate.</p>
+        </div>
+        <div class="card">
+          <h4>Catalog side</h4>
+          <p>Overlapping menus. Identity enrich improved (proteins/diet ~100% post ROE-022); cuisine_region ~30%, gi_band ~0% remain. <strong>Match-rule holes</strong> still allow soft F() false positives.</p>
+        </div>
+      </div>
+
+      <div class="ascii"><span class="mu">Vague Ask</span> ──► dials ≈ mid ──► soft score J_soft
+                                      │
+                         thin / similar menus
+                                      │
+                                      ▼
+                         <span class="warn">Same top kitchens · same staples</span>
+                         Best / Clean / Heritage converge
+
+<span class="mu">Sharp Ask</span> (“goat, not chicken”) ──► exclude + protein
+                                      ▼
+                         <span class="ok">Ask-fulfillment separates kitchens</span> (when identity fires)
+
+<span class="warn">Named Ask</span> (“butter chicken”) ──► token F() today
+                                      ▼
+                         <span class="warn">Partial on “butter” alone → wrong hero possible</span></div>
+
+      <div class="call warn">
+        <strong>Important:</strong> “Results say the same” is often <em>catalog poverty + soft ranking</em>,
+        not a broken model. Separately, <em>named-dish false heroes</em> are <strong>match-rule debt</strong> (§3b) — not fixed by inventing plates or by J weights alone.
+      </div>
+
+      <h3>What would make Readings feel different</h3>
+      <table>
+        <thead><tr><th>Change</th><th>How it helps</th></tr></thead>
+        <tbody>
+          <tr><td><strong>P0 tight named-dish / F() rules</strong></td><td>Butter chicken → exact kitchen; honesty when only garnish overlap</td></tr>
+          <tr><td>Richer dish <code>identity</code> (proteins, food_type, region)</td><td>Even soft Asks can tilt by region / lightness without inventing plates</td></tr>
+          <tr><td>Pareto triple plates (upgrade)</td><td>Best / Clean / Heritage optimize different axes — less clone slots <em>after</em> F is honest</td></tr>
+          <tr><td>Softmax + cuisine diversity for Alternates</td><td>Hero + alts stop looking like twins</td></tr>
+          <tr><td>Live DB menus (fresher, more items)</td><td>More real choices to pick among</td></tr>
+          <tr><td>Honest empty / Closest path</td><td>Better than fake 100% on weak partials</td></tr>
+        </tbody>
+      </table>
+
+      <div class="chart-wrap">
+        <p class="chart-title">Illustrative “sameness” / confusion of top-3 (lower = more distinct / correct)</p>
+        <div class="bars">
+          <div class="bar-row"><span class="label">Vague Ask today</span><div class="track"><div class="fill bad" style="width:88%"></div></div><span class="val">High</span></div>
+          <div class="bar-row"><span class="label">Named dish (token F)</span><div class="track"><div class="fill warn" style="width:55%"></div></div><span class="val">Med–High</span></div>
+          <div class="bar-row"><span class="label">Named + P0 match fix</span><div class="track"><div class="fill ok" style="width:18%"></div></div><span class="val">Low</span></div>
+          <div class="bar-row"><span class="label">Meat not chicken</span><div class="track"><div class="fill warn" style="width:28%"></div></div><span class="val">Med↓</span></div>
+          <div class="bar-row"><span class="label">Vague + identity + Pareto</span><div class="track"><div class="fill a" style="width:48%"></div></div><span class="val">Med↓</span></div>
+        </div>
+        <p class="cap">Rev 1.1: named-dish bar raised after Butter chicken → Butter Dosai soak · not a live A/B test.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2 class="sec"><i>03</i> Confusion scorecard (by Ask type)</h2>
+      <table>
+        <thead>
+          <tr><th>Ask type</th><th>Example</th><th>Confusion today</th><th>Why</th><th>Fix leverage</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vibe-only</td>
+            <td>“Something nice / comfort food”</td>
+            <td><span class="pill high">High</span></td>
+            <td>Default dials; soft score; similar staples</td>
+            <td>Pareto + diversity + better tags</td>
+          </tr>
+          <tr>
+            <td>Wellness vague</td>
+            <td>“Something healthy”</td>
+            <td><span class="pill med">Med–High</span></td>
+            <td>Purity up; no fake “Healthy” cuisine; menus still heavy</td>
+            <td>dish_type / purity tags on dishes</td>
+          </tr>
+          <tr>
+            <td>Protein + exclude</td>
+            <td>“Meat, not murgi”</td>
+            <td><span class="pill med">Med↓</span></td>
+            <td>Identity proteins ~100% post ROE-022; still watch vernacular aliases</td>
+            <td>Maintain enrich CI + exclusion soak</td>
+          </tr>
+          <tr>
+            <td>Named dish</td>
+            <td>“Butter chicken” / “Mysore pak”</td>
+            <td><span class="pill high">Med–High</span> <em>(Rev 1.1)</em></td>
+            <td>Was documented as Low — wrong. Soft token F() + honesty only on <code>none</code>; soak: Butter Dosai @ 100%</td>
+            <td><strong>P0 match rules</strong> (§3b); then fresher menus</td>
+          </tr>
+          <tr>
+            <td>Ethic / diet hard</td>
+            <td>“Jain” / “Halal”</td>
+            <td><span class="pill low">Low</span> if tagged</td>
+            <td>Hard gate drops non-compliant</td>
+            <td>Diet/ethic tags on dishes + kitchens</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>Before (vague)</h4>
+          <p>Three kitchens ~same %. Best often dal/naan-adjacent. Clean ≈ lighter fry. Heritage ≈ another curry. Feels cloned.</p>
+        </div>
+        <div class="card">
+          <h4>After (identity + honest F + Pareto)</h4>
+          <p>Same real menus, but F is honest on named Asks; slots pull apart: Ask-align Best, lighter Clean, regional Heritage. Alternates diversify cuisine.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3b Rev 1.1 -->
+    <section id="s3b">
+      <h2 class="sec"><i>03b</i> Named-dish match rules (Rev 1.1)</h2>
+      <p>
+        Registry audit §9b lists holes <code>M-01</code>…<code>M-06</code>. This section turns them into product rules.
+        Soft score J must <em>not</em> override a failed named-dish gate.
+      </p>
+
+      <div class="call danger">
+        <strong>Soak:</strong> <code>Butter chicken under 40</code> → Mylapore / Butter Dosai 100% while India Oven had Butter Chicken.
+        Catalog was fine; <strong>F() token policy</strong> was not.
+      </div>
+
+      <table>
+        <thead><tr><th>Rule</th><th>Behavior</th><th>Maps to</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>R1 Protein required</strong></td>
+            <td>If Ask tokens include a protein (chicken, goat, paneer…), exact/strong F requires that protein (or synonym) on the plate line</td>
+            <td>M-01, M-05</td>
+          </tr>
+          <tr>
+            <td><strong>R2 Fat/garnish alone ≠ dish</strong></td>
+            <td><code>butter</code>/<code>ghee</code> overlap without other Ask tokens → Closest / partial at most; never naked ~100%</td>
+            <td>M-01, M-02, M-06</td>
+          </tr>
+          <tr>
+            <td><strong>R3 Honesty on weak partial</strong></td>
+            <td>Extend ROE-018: cap confidence + Closest copy when match is garnish-only, not only when <code>none</code></td>
+            <td>M-02</td>
+          </tr>
+          <tr>
+            <td><strong>R4 No full F from weak doubles</strong></td>
+            <td><code>venueAskFulfillment</code> must not promote “full” from two weak partials</td>
+            <td>M-03</td>
+          </tr>
+          <tr>
+            <td><strong>R5 Exact kitchen first</strong></td>
+            <td>Any kitchen with exact named dish outranks garnish-only kitchens before purity / Sovereign soft tags</td>
+            <td>M-04</td>
+          </tr>
+          <tr>
+            <td><strong>R6 Soak pack</strong></td>
+            <td>Vitest: Butter chicken; Butter chicken under 40; ghee roast (legitimate); Mysore pak (no dosa false hit)</td>
+            <td>Acceptance</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="call ok">
+        <strong>Ticket:</strong> <strong>ROE-023</strong> implements R1–R6 in
+        <code>dishIntent.ts</code> / <code>askFulfillment.ts</code> / <code>veda.ts</code> + tests.
+        Do <em>not</em> wait for <code>score-reading</code> to “fix” this.
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2 class="sec"><i>04</i> Q2 — Full Database transition</h2>
+      <p>
+        “Full DB” here means: <strong>live culinary facts + <code>menu_items</code> feed scoring</strong>
+        (combined proposal: live cache + <code>score-reading</code>). It does <em>not</em> mean delete the matrix overnight
+        or auto-promote Apify scrapes.
+      </p>
+
+      <div class="legend">
+        <span><i class="t"></i>Today (SPA + static index)</span>
+        <span><i class="a"></i>DB catalog only</span>
+        <span><i class="c"></i>DB + upgrade math (J / Pareto / tags)</span>
+      </div>
+
+      <div class="chart-wrap">
+        <p class="chart-title">Relative win (Today = 100; higher better for quality; lower better for cost/latency)</p>
+        <div class="tri">
+          <div class="tri-row">
+            <div class="lab">Menu freshness</div>
+            <div class="stack">
+              <div class="sbar"><span class="tag">Today</span><div class="track"><div class="fill muted" style="width:40%"></div></div><span class="val">100</span></div>
+              <div class="sbar"><span class="tag">DB only</span><div class="track"><div class="fill a" style="width:85%"></div></div><span class="val">210</span></div>
+              <div class="sbar"><span class="tag">DB+math</span><div class="track"><div class="fill ok" style="width:90%"></div></div><span class="val">220</span></div>
+            </div>
+          </div>
+          <div class="tri-row">
+            <div class="lab">Reading payload</div>
+            <div class="stack">
+              <div class="sbar"><span class="tag">Today</span><div class="track"><div class="fill muted" style="width:100%"></div></div><span class="val">100</span></div>
+              <div class="sbar"><span class="tag">DB only</span><div class="track"><div class="fill a" style="width:28%"></div></div><span class="val">28</span></div>
+              <div class="sbar"><span class="tag">DB+math</span><div class="track"><div class="fill ok" style="width:25%"></div></div><span class="val">25</span></div>
+            </div>
+          </div>
+          <div class="tri-row">
+            <div class="lab">Vague-Ask variety</div>
+            <div class="stack">
+              <div class="sbar"><span class="tag">Today</span><div class="track"><div class="fill muted" style="width:40%"></div></div><span class="val">100</span></div>
+              <div class="sbar"><span class="tag">DB only</span><div class="track"><div class="fill a" style="width:55%"></div></div><span class="val">135</span></div>
+              <div class="sbar"><span class="tag">DB+math</span><div class="track"><div class="fill ok" style="width:78%"></div></div><span class="val">190</span></div>
+            </div>
+          </div>
+          <div class="tri-row">
+            <div class="lab">Safety (no invent)</div>
+            <div class="stack">
+              <div class="sbar"><span class="tag">Today</span><div class="track"><div class="fill muted" style="width:90%"></div></div><span class="val">Hold</span></div>
+              <div class="sbar"><span class="tag">DB only</span><div class="track"><div class="fill a" style="width:90%"></div></div><span class="val">Hold*</span></div>
+              <div class="sbar"><span class="tag">DB+math</span><div class="track"><div class="fill ok" style="width:92%"></div></div><span class="val">Hold*</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="cap">*Only if Lab / promote gate stays. Auto-promote speculative rows would break safety.</p>
+      </div>
+
+      <table>
+        <thead><tr><th>Win</th><th>DB catalog only</th><th>DB + upgrade math</th><th>Magnitude</th></tr></thead>
+        <tbody>
+          <tr><td>Freshness / fewer honest misses</td><td>Yes</td><td>Yes + identity for F()</td><td><span class="pill ok">Large</span></td></tr>
+          <tr><td>Payload / phone CPU</td><td>Yes (<code>score-reading</code>)</td><td>Same</td><td><span class="pill ok">Large</span></td></tr>
+          <tr><td>Vague-Ask diversity</td><td>Some (more real dishes)</td><td>Much better (Pareto + tags)</td><td><span class="pill warn">Med → Large</span></td></tr>
+          <tr><td>Explain “why this plate”</td><td>Weak</td><td>J component breakdown</td><td><span class="pill ok">Large with math</span></td></tr>
+          <tr><td>Safety</td><td>Same if Lab gate</td><td>Same</td><td><span class="pill low">Hold</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="call danger">
+        <strong>Caveat:</strong> Database alone does <em>not</em> fix vague-Ask sameness,
+        and does <em>not</em> fix named-dish token false heroes.
+        You still need honest F() match rules, dish attributes (tags/identity), hard gates, and ranking math (J / Pareto).
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2 class="sec"><i>05</i> Q3 — Sequential tables: opinion</h2>
+      <p>
+        The sketch (Ask → location → event → gender → user type → health → ethic → diet → macro → therapeutic → dish)
+        is a useful <em>thinking list</em>. As a literal SQL join pipeline, it is a poor fit for Rasaoi.
+      </p>
+
+      <h3>Why not a 10-step join chain</h3>
+      <table>
+        <thead><tr><th>Problem</th><th>What goes wrong</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Most Asks omit stages</td>
+            <td>Gender, age, renal, DASH rarely said. Empty stages = noise and ops cost.</td>
+          </tr>
+          <tr>
+            <td>Hard AND filters shrink Eligible</td>
+            <td>Too many gates → empty set → same fallbacks / “no match” loops (more sameness).</td>
+          </tr>
+          <tr>
+            <td>Gender / age as dish filters</td>
+            <td>EDH menus are not tagged this way; product and fairness risk if forced as hard gates.</td>
+          </tr>
+          <tr>
+            <td>Clinical health tables</td>
+            <td>“Diseased / renal / pregnant” as ranked DB paths invites medical claims. Handbook: wellness, not clinical.</td>
+          </tr>
+          <tr>
+            <td>One mega-column table</td>
+            <td>Brittle migrations; every new diet flag becomes a column war.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="call warn">
+        Recommendation: treat the sketch as a <strong>dimension checklist</strong>, not as a mandatory pipeline of tables in the hot path.
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2 class="sec"><i>06</i> Recommended model (hard gates + soft tags)</h2>
+      <p>Keep the Outcome Engine path simple. Split <em>must-pass</em> from <em>nice-to-rank</em>.</p>
+
+      <svg class="flow" viewBox="0 0 900 200" role="img" aria-label="Recommended score flow">
+        <rect x="10" y="70" width="100" height="55" rx="5" fill="#eff6ff" stroke="#1d4ed8"/>
+        <text x="60" y="95" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">Ask</text>
+        <text x="60" y="110" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">text/voice</text>
+        <path d="M110 98 H140" stroke="#64748b" stroke-width="2"/>
+        <rect x="140" y="70" width="120" height="55" rx="5" fill="#e0e7ff" stroke="#3730a3"/>
+        <text x="200" y="95" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">Parse+sanitize</text>
+        <text x="200" y="110" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">dials+filters</text>
+        <path d="M260 98 H290" stroke="#64748b" stroke-width="2"/>
+        <rect x="290" y="55" width="130" height="85" rx="5" fill="#fef2f2" stroke="#b91c1c"/>
+        <text x="355" y="85" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">Hard gates</text>
+        <text x="355" y="102" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">diet · ethic · exclude</text>
+        <text x="355" y="116" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">catalog · named F</text>
+        <path d="M420 98 H450" stroke="#64748b" stroke-width="2"/>
+        <rect x="450" y="55" width="150" height="85" rx="5" fill="#fffbeb" stroke="#b45309"/>
+        <text x="525" y="85" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">Soft score J</text>
+        <text x="525" y="102" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">occasion · wellness</text>
+        <text x="525" y="116" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">macro · purity · GL</text>
+        <path d="M600 98 H630" stroke="#64748b" stroke-width="2"/>
+        <rect x="630" y="70" width="120" height="55" rx="5" fill="#ecfdf5" stroke="#047857"/>
+        <text x="690" y="95" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">Plates</text>
+        <text x="690" y="110" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">menu ∪ matrix</text>
+        <path d="M750 98 H780" stroke="#64748b" stroke-width="2"/>
+        <rect x="780" y="70" width="110" height="55" rx="5" fill="#eff6ff" stroke="#1d4ed8"/>
+        <text x="835" y="95" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">Reading</text>
+        <text x="835" y="110" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">DTO render</text>
+        <text x="200" y="30" text-anchor="middle" font-size="10" font-family="Segoe UI" fill="#4b5563">optional profile prefs</text>
+        <path d="M200 40 V70" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 2"/>
+      </svg>
+
+      <div class="math">
+        <span class="lbl">Eligible then rank (same idea as upgrade J)</span>
+        Eligible = dishes/kitchens that pass diet ∩ ethic ∩ exclude ∩ regional ∩ catalog ∩ <strong>named-Ask F policy</strong><br/>
+        Maximize J = w_F·F + w_D·D + w_P·P + w_B·B + w_W·W + <strong>w_S·S</strong> − w_G·G<br/>
+        Soft choice dimensions from the sketch (occasion, macro, <strong>flavor/spice</strong>, wellness, household)
+        feed <strong>W / S / D</strong> — they do not each require a join table, and they do not override hard gates or named F (Rev 1.2).
+      </div>
+
+      <h3>Data shape (lean)</h3>
+      <div class="ascii"><span class="ok">dishes</span> / culinary knowledge   (live rows)
+    │
+    └── <span class="hi">dish_tags</span> (dish_id, dimension, tag, speculation_tier)
+              dimension ∈ { diet, ethic, macro, wellness, spice, therapeutic, allergen, food_type, … }
+
+<span class="mu">Optional profile (prefs only):</span>
+  location · household (kid/adult) · default occasion
+  Bio / clinical raw signals stay on-device / caveated
+
+<span class="warn">Not recommended:</span> gender_only table as hard dish filter;
+                        “diseased” as a ranked therapeutic table without legal copy</div>
+
+      <table>
+        <thead><tr><th>Layer</th><th>Examples</th><th>Behavior</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Hard gates</strong></td>
+            <td>Jain, vegan, halal, allergy excludes, catalog membership, <strong>named-Ask protein/F policy (R1–R5)</strong></td>
+            <td>Fail → out or Closest-capped. No soft override to naked 100%.</td>
+          </tr>
+          <tr>
+            <td><strong>Soft score</strong></td>
+            <td>Celebration dial, light/fresh tags, keto-ish, purity, budget, GL lens, <strong>mild/non-spicy (S)</strong></td>
+            <td>Reorder Eligible; never invent dishes.</td>
+          </tr>
+          <tr>
+            <td><strong>Profile prefs</strong></td>
+            <td>EDH/Folsom, family night, prefer veg</td>
+            <td>Defaults for parse — user Ask still wins.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2 class="sec"><i>07</i> Sketch → Rasaoi mapping</h2>
+      <p>Your concepts, adjusted to what already exists (dials, DIET-001, exclude_ingredients, identity, GL lens).</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Your sketch</th>
+            <th>Maps to today</th>
+            <th>Hard or soft?</th>
+            <th>Recommended storage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ask → intent parsing</td>
+            <td><code>parse-intent</code> + sanitize</td>
+            <td>—</td>
+            <td>Keep; always sanitize after LLM</td>
+          </tr>
+          <tr>
+            <td>Location table</td>
+            <td>EDH/Folsom venues; Places</td>
+            <td>Soft / scope</td>
+            <td>Restaurant geo + profile default city</td>
+          </tr>
+          <tr>
+            <td>Event / occasion</td>
+            <td>Context dial + context_tags</td>
+            <td>Soft</td>
+            <td>Dial + optional dish tags (celebratory…)</td>
+          </tr>
+          <tr>
+            <td>Gender table</td>
+            <td>— (not in product)</td>
+            <td><span class="pill bad">Avoid hard</span></td>
+            <td>Do not gate dishes by gender</td>
+          </tr>
+          <tr>
+            <td>User type (kid/adult/elderly)</td>
+            <td>Twin / prefs (thin today)</td>
+            <td>Soft pref</td>
+            <td>Profile pref; mild score tilt only if tagged</td>
+          </tr>
+          <tr>
+            <td>Health (allergy…)</td>
+            <td><code>exclude_ingredients</code>; GL lens</td>
+            <td>Allergy = hard; GL = soft</td>
+            <td>Allergen tags + excludes; lens caveats</td>
+          </tr>
+          <tr>
+            <td>Health (pregnant / diseased…)</td>
+            <td>Not clinical today</td>
+            <td><span class="pill warn">Defer</span></td>
+            <td>Only with legal copy + verified tags; never invent care advice</td>
+          </tr>
+          <tr>
+            <td>Ethic (halal, jain…)</td>
+            <td>Strict dietary / certifications</td>
+            <td>Hard</td>
+            <td>Kitchen + dish tags (DIET-001 family)</td>
+          </tr>
+          <tr>
+            <td>Diet (vegan, veg, non-veg…)</td>
+            <td><code>diet_class</code> + dietary gates</td>
+            <td>Hard</td>
+            <td>On <code>dishes</code> / identity; junction tags OK</td>
+          </tr>
+          <tr>
+            <td>Macro (keto, high-protein…)</td>
+            <td>Wellness / purity / macros</td>
+            <td>Soft</td>
+            <td>Tags + nutrition fields; speculation_tier</td>
+          </tr>
+          <tr>
+            <td><strong>Flavor / spice</strong> (mild, non-spicy, hot…)</td>
+            <td>Stop-words today — <strong>not scored</strong> (soak: “chicken, non spicy”)</td>
+            <td>Soft (Rev 1.2)</td>
+            <td><code>spice_level</code> / <code>dish_tags.spice</code> + Ask pref in <strong>J</strong> (w_S·S); name heuristics until tags dense</td>
+          </tr>
+          <tr>
+            <td>Therapeutic (DASH, Low-FODMAP…)</td>
+            <td>Experimental / sparse</td>
+            <td>Soft + caveated</td>
+            <td>Optional tags after verified enrich; wellness copy only</td>
+          </tr>
+          <tr>
+            <td>Dish table</td>
+            <td><code>menu_items</code> + <code>dishes</code> + index</td>
+            <td>Source of plates</td>
+            <td>Live DB primary; matrix/index enrich until cache ships</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2 class="sec"><i>08</i> Phased advice — Rev 1.2</h2>
+      <ol>
+        <li><strong>P0 — Named-dish / F() match rules</strong> — <strong>ROE-023</strong> (R1–R6). <em>Blocks false 100% heroes.</em></li>
+        <li><strong>Choice dimensions in J (spice/flavor first)</strong> — <strong>ROE-024</strong>: stop ignoring mild/non-spicy; soft <code>S</code> in outcome math; tag/heuristic spice_level; keep protein Ask-align on all triple slots.</li>
+        <li><strong>Maintain identity + alias parity</strong> — cuisine_region / food_type; <code>culinary:check-aliases</code>.</li>
+        <li><strong>Shared scoring + live cache + <code>score-reading</code></strong> — <strong>ROE-025+</strong>: host the <em>same</em> J (incl. S) on Edge; Lab gate.</li>
+        <li><strong>Full tag model</strong> — <code>dish_tags</code> ethic / diet / macro / wellness / spice / therapeutic + speculation_tier.</li>
+        <li><strong>Vague-Ask UX</strong> — Pareto + “why” bars; honest Closest.</li>
+        <li><strong>Defer</strong> — gender hard-gates; clinical therapeutic ranking.</li>
+      </ol>
+
+      <div class="kpi">
+        <div><strong>Do now</strong><span>ROE-023 match · ROE-024 spice/S in J</span></div>
+        <div><strong>Do next</strong><span>Shared J on Edge · live cache</span></div>
+        <div><strong>Do with care</strong><span>Full tags · GL · therapeutic</span></div>
+        <div><strong>Don’t</strong><span>10-table AND · invent plates · math without S/F</span></div>
+      </div>
+
+      <div class="call ok">
+        Bottom line: fix sameness with <em>better real choices + clearer gates + soft ranking math</em>.
+        Fix named-dish false heroes with <em>honest F()</em>. Fix “non spicy” with <em>choice-dimension S in J</em> — not a 10-table join.
+        Move cognition to the Database for speed — encode the sketch as tags and weights.
+      </div>
+    </section>
+
+    <footer>
+      Rasaoi Outcome Engine · Dish Matrix Recommendations · <strong>Rev 1.2</strong> · 6–7 Sep 2026 ·
+      Grounded in <code>docs/rasaoi-combined-audit-upgrade-proposal.pdf</code> and
+      <code>docs/rasaoi-dish-registry-audit-report.pdf</code> Rev 1.1
+      (plus dials / DIET-001 / Ask-fulfillment / catalog gate / ROE-018…024).
+      Recommendation only — schema for spice tags ships with ROE-024+.
+      <span class="no-print"> Print → Save as PDF (A4).</span>
+    </footer>
+  </main>
+  <script>
+    document.getElementById("printBtn").addEventListener("click", function () { window.print(); });
+  </script>
+</body>
+</html>

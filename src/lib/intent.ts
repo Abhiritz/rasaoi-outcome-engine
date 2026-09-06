@@ -11,6 +11,12 @@ import {
   RESTATED_MAX_CHARS,
   WELLNESS_TAG_SLUGS,
 } from "@/lib/intentSanitize";
+import {
+  clearIntentCache,
+  INTENT_CACHE_TTL_MS,
+  lookupIntentCacheRaw,
+  putIntentCacheRaw,
+} from "@/lib/intentCache";
 import type { DialState, Restaurant } from "./veda";
 
 export interface ParsedIntent {
@@ -55,9 +61,8 @@ export const RATE_LIMIT_USER_MSG =
   "Veda is busy (AI rate limit). Wait a moment, then try again.";
 
 const STORAGE_KEY = "rasaoi.last_intent.v1";
-const PARSE_CACHE_KEY = "rasaoi.parse_cache.v1";
-/** Short TTL so rapid re-asks of the same text do not re-burn Gemini quota (ROE-002). */
-export const PARSE_CACHE_TTL_MS = 90_000;
+/** @deprecated use INTENT_CACHE_TTL_MS — kept for test/compat aliases */
+export const PARSE_CACHE_TTL_MS = INTENT_CACHE_TTL_MS;
 const MAX_RETRIES = 2;
 
 /**
@@ -145,53 +150,19 @@ export function normalizeParsedIntent(raw: unknown, transcript: string): ParsedI
   return intent;
 }
 
-function normalizeTranscript(t: string): string {
-  return t.toLowerCase().replace(/\s+/g, " ").trim();
-}
-
-function parseCacheKey(transcript: string): string {
-  return normalizeTranscript(transcript);
-}
-
-interface ParseCacheEntry {
-  ts: number;
-  intent: ParsedIntent;
-}
-
-function loadParseCache(): Record<string, ParseCacheEntry> {
-  try {
-    const raw = sessionStorage.getItem(PARSE_CACHE_KEY);
-    if (!raw) return {};
-    return JSON.parse(raw) as Record<string, ParseCacheEntry>;
-  } catch {
-    return {};
-  }
-}
-
-function saveParseCache(map: Record<string, ParseCacheEntry>) {
-  try {
-    sessionStorage.setItem(PARSE_CACHE_KEY, JSON.stringify(map));
-  } catch {
-    /* ignore */
-  }
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 export function getCachedParse(transcript: string): ParsedIntent | null {
-  const map = loadParseCache();
-  const hit = map[parseCacheKey(transcript)];
-  if (!hit) return null;
-  if (Date.now() - hit.ts > PARSE_CACHE_TTL_MS) return null;
-  return normalizeParsedIntent(hit.intent, transcript);
+  const raw = lookupIntentCacheRaw(transcript);
+  if (!raw) return null;
+  // ROE-028: always re-sanitize / re-merge excludes against current transcript
+  return normalizeParsedIntent(raw, transcript);
 }
 
 function putCachedParse(intent: ParsedIntent) {
-  const map = loadParseCache();
-  map[parseCacheKey(intent.transcript)] = { ts: Date.now(), intent };
-  saveParseCache(map);
-}
-
-function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
+  putIntentCacheRaw(intent.transcript, intent as unknown as Record<string, unknown>);
 }
 
 function isRateLimitMessage(msg: string, body?: { code?: string }): boolean {
@@ -271,12 +242,15 @@ function celebratoryOfflineIntent(transcript: string): ParsedIntent {
   );
 }
 
+import { recordScoreTelemetry } from "./scoreTelemetry";
+
 export async function parseIntent(transcript: string): Promise<ParsedIntent> {
   const trimmed = transcript.trim();
   if (!trimmed) throw new Error("transcript required");
 
   const cached = getCachedParse(trimmed);
   if (cached) {
+    recordScoreTelemetry("intent_cache_hit", { len: trimmed.length });
     saveIntent(cached);
     return cached;
   }
@@ -338,7 +312,7 @@ export function loadIntent(): ParsedIntent | null {
 export function clearIntent() {
   try {
     sessionStorage.removeItem(STORAGE_KEY);
-    sessionStorage.removeItem(PARSE_CACHE_KEY);
+    clearIntentCache();
   } catch {
     // ignore
   }

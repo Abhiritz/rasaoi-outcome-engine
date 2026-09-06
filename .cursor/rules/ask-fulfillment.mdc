@@ -28,12 +28,14 @@ Course records should carry additive `identity` (proteins, diet_class, cuisine_r
 
 ## Agent checklist
 
-When changing `veda.ts`, `pairings.ts`, `culinaryIndex.ts`, or matrix builders:
+When changing `veda.ts`, `pairings.ts`, `culinaryIndex.ts`, `dishIntent.ts`, or matrix builders:
 
 1. Would a chicken-only kitchen with empty Best outrank a goat/lamb kitchen for “meat no chicken”? If yes, fix fulfillment sort.
 2. Does Best invent or use Chef’s selection while eligible Ask-aligned dishes remain? Forbidden.
 3. Are new matrix fields speculation-tiered and never used as clinical claims?
 4. Rebuild index after matrix identity changes; update impact doc.
+5. **ROE-023:** Would a fat/garnish-only token overlap (e.g. Butter Dosai for “Butter chicken”) score partial/exact or crown a ~100% hero? Forbidden — require Ask protein / required tokens; honesty-cap weak matches.
+6. **ROE-024:** Would “non spicy” / mild be ignored as a stop-word with no J soft weight **S**? Forbidden — detect spice preference and soft-rank; keep protein slots Ask-aligned.
 
 ## References
 

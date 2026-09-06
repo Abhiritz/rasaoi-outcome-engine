@@ -50,6 +50,23 @@ describe("parseIntent ROE-002 rate limit + cache", () => {
     expect(PARSE_CACHE_TTL_MS).toBeGreaterThan(0);
   });
 
+  it("hits semantic near-dup without second invoke (ROE-028)", async () => {
+    invoke.mockResolvedValueOnce({
+      data: {
+        restated_intent: "Chicken · mild",
+        dials: { energy: 50, context: 40, budget: 50, purity: 50 },
+        filters: { dish: "chicken" },
+        confidence: "high",
+      },
+      error: null,
+    });
+    await parseIntent("chicken non spicy");
+    const b = await parseIntent("chicken, non-spicy");
+    expect(invoke).toHaveBeenCalledTimes(1);
+    expect(b.filters.dish).toBe("chicken");
+    expect(b.transcript).toBe("chicken, non-spicy");
+  });
+
   it("throws RateLimitError with friendly copy after retries exhausted", async () => {
     invoke.mockResolvedValue({
       data: null,

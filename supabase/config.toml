@@ -35,5 +35,8 @@ verify_jwt = false
 [functions.commit-dishes]
 verify_jwt = false
 
+[functions.score-reading]
+verify_jwt = false
+
 [functions.experimental-apify-webhook]
 verify_jwt = false

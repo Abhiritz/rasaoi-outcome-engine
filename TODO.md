@@ -9,6 +9,62 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-029] GL soft + score telemetry — implemented (feature)
+
+Impact: `docs/ROE-029-telemetry-gl-soft-impact-analysis.md`  
+Story: `docs/ROE-upgrade-story.md`
+
+- [x] Lens on → `jComponents.G` + soft penalty via lens-on weights
+- [x] Session score telemetry ring
+- [ ] Staging soak / merge; Dirichlet nudge deferred
+
+---
+
+## [ROE-028] Intent semantic-lite cache — implemented (feature)
+
+Impact: `docs/ROE-028-intent-cache-impact-analysis.md`  
+Story: `docs/ROE-upgrade-story.md`
+
+- [x] Jaccard ≥ 0.92 near-dup + 15m TTL + LRU
+- [x] Re-sanitize on cache hit
+- [ ] Staging soak / merge
+
+---
+
+## [ROE-027] Pareto + softmax plates — implemented (feature)
+
+Impact: `docs/ROE-027-pareto-softmax-plates-impact-analysis.md`  
+Story: `docs/ROE-upgrade-story.md`
+
+- [x] Softmax + cuisine diversify MiniCard alts
+- [x] Pareto front on Ask×spice plate candidates
+- [ ] Staging soak / merge
+
+---
+
+## [ROE-026] Edge score-reading dual-run — implemented (feature)
+
+Impact: `docs/ROE-026-score-reading-dual-run-impact-analysis.md`  
+Story: `docs/ROE-upgrade-story.md`
+
+- [x] Edge `score-reading` + rate-limit + config
+- [x] Client `VITE_SCORE_READING_MODE` off/dual/edge
+- [x] Compare helpers + Vitest
+- [ ] Deploy `score-reading` on staging; soak dual drift
+
+---
+
+## [ROE-025] Shared scoring package + culinary cache — implemented (feature)
+
+Impact: `docs/ROE-025-shared-scoring-live-cache-impact-analysis.md`
+
+- [x] `scoreWeights` with **S** + Edge twin + `ci:twins`
+- [x] `veda` `scaleByWeight` for F/P/S + `jComponents`
+- [x] `culinaryCache` facade (static + experimental overlay)
+- [ ] Staging PR / merge; Edge `score-reading` → ROE-026
+
+---
+
 ## [ROE-020] Exclusion aliases + Ask-align + auto soak — implemented
 
 Impact: `docs/ROE-020-exclusion-aliases-auto-soak-impact-analysis.md`

@@ -9,6 +9,8 @@ import {
   isSweetDishIntent,
   namedDishMatchStrength,
   needsPlateCarrier,
+  spiceAlignDelta,
+  spicePreferenceFromAsk,
 } from "./dishIntent";
 
 describe("dishIntent (CRS-003a + ROE-001 + ROE-003)", () => {
@@ -65,5 +67,43 @@ describe("dishIntent (CRS-003a + ROE-001 + ROE-003)", () => {
       "exact",
     );
     expect(namedDishMatchStrength("Chicken 65", "", expandDishTokens("goat clay pot rice"))).toBe("none");
+  });
+
+  it("ROE-023: fat/garnish alone does not match named protein Ask", () => {
+    const tokens = expandDishTokens("Butter chicken");
+    expect(namedDishMatchStrength("Butter Dosai", "", tokens)).toBe("none");
+    expect(namedDishMatchStrength("Butter Chicken", "", tokens)).toBe("exact");
+    expect(namedDishMatchStrength("Class Butter Chicken", "", tokens)).toBe("exact");
+    expect(namedDishMatchStrength("Masala Dosai", "", tokens)).toBe("none");
+  });
+
+  it("ROE-023: ghee roast still matches when roast (required) hits", () => {
+    const tokens = expandDishTokens("ghee roast");
+    expect(namedDishMatchStrength("Ghee Roast Dosa", "", tokens)).toBe("exact");
+    expect(namedDishMatchStrength("Butter Dosai", "", tokens)).toBe("none");
+  });
+
+  it("ROE-023: Mysore pak does not exact-match Mysore Masala Dosa", () => {
+    const tokens = expandDishTokens("Mysore pak");
+    expect(namedDishMatchStrength("Mysore Masala Dosa", "", tokens)).toBe("partial");
+    expect(namedDishMatchStrength("Mysore Pak", "", tokens)).toBe("exact");
+  });
+
+  it("ROE-023: paneer Ask does not match chicken tikka", () => {
+    const tokens = expandDishTokens("paneer tikka");
+    expect(namedDishMatchStrength("Chicken Tikka", "", tokens)).toBe("none");
+    expect(namedDishMatchStrength("Paneer Tikka", "", tokens)).toBe("exact");
+  });
+
+  it("ROE-024: spice preference from Ask text", () => {
+    expect(spicePreferenceFromAsk("chicken", "Non-veg · Chicken · non-spicy")).toBe("mild");
+    expect(spicePreferenceFromAsk("spicy chicken fry")).toBe("hot");
+    expect(spicePreferenceFromAsk("chicken")).toBeUndefined();
+  });
+
+  it("ROE-024: mild Ask demotes hot names and boosts butter chicken", () => {
+    expect(spiceAlignDelta("Vijayawada Chicken Dosa", "", "mild")).toBeLessThan(0);
+    expect(spiceAlignDelta("Butter Chicken", "", "mild")).toBeGreaterThan(0);
+    expect(spiceAlignDelta("Chicken 65", "", "mild")).toBeLessThan(0);
   });
 });

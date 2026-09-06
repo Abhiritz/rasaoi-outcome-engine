@@ -37,6 +37,8 @@ import {
   isRiceAsMainIntent,
   isNamedDishAsk,
   namedDishMatchStrength,
+  spicePreferenceFromAsk,
+  spiceAlignDelta,
   STARCH_COMPLETE,
 } from "./dishIntent";
 import {
@@ -48,6 +50,7 @@ import {
   preferredProteinsFromAsk,
 } from "./askFulfillment";
 import { isDishOnRestaurantCatalog } from "./catalogGuard";
+import { filterPlateCandidatesPareto } from "./paretoSoftmax";
 
 export type DishRole = "Base" | "Booster" | "Carrier";
 
@@ -892,6 +895,8 @@ export interface IntentHint {
   dietary?: StrictDietaryTag;
   /** ROE-017: hard-excluded ingredients from negation. */
   exclude_ingredients?: string[];
+  /** ROE-024: restated Ask text for soft choice dims (spice). */
+  ask_text?: string;
 }
 
 const STOP = new Set([
@@ -988,34 +993,41 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const sweet = isSweetDishIntent(intent?.dish);
   const meatAsk = isMeatCategoryAsk(intent?.dish);
   const preferProteins = preferredProteinsFromAsk(intent?.dish, exclusions);
+  const askOpts = {
+    dish: intent?.dish,
+    exclusions,
+    dietary,
+    ask_text: intent?.ask_text,
+  };
   const askFulfillMode =
     meatAsk ||
     sweet ||
     isNamedDishAsk(intent?.dish) ||
     exclusions.length > 0 ||
-    Boolean(preferProteins?.length);
+    Boolean(preferProteins?.length) ||
+    Boolean(spicePreferenceFromAsk(intent?.dish, intent?.ask_text));
 
   const pickAskAlignedMenu = (usedSet: Set<string>): MenuItem | undefined => {
     if (!askFulfillMode) return undefined;
-    return [...menu]
-      .filter(
-        (m) =>
-          !usedSet.has(m.name.toLowerCase()) &&
-          !isCarrierOnlyDish(m.name, m.description ?? "") &&
-          !dishHitsExclusion(m.name, m.description ?? "", exclusions) &&
-          !(southKitchen && isNorthIndianInvention(m.name)) &&
-          dishPassesGate(m.name, m.description ?? "", dietary, m),
-      )
+    const spicePref = spicePreferenceFromAsk(intent?.dish, intent?.ask_text);
+    const pool = [...menu].filter(
+      (m) =>
+        !usedSet.has(m.name.toLowerCase()) &&
+        !isCarrierOnlyDish(m.name, m.description ?? "") &&
+        !dishHitsExclusion(m.name, m.description ?? "", exclusions) &&
+        !(southKitchen && isNorthIndianInvention(m.name)) &&
+        dishPassesGate(m.name, m.description ?? "", dietary, m),
+    );
+    const scored = pool
       .map((m) => ({
         m,
-        s: askAlignedDishScore(m.name, m.description ?? "", {
-          dish: intent?.dish,
-          exclusions,
-          dietary,
-        }, safe.name),
+        s: askAlignedDishScore(m.name, m.description ?? "", askOpts, safe.name),
+        spice: spiceAlignDelta(m.name, m.description ?? "", spicePref),
       }))
-      .filter((x) => x.s > 0)
-      .sort((a, b) => b.s - a.s)[0]?.m;
+      .filter((x) => x.s > 0);
+    // ROE-027: drop ask/spice-dominated candidates before taking top Ask-align
+    const front = filterPlateCandidatesPareto(scored, (c) => ({ ask: c.s, spice: c.spice }));
+    return [...front].sort((a, b) => b.s - a.s || b.spice - a.spice)[0]?.m;
   };
 
   const onCatalog = (name: string) => isDishOnRestaurantCatalog(name, safe.name, menu);
@@ -1263,7 +1275,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
       const alignedScore = askAlignedDishScore(
         p.name,
         p.description ?? "",
-        { dish: intent?.dish, exclusions, dietary },
+        askOpts,
         safe.name,
       );
       const namedOk =
@@ -1317,11 +1329,7 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
         !(southKitchen && isNorthIndianInvention(m.name)) &&
         dishPassesGate(m.name, m.description ?? "", dietary, m) &&
         (!askFulfillMode ||
-          askAlignedDishScore(m.name, m.description ?? "", {
-            dish: intent?.dish,
-            exclusions,
-            dietary,
-          }, safe.name) > 0),
+          askAlignedDishScore(m.name, m.description ?? "", askOpts, safe.name) > 0),
     );
     if (menuFallback) {
       used.add(menuFallback.name.toLowerCase());

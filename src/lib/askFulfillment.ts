@@ -14,6 +14,9 @@ import {
   isSweetDishIntent,
   namedDishMatchStrength,
   RICE_AS_MAIN_PATTERN,
+  spiceAlignDelta,
+  spicePreferenceFromAsk,
+  type SpicePreference,
 } from "./dishIntent";
 import { lookupDish, lookupRestaurant, type CulinaryDishMeta } from "./culinaryIndex";
 
@@ -150,6 +153,9 @@ export interface AskFulfillmentOpts {
   dish?: string;
   exclusions?: string[];
   dietary?: string;
+  /** ROE-024: restated Ask / transcript for soft choice dims (spice). */
+  ask_text?: string;
+  spice?: SpicePreference;
 }
 
 /** Score how well one dish line fulfills the Ask (0 = not aligned). */
@@ -180,6 +186,7 @@ export function askAlignedDishScore(
     const strength = namedDishMatchStrength(name, desc, tokens);
     if (strength === "exact") score += 50;
     else if (strength === "partial") score += 22;
+    // ROE-023: strength "none" (fat-only / missing protein) adds nothing
   }
 
   if (riceMain && (id.food_type === "rice_main" || RICE_AS_MAIN_PATTERN.test(name))) {
@@ -202,8 +209,15 @@ export function askAlignedDishScore(
       score += 28;
     } else if (meatCat) {
       return score > 0 ? score : 0;
+    } else if (preferred.length && !meatCat && !sweet) {
+      // Protein Ask (e.g. chicken) with no protein hit — zero out (ROE-024 Clean-slot fish miss)
+      return 0;
     }
   }
+
+  const spice =
+    opts.spice ?? spicePreferenceFromAsk(opts.dish, opts.ask_text);
+  score += spiceAlignDelta(name, desc, spice);
 
   // Coastal / oceany Ask — seafood vessel names count even without protein-family tags
   if (
@@ -265,10 +279,14 @@ export function venueAskFulfillment(
     }
   }
 
-  if (alignedCount >= 2) {
+  if (best >= 50) {
+    // One exact named (or strong) hit is enough — do not require two weak lines (M-03)
     return { level: "full", alignedCount, delta: 38, tag: "Ask fulfilled" };
   }
-  if (alignedCount === 1) {
+  if (alignedCount >= 2 && best >= 40) {
+    return { level: "full", alignedCount, delta: 38, tag: "Ask fulfilled" };
+  }
+  if (alignedCount >= 1 && best >= 22) {
     return { level: "partial", alignedCount, delta: 22, tag: "Partial Ask match" };
   }
   return {

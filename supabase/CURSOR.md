@@ -19,6 +19,7 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 | `parse-intent` | `functions/parse-intent/index.ts` | `{ transcript: string }` | Dials + filters; **429** `{ error, code: "rate_limit", retry_after_ms }`; ROE-003 strips carrier-only dish + celebratory dial band; **[ROE-007] (IP-FIX-001)** transcript lens + no Healthy cuisine + negation dietary (`_shared/intent-sanitize.ts`) | `GEMINI_API_KEY` |
 | `estimate-glycemic` | `functions/estimate-glycemic/index.ts` | `{ dishes: DishInput[] }` | GL estimates; same **429** shape (client soft-fails to matrix heuristics) | `GEMINI_API_KEY` |
 | `places-search` | `functions/places-search/index.ts` | `{ query, lat?, lng? }` | Restaurant results (Google Places or mock) | `GOOGLE_PLACES_API_KEY` (optional) |
+| `score-reading` | `functions/score-reading/index.ts` | `{ venues: [{ id, client_score, jComponents }], lens? }` | `{ venues: [{ id, edge_score, J, drift }], mean_abs_drift }` **[ROE-026]** | none (rate-limited) |
 | `ingest-menu` | `functions/ingest-menu/index.ts` | `{ restaurant_id, restaurant_name, source_url }` | `{ proposed: ProposedDish[], source_url, raw_excerpt }` | `GEMINI_API_KEY`, `FIRECRAWL_API_KEY` (optional) |
 | `commit-dishes` | `functions/commit-dishes/index.ts` | `{ restaurant_id, source_url, dishes[] }` | Inserted dish count + rebuilt menu_items | Auto-injected: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` |
 
@@ -33,12 +34,15 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 | `functions/_shared/ai-client.ts` | Gemini client (`geminiToolCall`, `geminiJsonObject`); reads `GEMINI_API_KEY` |
 | `functions/_shared/dietary.ts` | DIET-001 taxonomy: diet classes, modifiers, normalization, gatekeeper logic |
 | `functions/_shared/intent-sanitize.ts` | [ROE-007]/[ROE-008] transcript grounding, celebratory/carrier, `buildRestatedIntent` — sync with `src/lib/intentSanitize.ts` |
+| `functions/_shared/score-weights.ts` | **[ROE-025]/[ROE-026]** Named J (incl. S) — sync with `src/lib/scoreWeights.ts`; used by `score-reading` |
+| `functions/_shared/rate-limit.ts` | Invoke abuse control (score-reading + ROE-022 paths) |
 | `functions/_shared/model-router.ts` | **[ROE-016]** LiteLLM-class gateway — **wired** into `parse-intent`, `estimate-glycemic`, `ingest-menu` on staging (Gemini fallback always). Non-Gemini providers only when staging secrets + `EXPERIMENTAL_MODEL_ROUTER=true` |
 | `functions/experimental-apify-webhook/` | **[ROE-016]** Apify normalize/upsert → `experimental_dish_knowledge` (`speculative`); supports batch payloads from Actor cron |
 
 **Sync pairs:**
 - `functions/_shared/dietary.ts` ↔ `src/lib/dietary.ts` — both must change together.
 - `functions/_shared/intent-sanitize.ts` ↔ `src/lib/intentSanitize.ts` — both must change together.
+- `functions/_shared/score-weights.ts` ↔ `src/lib/scoreWeights.ts` — both must change together (`npm run ci:twins`).
 
 **Experimental schema:** `supabase/migrations_experimental/` — apply on **staging** only (`npm run experimental:apply-schema`). Never `db push` experimental SQL to production (`kiugplotjcnmpwjlxajc`). Staging project: `aotlzhdgnvovvqxmgyyx`. Migrations include pgvector knowledge, staging RLS, nutrition quarantine upsert, feedback check-in update. Runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`. Apify cron: `docs/experimental/APIFY_CLI_CRON_SETUP.md` (knowledge-only; no auto `menu_items`). Stakeholder URL: https://v0-rasaoi-staging.vercel.app. **ROE-017:** parse-intent sanitize adds `exclude_ingredients` (sync with `intent-sanitize.ts`).
 

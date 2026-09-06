@@ -6,14 +6,39 @@ import {
   isNamedDishAsk,
   isSweetDishIntent,
   namedDishMatchStrength,
+  spiceAlignDelta,
+  spicePreferenceFromAsk,
 } from "./dishIntent";
 import {
   type FulfillmentLevel,
   venueAskFulfillment,
 } from "./askFulfillment";
+import {
+  J_WEIGHTS_LENS_OFF,
+  J_WEIGHTS_LENS_ON,
+  scaleByWeight,
+  type JComponents,
+} from "./scoreWeights";
 
 export type Restaurant = Tables<"restaurants">;
 export type Promo = Tables<"active_promos">;
+
+/** ROE-029: optional blood-sugar soft constraint inputs for named J (G). */
+export type GlBand = "low" | "med" | "high";
+
+export interface ScoreRestaurantOpts {
+  bloodSugarLens?: boolean;
+  /** Signature-dish name (lower) → GL band from estimateGlycemic / matrix. */
+  glBySignature?: Record<string, GlBand>;
+}
+
+/** Map GL band → component G ∈ [0,1] for soft penalty. */
+export function glBandToG(band?: GlBand | null): number {
+  if (band === "low") return 0.2;
+  if (band === "high") return 0.9;
+  if (band === "med") return 0.55;
+  return 0.45; // unknown under lens: mild caution
+}
 
 export interface DialState {
   energy: number;    // 0 exhausted (low recovery) -> 100 peak
@@ -39,6 +64,8 @@ export interface ScoredRestaurant {
   dishMatch?: "exact" | "partial" | "none";
   /** ROE-019: catalog Ask-fulfillment level (named / protein / sweet / exclusions). */
   fulfillment?: FulfillmentLevel;
+  /** ROE-025: named J component snapshot (0–1) for explain / Edge parity. */
+  jComponents?: JComponents;
 }
 
 /** Canonical wellness slugs from parse-intent (must stay in sync with edge function). */
@@ -339,6 +366,10 @@ export function scoreRestaurants(
   intentWellnessTags?: WellnessTag[] | unknown[],
   intentDietary?: StrictDietaryTag | unknown,
   excludeIngredients?: string[],
+  /** ROE-024: restated Ask / transcript for soft choice dims (spice → S). */
+  askText?: string,
+  /** ROE-029: blood-sugar lens soft G. */
+  scoreOpts?: ScoreRestaurantOpts,
 ): ScoredRestaurant[] {
   const eState = energyState(dials.energy);
   const cState = contextState(dials.context);
@@ -350,6 +381,10 @@ export function scoreRestaurants(
   const exclusions = (excludeIngredients ?? []).map((x) => x.toLowerCase()).filter(Boolean);
   const sweetIntent = isSweetDishIntent(intentDish);
   const namedAsk = isNamedDishAsk(intentDish);
+  const spicePref = spicePreferenceFromAsk(intentDish, askText);
+  const lensOn = !!scoreOpts?.bloodSugarLens;
+  const jWeights = lensOn ? J_WEIGHTS_LENS_ON : J_WEIGHTS_LENS_OFF;
+  const glBySignature = scoreOpts?.glBySignature ?? {};
 
   // --- Hard-exclusion gatekeeper: non-compliant venues never enter ranking ---
   const eligible = strictDietary
@@ -472,19 +507,50 @@ export function scoreRestaurants(
         dish: intentDish,
         exclusions,
         dietary: strictDietary,
+        ask_text: askText,
+        spice: spicePref,
       });
       const fulfillment: FulfillmentLevel | undefined =
         fulfill.level === "n/a" ? undefined : fulfill.level;
       if (fulfill.level !== "n/a") {
-        score += fulfill.delta;
+        score += scaleByWeight(fulfill.delta, "F", jWeights);
         if (fulfill.tag && !tags.includes(fulfill.tag)) tags.push(fulfill.tag);
+      }
+
+      // ROE-024 / ROE-025: soft choice dimension S (spice) — best catalog line delta
+      let bestS = 0;
+      if (spicePref) {
+        bestS = -99;
+        for (const m of menuForFulfill) {
+          if (!m?.name) continue;
+          bestS = Math.max(bestS, spiceAlignDelta(m.name, m.description ?? "", spicePref));
+        }
+        if (bestS === -99) bestS = 0;
+        score += scaleByWeight(bestS * 0.35, "S", jWeights);
+        if (bestS >= 12) tags.push(spicePref === "mild" ? "Milder plates" : "Heat-forward plates");
+        else if (bestS <= -12) tags.push("Spice mismatch");
       }
 
       // --- Purity alignment (Sovereign Seal weighting) ---
       const userPurity = dials.purity;
       const rPurity = PURITY_RANK[r.purity_tier] ?? 50;
       const purityDelta = 100 - Math.abs(userPurity - rPurity);
-      score += (purityDelta - 50) * 0.4;
+      score += scaleByWeight((purityDelta - 50) * 0.4, "P", jWeights);
+
+      // ROE-029: soft GL constraint G when blood-sugar lens is on
+      let gComponent = 0;
+      if (lensOn) {
+        const sigKey = (r.signature_dish ?? "").toLowerCase();
+        const band = sigKey ? glBySignature[sigKey] : undefined;
+        gComponent = glBandToG(band);
+        // Historic soft points ~ −8…−24 mapped through w_G
+        const glDelta = -(8 + gComponent * 16);
+        score += scaleByWeight(glDelta, "G", jWeights);
+        if (band === "high") tags.push("Higher GL");
+        else if (band === "low") tags.push("Lower GL");
+        else if (band === "med") tags.push("Moderate GL");
+        else tags.push("GL estimated");
+      }
 
       if (dials.purity > 70 && r.sovereign_seal) {
         score += 12;
@@ -606,10 +672,14 @@ export function scoreRestaurants(
 
       score = Math.max(0, Math.min(100, Math.round(score)));
 
-      // ROE-018: never present a naked ~100% when the named dish is absent from catalog
+      // ROE-018 / ROE-023: never present a naked ~100% when the named dish is absent
+      // or only weakly overlapped (fat/garnish token alone → dishMatch none after ROE-023).
       if (namedAsk && dishMatch === "none") {
         score = Math.min(score, 72);
         if (!tags.includes("No exact dish")) tags.push("No exact dish");
+      } else if (namedAsk && dishMatch === "partial") {
+        score = Math.min(score, 88);
+        if (!tags.includes("Closest dish")) tags.push("Closest dish");
       }
       // ROE-019: category Asks with zero catalog fulfillment also cap confidence
       if (fulfillment === "none" && !namedAsk) {
@@ -633,15 +703,34 @@ export function scoreRestaurants(
       const honestySuffix =
         namedAsk && dishMatch === "none"
           ? ` Note: "${intentDish}" was not found on this kitchen's stored menu — showing a closest fit, not an exact dish match.`
-          : fulfillment === "none"
-            ? ` Note: this kitchen's stored menu cannot fulfill your Ask with an eligible plate — ranking prefers kitchens that can.`
-            : "";
+          : namedAsk && dishMatch === "partial"
+            ? ` Note: showing a closest catalog fit for "${intentDish}", not an exact dish match.`
+            : fulfillment === "none"
+              ? ` Note: this kitchen's stored menu cannot fulfill your Ask with an eligible plate — ranking prefers kitchens that can.`
+              : "";
 
       const why = sigInMenu
         ? `I've selected the ${r.signature_dish} from ${r.name} because it provides ${r.dish_outcome} — aligned to your ${stateLabel}, ${cState} context, and ${purityLabel}-tier purity preference.${promoSuffix}${honestySuffix}`
         : `Fetching verified menu data for ${r.name}… In the meantime, ${r.name} aligns to your ${stateLabel}, ${cState} context, and ${purityLabel}-tier purity preference.${promoSuffix}${honestySuffix}`;
 
       const restaurantOut = strictDietary ? sanitizeRestaurantForDietary(r, strictDietary) : r;
+      const jComponents: JComponents = {
+        F:
+          fulfill.level === "full"
+            ? 1
+            : fulfill.level === "partial"
+              ? 0.65
+              : fulfill.level === "none"
+                ? 0.15
+                : 0.5,
+        D: Math.max(0, Math.min(1, (dials.context + dials.energy) / 200)),
+        P: Math.max(0, Math.min(1, purityDelta / 100)),
+        B: Math.max(0, Math.min(1, 1 - Math.abs(r.price_tier - (1 + (dials.budget / 100) * 2)) / 3)),
+        W: wellnessTags.length ? Math.min(1, 0.55 + wellnessTags.length * 0.1) : 0.5,
+        // spiceAlignDelta ≈ −24…+18 → map to [0,1]; neutral 0.5 when no spice Ask
+        S: spicePref ? Math.max(0, Math.min(1, (bestS + 24) / 42)) : 0.5,
+        G: gComponent,
+      };
       return {
         restaurant: restaurantOut,
         score,
@@ -650,6 +739,7 @@ export function scoreRestaurants(
         promo,
         dishMatch,
         fulfillment,
+        jComponents,
       };
     })
     .sort((a, b) => {
