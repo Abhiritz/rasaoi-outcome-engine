@@ -29,7 +29,7 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 | 026 | `score-reading` dual-run (Edge hosts J) | Shipped PR [#37](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/37) |
 | 027 | Pareto / softmax plates | Shipped PR [#38](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/38) |
 | 028 | Intent cache | Shipped PR [#39](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/39) |
-| 029 | Telemetry / GL soft | **Shipped** (this branch) |
+| 029 | Telemetry / GL soft | **Shipped** PR [#40](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/40) |
 
 **Rev 1.2 math epic queue (023–029) complete** on feature branches / PRs. Staging merges + soak remain.
 
@@ -72,7 +72,7 @@ Fat/garnish-only token overlap no longer crowns ~100% heroes (Butter Dosai ≠ B
 ### ROE-029 — GL soft + score telemetry (2026-09-07)
 - Lens on → populate `jComponents.G` from signature GL band; soft `scaleByWeight` penalty; lens-on weights
 - Session telemetry ring for intent_cache_hit / score_reading_dual
-- Branch: `feature/ROE-029-telemetry-gl-soft`
+- Branch: `feature/ROE-029-telemetry-gl-soft` · PR #40
 
 ---
 
