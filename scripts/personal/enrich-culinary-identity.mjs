@@ -48,6 +48,42 @@ for (const [proteinFamily, regionTree] of Object.entries(matrix)) {
 writeFileSync(MATRIX_PATH, JSON.stringify(matrix, null, 2) + "\n");
 console.log(`[enrich-culinary-identity] annotated ${touched} course records → ${MATRIX_PATH}`);
 
+// Coverage snapshot (ROE-022 T4)
+let courses = 0;
+let withProteins = 0;
+let withDiet = 0;
+let withFoodType = 0;
+let withRole = 0;
+let withRegion = 0;
+const walkCount = (node) => {
+  if (Array.isArray(node)) {
+    for (const entry of node) {
+      for (const dish of Object.values(entry.courses ?? {})) {
+        if (!dish?.name) continue;
+        courses += 1;
+        const id = dish.identity ?? {};
+        if (Array.isArray(id.proteins) && id.proteins.length) withProteins += 1;
+        if (id.diet_class) withDiet += 1;
+        if (id.food_type) withFoodType += 1;
+        if (id.dish_role) withRole += 1;
+        if (id.cuisine_region) withRegion += 1;
+      }
+    }
+  } else if (node && typeof node === "object") {
+    for (const v of Object.values(node)) walkCount(v);
+  }
+};
+for (const tree of Object.values(matrix)) walkCount(tree);
+const pct = (n) => (courses ? ((100 * n) / courses).toFixed(1) : "0.0");
+console.log(
+  `[enrich-culinary-identity] coverage courses=${courses}` +
+    ` proteins=${pct(withProteins)}%` +
+    ` diet_class=${pct(withDiet)}%` +
+    ` food_type=${pct(withFoodType)}%` +
+    ` dish_role=${pct(withRole)}%` +
+    ` cuisine_region=${pct(withRegion)}%`,
+);
+
 const build = spawnSync(process.execPath, [join(__dirname, "build-culinary-index.mjs")], {
   cwd: ROOT,
   stdio: "inherit",

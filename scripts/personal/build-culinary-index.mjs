@@ -33,8 +33,8 @@ function identityFields(dish, proteinFamily, course) {
     ...(typeof (fromFile.diet_class ?? inferred.diet_class) === "string"
       ? { diet_class: fromFile.diet_class ?? inferred.diet_class }
       : {}),
-    ...(typeof fromFile.cuisine_region === "string"
-      ? { cuisine_region: fromFile.cuisine_region }
+    ...(typeof (fromFile.cuisine_region ?? inferred.cuisine_region) === "string"
+      ? { cuisine_region: fromFile.cuisine_region ?? inferred.cuisine_region }
       : {}),
     ...(typeof (fromFile.food_type ?? inferred.food_type) === "string"
       ? { food_type: fromFile.food_type ?? inferred.food_type }
