@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "ci:twins": "node scripts/ci/check-sync-twins.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "culinary:build-index": "node scripts/personal/build-culinary-index.mjs",

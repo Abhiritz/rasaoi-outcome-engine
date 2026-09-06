@@ -2,9 +2,9 @@ name: CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, staging]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, staging]
 
 concurrency:
   group: ci-cd-${{ github.workflow }}-${{ github.ref }}
@@ -41,6 +41,9 @@ jobs:
           test -f .cursor/CONTEXT_PLAN.md
           echo "CONTEXT_PLAN.md tracked — agents should read it before deep dives."
 
+      - name: Sync-pair twin CI (ROE-022)
+        run: npm run ci:twins
+
       - name: Lint
         run: npm run lint
 
@@ -49,6 +52,14 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Secret scan (assignment patterns)
+        run: |
+          if git grep -nE '(GEMINI_API_KEY|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY)\s*[:=]\s*["'\''][^"'\''\$\{]' -- ':!*.md' ':!docs/**' ':!**/node_modules/**' 2>/dev/null; then
+            echo "::error::Possible committed secret pattern"
+            exit 1
+          fi
+          echo "No hard-coded secret assignment patterns found."
 
   # Required status check name for branch protection: "Quality gates"
   # Deploy only after merge/push to develop|main (not on pull_request).
