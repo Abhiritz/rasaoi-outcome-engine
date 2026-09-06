@@ -247,12 +247,16 @@ async function invokeParseOnce(transcript: string): Promise<ParsedIntent> {
   if (!data || typeof data !== "object") {
     throw new Error("Veda returned an empty response. Please try again.");
   }
-  const errBody = data as { error?: string; code?: string; retry_after_ms?: number };
+  const errBody = data as { error?: string; code?: string; retry_after_ms?: number; detail?: string };
   if (errBody.error) {
     if (isRateLimitMessage(errBody.error, { code: errBody.code })) {
       throw new RateLimitError(RATE_LIMIT_USER_MSG, errBody.retry_after_ms ?? 8000);
     }
-    throw new Error(errBody.error);
+    const detail =
+      typeof errBody.detail === "string" && errBody.detail.trim()
+        ? ` (${errBody.detail.trim().slice(0, 160)})`
+        : "";
+    throw new Error(`${errBody.error}${detail}`);
   }
 
   return normalizeParsedIntent(data, transcript);

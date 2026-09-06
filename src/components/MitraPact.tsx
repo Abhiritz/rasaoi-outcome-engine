@@ -22,23 +22,25 @@ export const MitraPact = () => {
           <DialogTitle className="serif text-3xl text-primary leading-tight">
             A pact of transparency, not prescription.
           </DialogTitle>
-          <DialogDescription className="text-sm leading-relaxed text-foreground/80 pt-2 space-y-3">
-            <p>
-              Rasaoi is a <strong className="text-primary">lifestyle wellness</strong> system — not medical
-              advice, diagnosis, or treatment. Recommendations are reasoning, not prescription.
-            </p>
-            <p>
-              <strong className="text-primary">Attribute Disclosure:</strong> always verify allergies and
-              ingredient details directly with the kitchen.
-            </p>
-            <p>
-              <strong className="text-primary">Privacy Sovereign:</strong> any biometric data is processed
-              with zero-knowledge handling (CCPA / GDPR).
-            </p>
-            <p>
-              <strong className="text-primary">Order Handoff:</strong> upon ordering, you leave Rasaoi —
-              the restaurant and delivery platform's terms then apply.
-            </p>
+          <DialogDescription asChild className="text-sm leading-relaxed text-foreground/80 pt-2">
+            <div className="space-y-3">
+              <p>
+                Rasaoi is a <strong className="text-primary">lifestyle wellness</strong> system — not medical
+                advice, diagnosis, or treatment. Recommendations are reasoning, not prescription.
+              </p>
+              <p>
+                <strong className="text-primary">Attribute Disclosure:</strong> always verify allergies and
+                ingredient details directly with the kitchen.
+              </p>
+              <p>
+                <strong className="text-primary">Privacy Sovereign:</strong> any biometric data is processed
+                with zero-knowledge handling (CCPA / GDPR).
+              </p>
+              <p>
+                <strong className="text-primary">Order Handoff:</strong> upon ordering, you leave Rasaoi —
+                the restaurant and delivery platform's terms then apply.
+              </p>
+            </div>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

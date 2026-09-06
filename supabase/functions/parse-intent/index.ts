@@ -1,7 +1,6 @@
 // Veda Intent Parser — turns a spoken/typed request into dials + filters.
 // Uses native Google Gemini API with tool-calling for reliable structured output.
 
-import { routedToolCall } from "../_shared/model-router.ts";
 import { DIETARY_INTENT_SLUGS } from "../_shared/dietary.ts";
 import {
   buildRestatedIntent,
@@ -15,12 +14,7 @@ import {
   mergeExcludedIngredients,
   type StrictDietary,
 } from "../_shared/intent-sanitize.ts";
-import {
-  checkRateLimit,
-  clientKeyFromRequest,
-  envInt,
-  rateLimitJsonResponse,
-} from "../_shared/rate-limit.ts";
+import { routedToolCall } from "../_shared/model-router.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -476,11 +470,6 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
       ? obj.confidence
       : "medium";
 
-  const modelRestated =
-    typeof obj.restated_intent === "string" && obj.restated_intent.trim()
-      ? obj.restated_intent.trim()
-      : undefined;
-
   // [ROE-008] (IP-FIX-002): priority segment assembly (dietary first; ≤60)
   const restated = buildRestatedIntent({
     modelRestated,
@@ -502,18 +491,6 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
-  }
-
-  const rl = checkRateLimit(clientKeyFromRequest(req, "parse-intent"), {
-    limit: envInt("RATE_LIMIT_PARSE_INTENT", 30),
-    windowMs: envInt("RATE_LIMIT_WINDOW_MS", 60_000),
-  });
-  if (!rl.allowed) {
-    return rateLimitJsonResponse(
-      corsHeaders,
-      rl.retry_after_ms,
-      "Veda is busy (request rate limit). Wait a moment, then try again.",
-    );
   }
 
   try {
@@ -542,19 +519,26 @@ Deno.serve(async (req) => {
 
     let parsed: unknown;
     try {
-      parsed = await routedToolCall(
-        "parse_intent",
-        SYSTEM_PROMPT,
-        trimmedTranscript,
-        {
-          name: TOOL_SCHEMA.function.name,
-          description: TOOL_SCHEMA.function.description ?? "",
-          parameters: TOOL_SCHEMA.function.parameters as Record<string, unknown>,
-        },
-      );
+      const tool = {
+        name: TOOL_SCHEMA.function.name,
+        description: TOOL_SCHEMA.function.description ?? "",
+        parameters: TOOL_SCHEMA.function.parameters as Record<string, unknown>,
+      };
+      const invoke = () =>
+        routedToolCall("parse_intent", SYSTEM_PROMPT, trimmedTranscript, tool);
+      try {
+        parsed = await invoke();
+      } catch (first) {
+        const firstMsg = first instanceof Error ? first.message : String(first);
+        // One retry for transient Gemini / network blips (not hard rate limits).
+        if (/429|rate limit|quota|resource.?exhausted/i.test(firstMsg)) throw first;
+        console.warn("parse-intent retry after:", firstMsg.slice(0, 200));
+        await new Promise((r) => setTimeout(r, 700));
+        parsed = await invoke();
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      if (/429|rate limit|quota/i.test(msg)) {
+      if (/429|rate limit|quota|resource.?exhausted|too many requests/i.test(msg)) {
         return new Response(
           JSON.stringify({
             error: "Veda is busy (AI rate limit). Wait a moment, then try again.",
@@ -568,10 +552,18 @@ Deno.serve(async (req) => {
         );
       }
       console.error("parse-intent Gemini error:", msg);
-      return new Response(JSON.stringify({ error: "Veda could not interpret that." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const detail = msg.replace(/\s+/g, " ").trim().slice(0, 180);
+      return new Response(
+        JSON.stringify({
+          error: "Veda could not interpret that.",
+          code: "parse_failed",
+          detail,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const sanitized = validateAndSanitize(parsed, trimmedTranscript);
