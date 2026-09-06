@@ -27,7 +27,7 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 | 024 | Choice dim **S** (spice/mild) soft in Ask scoring | Pushed |
 | 025 | Shared scoring package + culinary cache facade | Shipped PR [#36](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/36) |
 | 026 | `score-reading` dual-run (Edge hosts J) | Shipped PR [#37](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/37) |
-| 027 | Pareto / softmax plates | **Shipped** (this branch) |
+| 027 | Pareto / softmax plates | **Shipped** PR [#38](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/38) |
 | 028 | Intent cache | Queued |
 | 029 | Telemetry / GL soft | Queued |
 
