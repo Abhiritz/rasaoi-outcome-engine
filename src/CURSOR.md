@@ -150,6 +150,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 - [ ] Scoring / plates → Ask-fulfillment: read `.cursor/rules/ask-fulfillment.mdc`; venues that cannot fulfill the Ask must not outrank those that can
 - [ ] Triple-outcome / carrier change → `pairings.test.ts` + check CRS-003 constraints in `TODO.md`
 - [ ] Run `npm test` before committing scoring/dietary/pairings changes
+- [ ] Ship ROE ticket → update **`docs/ROE-upgrade-story.md`** (epic chronicle)
 
 ---
 
@@ -160,6 +161,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script). Optional overlay via `setCulinaryLookupOverlay` when staging dynamic culinary is on. **ROE-019:** emit/consume per-dish `identity` (proteins, diet_class, cuisine_region, food_type, dish_role) — trust over tree-root protein family |
 | `culinaryCache.ts` | **[ROE-025]** Static culinary facts facade + optional experimental hydrate (`ensureCulinaryFactsHydrated`) |
 | `scoreWeights.ts` | **[ROE-025]** Named J weights F/D/P/B/W/**S**/G — SYNC PAIR with `_shared/score-weights.ts`; `npm run ci:twins` |
+| `scoreReading.ts` | **[ROE-026]** Edge dual-run client (`VITE_SCORE_READING_MODE`); soft-fail compare |
 | `dishIntent.ts` | Oceany/coastal + sweet/dessert + **carrier-only / celebratory mood** helpers (CRS-003, ROE-001, ROE-003); rice-as-main (ROE-018); **ROE-024** spice preference |
 | `vedaDishes.ts` | Dish-level scoring; `cravingSweet` includes/boosts Dessert category |
 | `dietary.ts` | DIET-001 taxonomy (sync with `_shared/dietary.ts`); **ROE-019:** `unknown` must not hard-fail non_veg when meat markers match |

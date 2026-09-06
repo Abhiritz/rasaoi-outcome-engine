@@ -9,6 +9,18 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-026] Edge score-reading dual-run — implemented (feature)
+
+Impact: `docs/ROE-026-score-reading-dual-run-impact-analysis.md`  
+Story: `docs/ROE-upgrade-story.md`
+
+- [x] Edge `score-reading` + rate-limit + config
+- [x] Client `VITE_SCORE_READING_MODE` off/dual/edge
+- [x] Compare helpers + Vitest
+- [ ] Deploy `score-reading` on staging; soak dual drift
+
+---
+
 ## [ROE-025] Shared scoring package + culinary cache — implemented (feature)
 
 Impact: `docs/ROE-025-shared-scoring-live-cache-impact-analysis.md`

@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-025-impl
+last_verified_commit: pending-ROE-026-impl
 last_verified_date: 2026-09-07
-branch: feature/ROE-025-shared-scoring-cache
+branch: feature/ROE-026-score-reading-dual-run
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-025 shared scoreWeights (+S) twin + culinaryCache facade; veda jComponents.
-  ROE-024 spice S soft axis; ROE-023 named-dish F(). Next free: ROE-026 score-reading.
+  ROE-026 score-reading dual-run (VITE_SCORE_READING_MODE); Edge J from jComponents +S.
+  Story: docs/ROE-upgrade-story.md. Next free: ROE-027 Pareto.
 ```
 
 ---
@@ -168,6 +168,7 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 | `places-search` | `supabase/functions/places-search/index.ts` | Google Places or mock fixtures | `GOOGLE_PLACES_API_KEY` (optional) |
 | `ingest-menu` | `supabase/functions/ingest-menu/index.ts` | Firecrawl scrape → Gemini parse | `GEMINI_API_KEY`, `FIRECRAWL_API_KEY` (optional) |
 | `commit-dishes` | `supabase/functions/commit-dishes/index.ts` | Insert dishes + rebuild `menu_items` | Auto: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` |
+| `score-reading` | `supabase/functions/score-reading/index.ts` | **[ROE-026]** J recompute from `jComponents` (dual-run) | none (rate-limited) |
 
 **Shared:** `supabase/functions/_shared/ai-client.ts`, `supabase/functions/_shared/dietary.ts`, `supabase/functions/_shared/intent-sanitize.ts`, `supabase/functions/_shared/score-weights.ts` (ROE-025 J incl. S; Edge score-reading ROE-026), experimental `supabase/functions/_shared/model-router.ts` (unused by prod deploy until promotion).
 
@@ -287,7 +288,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` (or `origin/staging` for soak follow-ons) → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-026**.
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch → implement + tests → sync plan/TODO/CONTEXT/CURSOR + **`docs/ROE-upgrade-story.md`** → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-027**.
 
 | Trigger | Action |
 |---------|--------|

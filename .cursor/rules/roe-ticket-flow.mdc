@@ -23,7 +23,7 @@ Agents follow this sequence for every new ROE ticket **without the user restatin
 2. **Impact analysis** — Write `docs/ROE-NNN-*-impact-analysis.md` (problem, acceptance, scope, files, test plan, deploy). Await user approval before coding unless they already said “implement”.
 3. **Branch** — `git fetch origin develop && git checkout -b feature/ROE-NNN-… origin/develop`
 4. **Implement** — Minimal diff; honor sync pairs; add/adjust Vitest for scoring/dietary/intent/pairings.
-5. **Docs sync** — Same PR: `TODO.md`, `.lovable/plan.md`, `.cursor/CONTEXT_PLAN.md`, relevant CURSOR.md, next-free ROE bump. For ROE-016 staging work also sync `TODO_PROGRESS.md`, `docs/experimental/tickets/README.md`, impact docs.
+5. **Docs sync** — Same PR: `TODO.md`, `.lovable/plan.md`, `.cursor/CONTEXT_PLAN.md`, relevant CURSOR.md, **`docs/ROE-upgrade-story.md`**, next-free ROE bump. For ROE-016 staging work also sync `TODO_PROGRESS.md`, `docs/experimental/tickets/README.md`, impact docs.
 6. **Ship** — Commit → push → `gh pr create` (title matches issue) → add to Rasaoi QA Board → set **In progress**.
 7. **Ops / QA** — Note edge redeploy / `db push` in PR if needed. After merge, board → **QA**; stakeholder Pass → **Done**.
 

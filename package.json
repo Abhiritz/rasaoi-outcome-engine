@@ -29,7 +29,7 @@
     "experimental:backfill": "node scripts/experimental/backfill-culinary-knowledge.mjs",
     "experimental:deploy-staging": "vercel deploy --prod --yes",
     "experimental:deploy-preview": "vercel deploy --prod --yes",
-    "supabase:deploy:all": "npx supabase functions deploy parse-intent --no-verify-jwt && npx supabase functions deploy estimate-glycemic --no-verify-jwt && npx supabase functions deploy places-search --no-verify-jwt && npx supabase functions deploy ingest-menu --no-verify-jwt && npx supabase functions deploy commit-dishes --no-verify-jwt",
+    "supabase:deploy:all": "npx supabase functions deploy parse-intent --no-verify-jwt && npx supabase functions deploy estimate-glycemic --no-verify-jwt && npx supabase functions deploy places-search --no-verify-jwt && npx supabase functions deploy ingest-menu --no-verify-jwt && npx supabase functions deploy commit-dishes --no-verify-jwt && npx supabase functions deploy score-reading --no-verify-jwt",
     "supabase:deploy:experimental": "npm run supabase:deploy:all && npx supabase functions deploy experimental-apify-webhook --no-verify-jwt",
     "supabase:link": "npx supabase link",
     "supabase:db:push": "npx supabase db push",
