@@ -41,6 +41,9 @@ jobs:
           test -f .cursor/CONTEXT_PLAN.md
           echo "CONTEXT_PLAN.md tracked — agents should read it before deep dives."
 
+      - name: Sync-pair twin CI
+        run: npm run ci:twins
+
       - name: Lint
         run: npm run lint
 

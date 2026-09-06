@@ -8,8 +8,12 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-/** Stable Flash alias — tracks current GA Flash for tool calling. */
-export const DEFAULT_GEMINI_MODEL = "gemini-flash-latest";
+/**
+ * Pinned Flash id for tool calling.
+ * Avoid `gemini-flash-latest` — shared free-tier quota / 503s; prefer a concrete GA id
+ * that ListModels returns for the active Studio key (verified 2026-09-06: gemini-3.5-flash).
+ */
+export const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash";
 
 export function getGeminiApiKey(): string {
   const key =

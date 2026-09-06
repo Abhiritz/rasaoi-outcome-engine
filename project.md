@@ -140,7 +140,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize), `_share
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-030** (ROE-029 = GL soft + telemetry; ROE-028 = intent cache; epic 023–029 complete on feature branches).
+1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-031** (ROE-030 = salvage 021/022; ROE-029 = GL soft; epic 023–029 on staging).
 2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
@@ -176,9 +176,9 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 | **ROE-009** (FUL-001) contacts | Merged PR #21; ops + QA | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
 | ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
 
-Next free serial: **ROE-030**.
+Next free serial: **ROE-031**.
 
-Future: staging merge/soak for ROE-023…029; then ROE-030+ as needed.  
+Future: staging soak; then ROE-031+ as needed.  
 Story: `docs/ROE-upgrade-story.md`.
 
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Matrix Rev 1.2 flavor→S. Ask-fulfillment: `.cursor/rules/ask-fulfillment.mdc`.

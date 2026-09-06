@@ -2,6 +2,12 @@
 // Lifestyle wellness only — never medical advice.
 
 import { routedToolCall } from "../_shared/model-router.ts";
+import {
+  checkRateLimit,
+  clientKeyFromRequest,
+  envInt,
+  rateLimitJsonResponse,
+} from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -76,6 +82,14 @@ interface DishIn {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const rl = checkRateLimit(clientKeyFromRequest(req, "estimate-glycemic"), {
+    limit: envInt("RATE_LIMIT_ESTIMATE_GLYCEMIC", 40),
+    windowMs: envInt("RATE_LIMIT_WINDOW_MS", 60_000),
+  });
+  if (!rl.allowed) {
+    return rateLimitJsonResponse(corsHeaders, rl.retry_after_ms);
+  }
 
   try {
     const { dishes } = await req.json();

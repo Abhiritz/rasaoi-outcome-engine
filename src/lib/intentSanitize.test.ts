@@ -8,6 +8,7 @@ import {
   extractExcludedIngredients,
   isCarrierOnlyDish,
   isCelebratoryMoodIntent,
+  isMeatProteinScopedNegation,
   isSweetCravingTranscript,
   mergeBloodSugarLens,
   mergeDietary,
@@ -158,6 +159,24 @@ describe("intentSanitize [ROE-008] (IP-FIX-002)", () => {
       expect(
         mergeExcludedIngredients(undefined, "meat not murgi", "Meat (no chicken)"),
       ).toEqual(["chicken"]);
+    });
+
+    it("ROE-021: no meat murgi → chicken exclude, non_veg, dish meat", () => {
+      expect(isMeatProteinScopedNegation("no meat murgi")).toBe(true);
+      expect(extractExcludedIngredients("no meat murgi")).toEqual(["chicken"]);
+      expect(extractDietaryFromTranscript("no meat murgi")).toBe("non_veg");
+      expect(extractDishFromTranscript("no meat murgi")).toBe("meat");
+      expect(extractDietaryFromTranscript("no meat")).toBe("vegetarian");
+      expect(isMeatProteinScopedNegation("no meat")).toBe(false);
+      expect(extractExcludedIngredients("no chicken meat")).toEqual(["chicken"]);
+      expect(
+        buildRestatedIntent({
+          dietary: "non_veg",
+          dish: "meat",
+          exclude_ingredients: ["chicken"],
+          transcript: "no meat murgi",
+        }),
+      ).toMatch(/Meat \(no chicken\)/i);
     });
   });
 });
