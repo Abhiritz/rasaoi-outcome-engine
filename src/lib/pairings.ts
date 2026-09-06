@@ -29,6 +29,7 @@ import {
   isCoastalDishIntent,
   isDessertDish,
   isHeavyFriedDish,
+  isLightPrepDish,
   isLightSweetDish,
   isStarchAccompaniment,
   isSweetDishIntent,
@@ -688,7 +689,7 @@ function pickBest(menu: MenuItem[], dials: DialState, sigName: string | undefine
   return best;
 }
 
-function scoreClean(name: string, desc: string, coastal = false, sweet = false): number {
+function scoreClean(name: string, desc: string, coastal = false, sweet = false, lowOil = false): number {
   const t = (name + " " + (desc ?? "")).toLowerCase();
   let s = 0;
   if (/(salad|sashimi|crudo|poke|grilled|steamed|baked|roasted|dal|saag|tikka|ceviche|soup|broth|kale|quinoa|greens|fish|salmon|seafood|shrimp|prawn|veg)/.test(t)) s += 6;
@@ -699,6 +700,8 @@ function scoreClean(name: string, desc: string, coastal = false, sweet = false):
   if (/\b(butter|ghee)\b/.test(t) && isSouthTiffinDish(name, desc)) s += 4;
   if (coastal && /(fish|seafood|shrimp|prawn|salmon|crab|lobster|ceviche|grilled|steamed)/.test(t)) s += 8;
   if (coastal && isHeavyFriedDish(name, desc)) s -= 12;
+  if (lowOil && isHeavyFriedDish(name, desc)) s -= 18;
+  if (lowOil && isLightPrepDish(name, desc)) s += 10;
   if (sweet && isDessertDish(name, desc)) s += 10;
   if (sweet && isLightSweetDish(name, desc)) s += 6;
   if (sweet && isHeavyFriedDish(name, desc) && !isDessertDish(name, desc)) s -= 12;
@@ -711,6 +714,7 @@ function pickClean(
   exclude: Set<string>,
   coastal = false,
   sweet = false,
+  lowOil = false,
 ): MenuItem | undefined {
   let best: MenuItem | undefined;
   let bestScore = -Infinity;
@@ -718,13 +722,14 @@ function pickClean(
     if (exclude.has(m.name.toLowerCase())) continue;
     if (isCarrierOnlyDish(m.name, m.description ?? "")) continue;
     if (coastal && isHeavyFriedDish(m.name, m.description ?? "")) continue;
+    if (lowOil && isHeavyFriedDish(m.name, m.description ?? "")) continue;
     if (sweet && isHeavyFriedDish(m.name, m.description ?? "") && !isDessertDish(m.name, m.description ?? "")) {
       continue;
     }
     if (sweet && !isDessertDish(m.name, m.description ?? "") && best && isDessertDish(best.name)) {
       continue;
     }
-    const s = scoreClean(m.name, m.description ?? "", coastal, sweet);
+    const s = scoreClean(m.name, m.description ?? "", coastal, sweet, lowOil);
     if (s > bestScore) { bestScore = s; best = m; }
   }
   // Prefer any dessert over savory when sweet craving
@@ -897,6 +902,8 @@ export interface IntentHint {
   exclude_ingredients?: string[];
   /** ROE-024: restated Ask text for soft choice dims (spice). */
   ask_text?: string;
+  /** ROE-031: wellness (low_oil / light) for fry demotion on Best. */
+  wellness_tags?: string[];
 }
 
 const STOP = new Set([
@@ -993,11 +1000,21 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   const sweet = isSweetDishIntent(intent?.dish);
   const meatAsk = isMeatCategoryAsk(intent?.dish);
   const preferProteins = preferredProteinsFromAsk(intent?.dish, exclusions);
+  const wellnessTags = Array.isArray(intent?.wellness_tags)
+    ? intent!.wellness_tags!.filter((t): t is string => typeof t === "string")
+    : [];
+  const wantsLowOil =
+    wellnessTags.includes("low_oil") ||
+    wellnessTags.includes("light") ||
+    /\b(low[- ]?oil|not oily|non[- ]?oily)\b/i.test(
+      `${intent?.dish ?? ""} ${intent?.ask_text ?? ""}`,
+    );
   const askOpts = {
     dish: intent?.dish,
     exclusions,
     dietary,
     ask_text: intent?.ask_text,
+    wellness_tags: wellnessTags.length ? wellnessTags : wantsLowOil ? ["low_oil"] : undefined,
   };
   const askFulfillMode =
     meatAsk ||
@@ -1005,7 +1022,8 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     isNamedDishAsk(intent?.dish) ||
     exclusions.length > 0 ||
     Boolean(preferProteins?.length) ||
-    Boolean(spicePreferenceFromAsk(intent?.dish, intent?.ask_text));
+    Boolean(spicePreferenceFromAsk(intent?.dish, intent?.ask_text)) ||
+    wantsLowOil;
 
   const pickAskAlignedMenu = (usedSet: Set<string>): MenuItem | undefined => {
     if (!askFulfillMode) return undefined;
@@ -1210,8 +1228,8 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
   }
   if (best) used.add(best.name.toLowerCase());
 
-  // 2) CLEAN & VITAL — lighter; coastal skips fried; sweet prefers light dessert
-  let clean: Pick | null = tryMenu(pickClean(menu, used, coastal, sweet));
+  // 2) CLEAN & VITAL — lighter; coastal / low-oil skips fried; sweet prefers light dessert
+  let clean: Pick | null = tryMenu(pickClean(menu, used, coastal, sweet, wantsLowOil));
   if (!clean) clean = tryMatrix("light");
   if (!clean && bank) clean = tryBank(bank.clean);
   // If menu pick exists but happens to NOT be lighter than the best, prefer bank
@@ -1220,17 +1238,22 @@ export function buildTripleOutcome(r: Restaurant, dials: DialState, intent?: Int
     clean &&
     best &&
     clean.verified &&
-    scoreClean(clean.name, clean.description ?? "", coastal, sweet) < 3 &&
+    scoreClean(clean.name, clean.description ?? "", coastal, sweet, wantsLowOil) < 3 &&
     bank &&
     !southKitchen &&
     !isSouthTiffinDish(clean.name, clean.description ?? "")
   ) {
     const alt = tryBank(bank.clean);
-    if (alt && !(coastal && isHeavyFriedDish(alt.name)) && !(sweet && isHeavyFriedDish(alt.name))) {
+    if (
+      alt &&
+      !(coastal && isHeavyFriedDish(alt.name)) &&
+      !(wantsLowOil && isHeavyFriedDish(alt.name)) &&
+      !(sweet && isHeavyFriedDish(alt.name))
+    ) {
       clean = alt;
     }
   }
-  if (clean && coastal && isHeavyFriedDish(clean.name)) {
+  if (clean && (coastal || wantsLowOil) && isHeavyFriedDish(clean.name)) {
     clean = tryMatrix("light") ?? (bank ? tryBank(bank.clean) : null) ?? clean;
     if (clean && isHeavyFriedDish(clean.name)) {
       // Last resort: keep non-fried menu item if any

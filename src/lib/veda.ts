@@ -3,6 +3,7 @@ import {
   dishHitsExclusion,
   expandDishTokens,
   isDessertDish,
+  isHeavyFriedDish,
   isNamedDishAsk,
   isSweetDishIntent,
   namedDishMatchStrength,
@@ -134,7 +135,7 @@ export {
 
 export type MenuItemLike = DishDietFields;
 const HEAVY_DISH_MARKERS =
-  /\b(tandoori|korma|biryani|tikka masala|butter chicken|navratan|malai|rogan josh|fried|cream|heavy|dosa.*tikka|tikka.*dosa)\b/i;
+  /\b(tandoori|korma|biryani|tikka masala|butter chicken|navratan|malai|rogan josh|fried|fry|pakora|samosa|chicken\s*65|\b65\b|cream|heavy|dosa.*tikka|tikka.*dosa)\b/i;
 
 /** Light, raw, or gut-supportive dish signals (esp. desi intersection). */
 const LIGHT_DISH_MARKERS =
@@ -509,6 +510,7 @@ export function scoreRestaurants(
         dietary: strictDietary,
         ask_text: askText,
         spice: spicePref,
+        wellness_tags: wellnessTags,
       });
       const fulfillment: FulfillmentLevel | undefined =
         fulfill.level === "n/a" ? undefined : fulfill.level;
@@ -684,6 +686,25 @@ export function scoreRestaurants(
       // ROE-019: category Asks with zero catalog fulfillment also cap confidence
       if (fulfillment === "none" && !namedAsk) {
         score = Math.min(score, 68);
+      }
+      // ROE-031: low-oil Ask but only fried chicken lines remain → honesty cap
+      const wantsLowOil =
+        wellnessTags.includes("low_oil") ||
+        wellnessTags.includes("light") ||
+        /\b(low[- ]?oil|not oily|non[- ]?oily)\b/i.test(`${intentDish ?? ""} ${askText ?? ""}`);
+      if (wantsLowOil) {
+        const chickenLines = menuForFulfill.filter((m) => {
+          if (!m?.name) return false;
+          if (dishHitsExclusion(m.name, m.description ?? "", exclusions)) return false;
+          return /\bchicken\b/i.test(`${m.name} ${m.description ?? ""}`);
+        });
+        const nonFriedChicken = chickenLines.filter(
+          (m) => !isHeavyFriedDish(m.name ?? "", m.description ?? ""),
+        );
+        if (chickenLines.length > 0 && nonFriedChicken.length === 0) {
+          score = Math.min(score, 78);
+          if (!tags.includes("Limited low-oil options")) tags.push("Limited low-oil options");
+        }
       }
 
       const stateLabel = lowRecovery

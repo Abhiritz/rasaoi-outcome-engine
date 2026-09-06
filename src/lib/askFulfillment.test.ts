@@ -204,4 +204,17 @@ describe("ROE-019 ask fulfillment", () => {
       askAlignedDishScore("Chicken 65", "", { dish: "chicken", ask_text: "non-spicy" }),
     );
   });
+
+  it("ROE-031: low_oil zeros fry lines and prefers light prep chicken", () => {
+    const opts = {
+      dish: "chicken",
+      wellness_tags: ["low_oil"],
+      ask_text: "Chicken · low oil",
+    };
+    expect(askAlignedDishScore("Chicken Pakora", "fried fritters", opts)).toBe(0);
+    expect(askAlignedDishScore("Chicken 65", "spicy fried", opts)).toBe(0);
+    expect(askAlignedDishScore("Chicken Tikka", "clay oven", opts)).toBeGreaterThan(
+      askAlignedDishScore("Butter Chicken", "cream tomato", opts),
+    );
+  });
 });
