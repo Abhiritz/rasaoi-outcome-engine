@@ -606,10 +606,14 @@ export function scoreRestaurants(
 
       score = Math.max(0, Math.min(100, Math.round(score)));
 
-      // ROE-018: never present a naked ~100% when the named dish is absent from catalog
+      // ROE-018 / ROE-023: never present a naked ~100% when the named dish is absent
+      // or only weakly overlapped (fat/garnish token alone → dishMatch none after ROE-023).
       if (namedAsk && dishMatch === "none") {
         score = Math.min(score, 72);
         if (!tags.includes("No exact dish")) tags.push("No exact dish");
+      } else if (namedAsk && dishMatch === "partial") {
+        score = Math.min(score, 88);
+        if (!tags.includes("Closest dish")) tags.push("Closest dish");
       }
       // ROE-019: category Asks with zero catalog fulfillment also cap confidence
       if (fulfillment === "none" && !namedAsk) {
@@ -633,9 +637,11 @@ export function scoreRestaurants(
       const honestySuffix =
         namedAsk && dishMatch === "none"
           ? ` Note: "${intentDish}" was not found on this kitchen's stored menu — showing a closest fit, not an exact dish match.`
-          : fulfillment === "none"
-            ? ` Note: this kitchen's stored menu cannot fulfill your Ask with an eligible plate — ranking prefers kitchens that can.`
-            : "";
+          : namedAsk && dishMatch === "partial"
+            ? ` Note: showing a closest catalog fit for "${intentDish}", not an exact dish match.`
+            : fulfillment === "none"
+              ? ` Note: this kitchen's stored menu cannot fulfill your Ask with an eligible plate — ranking prefers kitchens that can.`
+              : "";
 
       const why = sigInMenu
         ? `I've selected the ${r.signature_dish} from ${r.name} because it provides ${r.dish_outcome} — aligned to your ${stateLabel}, ${cState} context, and ${purityLabel}-tier purity preference.${promoSuffix}${honestySuffix}`

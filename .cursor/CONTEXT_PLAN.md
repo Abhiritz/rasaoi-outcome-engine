@@ -4,15 +4,14 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-019-impl
-last_verified_date: 2026-08-01
-branch: feature/ROE-019-ask-fulfillment-matrix
+last_verified_commit: pending-ROE-023-impl
+last_verified_date: 2026-09-06
+branch: feature/ROE-023-named-dish-match-rules
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-019 implemented: Ask-fulfillment ranking (venue sort + Ask-aligned plates),
-  culinary-index v2 identity fields, diet_class unknown + goat MEAT_MARKERS,
-  Limited menu for this Ask instead of Chef's selection spam. Staging merge pending.
-  Next free: ROE-020.
+  ROE-023 named-dish match rules (P0): fat/garnish alone ≠ F; Ask protein required;
+  venue full F needs strong score; honesty on none/partial. Next free: ROE-024
+  (shared scoring + live culinary cache). Rev 1.1 audit §9b + matrix §3b.
 ```
 
 ---
@@ -286,7 +285,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` (or `origin/staging` for ROE-016 soak hotfixes) → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-018** (ROE-017 = staging soak fixes; ROE-016 staging live; develop merge locked on soak).
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` (or `origin/staging` for soak follow-ons) → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-024**.
 
 | Trigger | Action |
 |---------|--------|

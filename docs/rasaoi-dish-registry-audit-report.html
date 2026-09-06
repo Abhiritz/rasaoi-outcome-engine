@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rasaoi — Dish Registry & Culinary Data Audit</title>
+  <style>
+    :root {
+      --ink: #111827; --muted: #4b5563; --line: #d1d5db; --bg: #f3f4f6; --card: #fff;
+      --head: #0f3d2e; --accent: #1d4ed8; --accent-soft: #eff6ff; --gold: #b45309;
+      --ok: #047857; --danger: #b91c1c; --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+      --font: "Segoe UI", Calibri, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font); font-size: 14.5px; line-height: 1.5; color: var(--ink); background: var(--bg); }
+    .bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 0.7rem 1.1rem; background: #0b1220; color: #e5e7eb; border-bottom: 2px solid var(--accent); }
+    .bar b { color: #fff; font-size: 0.92rem; }
+    .bar span { display: block; font-size: 0.68rem; color: #94a3b8; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.1rem; }
+    .btn { appearance: none; border: none; border-radius: 6px; padding: 0.5rem 0.9rem; font: 600 0.72rem/1 var(--font);
+      letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; background: var(--accent); color: #fff; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 1.4rem 1.1rem 3rem; }
+    .hero { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.2rem 1.3rem; margin-bottom: 1rem; }
+    .eyebrow { margin: 0 0 0.4rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+    h1 { margin: 0 0 0.5rem; font-size: clamp(1.35rem, 3vw, 1.85rem); line-height: 1.15; color: var(--head); letter-spacing: -0.02em; }
+    .lede { margin: 0 0 1rem; color: var(--muted); max-width: 50rem; }
+    .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; }
+    .meta div { background: #f8fafc; border: 1px solid var(--line); border-radius: 6px; padding: 0.5rem 0.65rem; }
+    .meta kbd { display: block; font-family: var(--font); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.12rem; }
+    .meta p { margin: 0; font-size: 0.82rem; font-weight: 600; }
+    nav.toc { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 0.85rem 1rem; margin-bottom: 1.1rem; }
+    nav.toc h2 { margin: 0 0 0.45rem; font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    nav.toc ol { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.28rem 0.8rem; }
+    nav.toc a { color: var(--ink); text-decoration: none; font-size: 0.84rem; }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.1rem 1.2rem; margin-bottom: 0.9rem; page-break-inside: avoid; }
+    h2.sec { margin: 0 0 0.7rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--head); font-size: 1.1rem; color: var(--head);
+      display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; }
+    h2.sec i { font-style: normal; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em; color: var(--accent); }
+    h3 { margin: 0.95rem 0 0.35rem; font-size: 0.95rem; color: var(--ink); border-left: 3px solid var(--gold); padding-left: 0.55rem; }
+    h4 { margin: 0.55rem 0 0.25rem; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+    p, li { color: #374151; } p { margin: 0 0 0.55rem; }
+    ul, ol { margin: 0 0 0.65rem; padding-left: 1.15rem; } li { margin: 0.2rem 0; }
+    strong { color: var(--ink); }
+    code { font-family: var(--mono); font-size: 0.78em; background: #f3f4f6; padding: 0.05em 0.28em; border-radius: 3px; }
+    .call { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 0.55rem 0.7rem; margin: 0.55rem 0; font-size: 0.86rem; }
+    .call.warn { border-left-color: var(--gold); background: #fffbeb; }
+    .call.ok { border-left-color: var(--ok); background: #ecfdf5; }
+    .call.danger { border-left-color: var(--danger); background: #fef2f2; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.76rem; margin: 0.4rem 0 0.7rem; border: 1px solid var(--line); }
+    th, td { text-align: left; padding: 0.4rem 0.45rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: var(--head); color: #f8fafc; font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+    tr:nth-child(even) td { background: #f8fafc; } tr:last-child td { border-bottom: none; }
+    .ascii { background: #0b1220; color: #d1e0ff; border-radius: 6px; padding: 0.75rem 0.85rem; overflow-x: auto;
+      font: 500 0.62rem/1.42 var(--mono); margin: 0.5rem 0 0.7rem; white-space: pre; }
+    .ascii .hi { color: #60a5fa; } .ascii .ok { color: #34d399; } .ascii .mu { color: #94a3b8; } .ascii .warn { color: #fbbf24; }
+    .pill { display: inline-block; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0.1rem 0.35rem; border-radius: 3px; white-space: nowrap; }
+    .pill.ok { background: #d1fae5; color: var(--ok); }
+    .pill.warn { background: #fef3c7; color: var(--gold); }
+    .pill.bad { background: #fee2e2; color: var(--danger); }
+    .pill.idle { background: #e5e7eb; color: #4b5563; }
+    .pill.live { background: #dbeafe; color: #1e40af; }
+    .kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.45rem; margin: 0.45rem 0 0.7rem; }
+    .kpi div { border: 1px solid var(--line); border-radius: 6px; padding: 0.5rem 0.6rem; background: #f8fafc; }
+    .kpi strong { display: block; font-size: 1.05rem; color: var(--head); }
+    .kpi span { display: block; font-size: 0.66rem; color: var(--muted); margin-top: 0.1rem; }
+    .chart-wrap { border: 1px solid var(--line); border-radius: 6px; padding: 0.7rem 0.8rem; margin: 0.45rem 0 0.75rem; background: #fff; }
+    .chart-title { margin: 0 0 0.45rem; font-size: 0.78rem; font-weight: 700; color: var(--head); }
+    .cap { margin: 0.35rem 0 0; font-size: 0.66rem; color: var(--muted); }
+    .bars { display: grid; gap: 0.4rem; }
+    .bar-row { display: grid; grid-template-columns: 8.5rem 1fr 3.4rem; gap: 0.4rem; align-items: center; font-size: 0.74rem; }
+    .bar-row .label { color: var(--muted); font-weight: 600; }
+    .bar-row .val { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .track { height: 0.65rem; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+    .fill { height: 100%; border-radius: 3px; background: var(--accent); }
+    .fill.ok { background: var(--ok); } .fill.warn { background: var(--gold); } .fill.bad { background: var(--danger); } .fill.muted { background: #94a3b8; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; margin: 0.5rem 0; }
+    @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } .bar { flex-wrap: wrap; } }
+    .card { border: 1px solid var(--line); border-radius: 6px; padding: 0.6rem 0.7rem; background: #fff; }
+    .card h4 { margin: 0 0 0.25rem; }
+    .card p { margin: 0; font-size: 0.84rem; }
+    .fix { border: 1px solid var(--line); border-radius: 6px; padding: 0.55rem 0.65rem; margin: 0.4rem 0 0.6rem; background: #fafafa; }
+    .fix .lbl { display: inline-block; font-size: 0.58rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.08rem 0.32rem; border-radius: 3px; margin-right: 0.3rem; }
+    .lbl.issue { background: #fee2e2; color: var(--danger); }
+    .lbl.fix { background: #d1fae5; color: var(--ok); }
+    .lbl.impact { background: #ffedd5; color: #9a3412; }
+    footer { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--line); font-size: 0.74rem; color: var(--muted); }
+    svg.flow { width: 100%; height: auto; margin: 0.35rem 0 0.6rem; }
+    @media print {
+      @page { size: A4; margin: 10mm 11mm; }
+      body { background: #fff; font-size: 9.1pt; }
+      .bar, .no-print { display: none !important; }
+      .wrap { max-width: none; padding: 0; }
+      section, .hero, nav.toc, .chart-wrap, .card, .fix { break-inside: avoid; border-color: #ccc; }
+      th, .ascii, .call, .pill, .fill, .lbl { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      a { color: inherit; text-decoration: none; }
+      .ascii { font-size: 6.2pt; } table { font-size: 7.5pt; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bar no-print">
+    <div>
+      <b>Rasaoi Outcome Engine</b>
+      <span>Dish Registry · Culinary Matrix · Database Audit</span>
+    </div>
+    <button type="button" class="btn" id="printBtn">Print / Save as PDF</button>
+  </div>
+
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Data &amp; catalog audit · Simple language · <strong>Rev 1.1</strong></p>
+      <h1>Dish Registry Audit Report</h1>
+      <p class="lede">
+        What lives in <code>dish_registry.json</code> and <code>el_dorado_folsom_culinary_matrix.json</code>,
+        which fields the app actually uses, how Postgres tables fit in, and whether prod/staging databases
+        are awake. <strong>Rev 1.1</strong> adds Ask-match / F() holes (soak: “Butter chicken” → Butter Dosai),
+        refreshes identity coverage after ROE-022 enrich, and re-prioritizes the fix backlog so math tickets
+        cannot paper over bad match rules.
+      </p>
+      <div class="meta">
+        <div><kbd>Registry</kbd><p>~3.9 MB · 2,772 city rows</p></div>
+        <div><kbd>Matrix</kbd><p>~0.7 MB · 13 EDH/Folsom kitchens</p></div>
+        <div><kbd>Live index</kbd><p>generatedAt 2026-09-06</p></div>
+        <div><kbd>Prod DB</kbd><p>Active (not paused)</p></div>
+        <div><kbd>Staging DB</kbd><p>Active · other org</p></div>
+        <div><kbd>Audit date</kbd><p>6 Sep 2026 · Rev 1.1</p></div>
+      </div>
+      <div class="call warn">
+        <strong>Read order:</strong> this audit (findings) →
+        <code>docs/rasaoi-dish-matrix-recommendations.pdf</code> Rev 1.1 (phased fixes).
+        Do not jump to J(r) / <code>score-reading</code> until P0 match-rule items below are closed or ticketed.
+      </div>
+    </header>
+
+    <nav class="toc">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#s1">1. Snapshot (what matters)</a></li>
+        <li><a href="#s2">2. Database status (prod + staging)</a></li>
+        <li><a href="#s3">3. Three data worlds</a></li>
+        <li><a href="#s4">4. Registry field map</a></li>
+        <li><a href="#s5">5. Matrix field map</a></li>
+        <li><a href="#s6">6. Flow: how fields get touched</a></li>
+        <li><a href="#s7">7. Coverage &amp; quality bars</a></li>
+        <li><a href="#s8">8. Postgres tables</a></li>
+        <li><a href="#s9">9. Issues + remediations</a></li>
+        <li><a href="#s9b">9b. Ask-match / F() holes (Rev 1.1)</a></li>
+        <li><a href="#s10">10. Fix backlog</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2 class="sec"><i>01</i> Snapshot (what matters)</h2>
+      <div class="kpi">
+        <div><strong>2 sources → 1 slim index</strong><span>Raw JSON never ships in the SPA</span></div>
+        <div><strong>DB = live plates</strong><span>menu_items is the catalog gate</span></div>
+        <div><strong>Matrix = enrich</strong><span>Price, macros, identity hints</span></div>
+        <div><strong>India registry mostly idle</strong><span>Only EDH/Folsom slice builds into index</span></div>
+      </div>
+      <div class="call ok">
+        Core idea: restaurants in Postgres decide <em>what can be plated</em>.
+        The culinary index helps rank and explain. The giant India registry is a research book — not the live menu.
+      </div>
+      <div class="chart-wrap">
+        <p class="chart-title">Where dish facts live (relative weight)</p>
+        <div class="bars">
+          <div class="bar-row"><span class="label">dish_registry.json</span><div class="track"><div class="fill muted" style="width:100%"></div></div><span class="val">3.9 MB</span></div>
+          <div class="bar-row"><span class="label">culinary matrix</span><div class="track"><div class="fill warn" style="width:19%"></div></div><span class="val">0.7 MB</span></div>
+          <div class="bar-row"><span class="label">culinary-index</span><div class="track"><div class="fill ok" style="width:7%"></div></div><span class="val">0.3 MB</span></div>
+          <div class="bar-row"><span class="label">DB menu_items</span><div class="track"><div class="fill" style="width:45%"></div></div><span class="val">live</span></div>
+        </div>
+        <p class="cap">File sizes measured on disk 6 Sep 2026. DB size varies by seeded venues.</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2 class="sec"><i>02</i> Database status (prod + staging)</h2>
+      <p>
+        Checked without using secret keys. A <strong>paused</strong> Supabase project usually returns a clear
+        “project paused” message. Both projects instead answer on the API gateway with
+        <strong>HTTP 401</strong> (need a key) — that pattern means the project is <strong>up / not paused</strong>.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Env</th><th>Project ref</th><th>Name (CLI)</th><th>Probe</th><th>Status</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Production</td>
+            <td><code>kiugplotjcnmpwjlxajc</code></td>
+            <td>rasaoi-project</td>
+            <td>REST/Auth → 401</td>
+            <td><span class="pill ok">Active</span></td>
+            <td>Listed in logged-in CLI org. Vercel prod target.</td>
+          </tr>
+          <tr>
+            <td>Staging</td>
+            <td><code>aotlzhdgnvovvqxmgyyx</code></td>
+            <td>rasaoi-staging</td>
+            <td>REST/Auth → 401</td>
+            <td><span class="pill ok">Active</span></td>
+            <td>Active API. CLI org for personal login does <strong>not</strong> own this project (secrets/deploy 403). Dashboard needs org <code>begvkmrmyqxrrrtoqurj</code>. Preview: v0-rasaoi-staging / rasaoi-i8.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="grid2">
+        <div class="card">
+          <h4>How we decided “Active”</h4>
+          <p>No “Project paused” body. Gateway responds. Auth endpoint requires a key (401), not a pause page.</p>
+        </div>
+        <div class="card">
+          <h4>What we did not claim</h4>
+          <p>Row counts / billing plan. Those need anon or service keys (not printed in this audit).</p>
+        </div>
+      </div>
+      <div class="call warn">
+        Local <code>.env</code> currently targets <strong>staging</strong> (<code>aotlzhdgnvovvqxmgyyx</code>),
+        not prod. Linked CLI project matches staging. Do not assume laptop queries hit prod.
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2 class="sec"><i>03</i> Three data worlds</h2>
+      <table>
+        <thead><tr><th>World</th><th>Files / tables</th><th>Job</th><th>Touches Reading?</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>A. Research registry</strong></td>
+            <td><code>dish_registry.json</code></td>
+            <td>City×dish price / link / nutrition book (mostly India + local USD slice)</td>
+            <td>Only EDH/Folsom slice → index</td>
+          </tr>
+          <tr>
+            <td><strong>B. Local culinary matrix</strong></td>
+            <td><code>el_dorado_folsom_culinary_matrix.json</code></td>
+            <td>Per-kitchen course tree (appetizer → carrier) for EDH/Folsom</td>
+            <td>Yes, via build → index</td>
+          </tr>
+          <tr>
+            <td><strong>C. Live catalog (DB)</strong></td>
+            <td><code>restaurants.menu_items</code> + <code>dishes</code></td>
+            <td>What Lab committed; plate gate + ranking inputs</td>
+            <td>Yes — primary truth for plates</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="ascii"><span class="hi">dish_registry.json</span> ──┐
+                         │  build-culinary-index.mjs (offline, no AI)
+<span class="hi">el_dorado_folsom_…json</span> ─┤
+                         ▼
+              <span class="ok">src/data/culinary-index.json</span>  ──►  veda / pairings / glycemic / askFulfillment
+                         ▲
+                         │  optional overlay (staging flag)
+              <span class="warn">experimental_dish_knowledge</span> (staging Postgres)
+
+<span class="mu">Separate path:</span>
+  Lab → ingest-menu → commit-dishes → <span class="ok">restaurants.menu_items</span> + <span class="ok">dishes</span>
+  Reading plate gate: menu_items ∪ matrix/index — never invent</div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2 class="sec"><i>04</i> Registry field map (<code>dish_registry.json</code>)</h2>
+      <p>Top shape: <code>{ by_city, nutrition }</code>. Keys in <code>by_city</code> look like <code>dish-slug|city-slug</code>.</p>
+
+      <h3>4.1 <code>by_city</code> entry fields</h3>
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Meaning</th><th>Used in build?</th><th>Used at score time?</th><th>Health</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>name</code></td><td>Dish display name</td><td>Yes (local only)</td><td>Via index dish key</td><td><span class="pill ok">Used</span></td></tr>
+          <tr><td><code>city</code></td><td>City label</td><td>Local filter</td><td>No</td><td><span class="pill live">Filter only</span></td></tr>
+          <tr><td><code>restaurant</code></td><td>Venue name (local rows)</td><td>Yes → restaurant bucket</td><td>Lookup key</td><td><span class="pill ok">Used (local)</span></td></tr>
+          <tr><td><code>price.amount / currency</code></td><td>Listed price</td><td>USD → priceUsd / median</td><td>Budget soft signals</td><td><span class="pill warn">INR ignored</span></td></tr>
+          <tr><td><code>price.source_url / verified_at / fetch_status</code></td><td>Provenance</td><td>Dropped in slim</td><td>No</td><td><span class="pill idle">Audit only</span></td></tr>
+          <tr><td><code>link.url / platform</code></td><td>Zomato / Grubhub link</td><td>Dropped</td><td>No</td><td><span class="pill idle">Unused in app</span></td></tr>
+          <tr><td><code>nutrition.*</code></td><td>Macros / diabetic note</td><td>Slim macros if present</td><td>GL / heaviness</td><td><span class="pill warn">Sparse globally</span></td></tr>
+          <tr><td><code>taste_benchmark.*</code></td><td>Rating idea</td><td>Dropped</td><td>No</td><td><span class="pill bad">100% empty score</span></td></tr>
+          <tr><td><code>enriched_at</code></td><td>Enrich timestamp</td><td>Dropped</td><td>No</td><td><span class="pill idle">Ops only</span></td></tr>
+          <tr><td><code>source_matrix</code></td><td>Marks EDH matrix rows</td><td>Local include flag</td><td>No</td><td><span class="pill ok">Useful filter</span></td></tr>
+        </tbody>
+      </table>
+
+      <h3>4.2 <code>nutrition</code> map (global by dish slug)</h3>
+      <table>
+        <thead><tr><th>Field</th><th>Slimmed into index?</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>calories_kcal</code>, <code>protein_g</code>, <code>fiber_g</code></td><td>Yes → <code>byDish</code></td><td>Fallback when restaurant dish thin</td></tr>
+          <tr><td><code>diabetic.gi_band</code></td><td>Only if string set</td><td>Almost never set today</td></tr>
+          <tr><td><code>overall</code>, <code>source_url</code>, <code>fetch_status</code></td><td>No</td><td>Research metadata</td></tr>
+        </tbody>
+      </table>
+
+      <div class="kpi">
+        <div><strong>2,772</strong><span>by_city rows</span></div>
+        <div><strong>727</strong><span>EDH/Folsom (USD) local</span></div>
+        <div><strong>2,045</strong><span>INR (India) rows</span></div>
+        <div><strong>2,304</strong><span>global nutrition keys</span></div>
+        <div><strong>0</strong><span>taste scores filled</span></div>
+        <div><strong>1,876</strong><span>by_city with nutrition=null</span></div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2 class="sec"><i>05</i> Matrix field map (<code>el_dorado_folsom_culinary_matrix.json</code>)</h2>
+      <p>Tree: <code>proteinFamily → region → metro → city → [ { menu_style, courses } ]</code>.</p>
+      <table>
+        <thead>
+          <tr><th>Field path</th><th>Meaning</th><th>Build keeps?</th><th>Runtime consumer</th><th>Health</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Tree key (<code>veggies|meat|…</code>)</td><td>Protein family root</td><td><code>proteinFamilies[]</code></td><td>askFulfillment (fallback)</td><td><span class="pill warn">Can mislead vs identity</span></td></tr>
+          <tr><td><code>menu_style</code></td><td>Kitchen name</td><td>Restaurant key + alias</td><td>lookupRestaurant</td><td><span class="pill ok">Critical</span></td></tr>
+          <tr><td><code>courses.*.name</code></td><td>Dish in that slot</td><td>Dish record</td><td>Plates / fulfill / GL</td><td><span class="pill ok">Critical</span></td></tr>
+          <tr><td><code>courses.*.price</code></td><td>USD amount + provenance</td><td><code>priceUsd</code> only</td><td>Budget / display enrich</td><td><span class="pill ok">Used (amount)</span></td></tr>
+          <tr><td><code>courses.*.link</code></td><td>Grubhub etc.</td><td>Dropped</td><td>No</td><td><span class="pill idle">Unused</span></td></tr>
+          <tr><td><code>courses.*.nutrition</code></td><td>Macros + method</td><td>Slim macros + dish_type</td><td>veda heaviness, glycemic</td><td><span class="pill ok">Calories present</span></td></tr>
+          <tr><td><code>nutrition.diabetic.gi_band</code></td><td>GI band</td><td>If set</td><td>glycemic.ts</td><td><span class="pill bad">0% filled</span></td></tr>
+          <tr><td><code>courses.*.taste_benchmark</code></td><td>Rating</td><td>Dropped</td><td>No</td><td><span class="pill bad">Empty</span></td></tr>
+          <tr><td><code>courses.*.identity</code></td><td>ROE-019 proteins / diet / role</td><td>Prefer over infer</td><td>askFulfillment</td><td><span class="pill bad">0 in source file</span></td></tr>
+        </tbody>
+      </table>
+      <div class="kpi">
+        <div><strong>8</strong><span>protein families</span></div>
+        <div><strong>13</strong><span>unique kitchens</span></div>
+        <div><strong>416</strong><span>course dish slots</span></div>
+        <div><strong>104×4</strong><span>app / starter / main / base</span></div>
+        <div><strong>416</strong><span>with calories</span></div>
+        <div><strong>0</strong><span>with gi_band / identity in file</span></div>
+      </div>
+      <div class="call warn">
+        Appetizer and starter often repeat the same dish name. Build merges by normalized name
+        and keeps the richer nutrition row — but course labels can blur.
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2 class="sec"><i>06</i> Flow: how fields get touched</h2>
+      <svg class="flow" viewBox="0 0 900 210" role="img" aria-label="Field flow diagram">
+        <rect x="10" y="20" width="150" height="55" rx="5" fill="#eff6ff" stroke="#1d4ed8"/>
+        <text x="85" y="42" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">Ask / dials</text>
+        <text x="85" y="58" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">parse-intent</text>
+        <rect x="190" y="20" width="160" height="55" rx="5" fill="#ecfdf5" stroke="#047857"/>
+        <text x="270" y="42" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">Postgres menus</text>
+        <text x="270" y="58" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">menu_items names</text>
+        <rect x="380" y="20" width="170" height="55" rx="5" fill="#fffbeb" stroke="#b45309"/>
+        <text x="465" y="42" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">culinary-index</text>
+        <text x="465" y="58" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">price · macros · identity</text>
+        <rect x="580" y="20" width="140" height="55" rx="5" fill="#e0e7ff" stroke="#3730a3"/>
+        <text x="650" y="42" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">veda score</text>
+        <text x="650" y="58" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">rank kitchens</text>
+        <rect x="750" y="20" width="140" height="55" rx="5" fill="#ecfdf5" stroke="#047857"/>
+        <text x="820" y="42" text-anchor="middle" font-size="11" font-family="Segoe UI" fill="#111">pairings</text>
+        <text x="820" y="58" text-anchor="middle" font-size="9" font-family="Segoe UI" fill="#4b5563">triple plates</text>
+        <path d="M160 48 H190" stroke="#64748b" stroke-width="2"/>
+        <path d="M350 48 H380" stroke="#64748b" stroke-width="2"/>
+        <path d="M550 48 H580" stroke="#64748b" stroke-width="2"/>
+        <path d="M720 48 H750" stroke="#64748b" stroke-width="2"/>
+
+        <rect x="80" y="110" width="740" height="85" rx="6" fill="#f8fafc" stroke="#d1d5db"/>
+        <text x="100" y="135" font-size="11" font-family="Segoe UI" font-weight="700" fill="#0f3d2e">Field touch points</text>
+        <text x="100" y="155" font-size="10" font-family="Segoe UI" fill="#374151">name → dish match / catalog gate · priceUsd → budget tilt · calories/dish_type → heavy/light · proteins/diet_class/food_type → Ask-fulfillment · gi_band → blood-sugar lens</text>
+        <text x="100" y="175" font-size="10" font-family="Segoe UI" fill="#4b5563">Not touched at score time: link, taste_benchmark, INR prices, India-only by_city rows, raw source_url provenance</text>
+      </svg>
+
+      <table>
+        <thead><tr><th>Runtime module</th><th>Index / DB fields it reads</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>veda.ts</code></td>
+            <td>menu names; lookupRestaurant/Dish; dish_type; calories</td>
+            <td>Rank kitchens; dish hit; heaviness tags</td>
+          </tr>
+          <tr>
+            <td><code>askFulfillment.ts</code></td>
+            <td>identity proteins / diet / food_type / dish_role; proteinFamilies fallback; menu ∪ matrix names</td>
+            <td>Ask-first ranking (ROE-019)</td>
+          </tr>
+          <tr>
+            <td><code>pairings.ts</code></td>
+            <td>menu_items; matrix dishes; carriers; catalog gate</td>
+            <td>Best / Clean / Heritage + carrier</td>
+          </tr>
+          <tr>
+            <td><code>glycemic.ts</code></td>
+            <td>gi_band; calories; dish_type; else edge estimate</td>
+            <td>Blood-sugar lens</td>
+          </tr>
+          <tr>
+            <td><code>catalogGuard.ts</code></td>
+            <td>menu ∪ matrix membership</td>
+            <td>Drop invented plates</td>
+          </tr>
+          <tr>
+            <td>Lab / <code>commit-dishes</code></td>
+            <td>Writes <code>dishes</code> + rebuilds <code>menu_items</code></td>
+            <td>Live catalog updates (no matrix write)</td>
+          </tr>
+          <tr>
+            <td>Staging overlay</td>
+            <td><code>experimental_dish_knowledge</code></td>
+            <td>Optional dynamic enrich when flag on</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2 class="sec"><i>07</i> Coverage &amp; quality bars</h2>
+      <div class="chart-wrap">
+        <p class="chart-title">Built index dish fields (156 scored dishes · post ROE-022 enrich)</p>
+        <div class="bars">
+          <div class="bar-row"><span class="label">Has proteins</span><div class="track"><div class="fill ok" style="width:100%"></div></div><span class="val">100%</span></div>
+          <div class="bar-row"><span class="label">Has diet_class</span><div class="track"><div class="fill ok" style="width:100%"></div></div><span class="val">100%</span></div>
+          <div class="bar-row"><span class="label">Has dish_role</span><div class="track"><div class="fill ok" style="width:100%"></div></div><span class="val">100%</span></div>
+          <div class="bar-row"><span class="label">Has food_type</span><div class="track"><div class="fill warn" style="width:71%"></div></div><span class="val">71%</span></div>
+          <div class="bar-row"><span class="label">Has cuisine_region</span><div class="track"><div class="fill warn" style="width:30%"></div></div><span class="val">30%</span></div>
+          <div class="bar-row"><span class="label">Has gi_band</span><div class="track"><div class="fill bad" style="width:2%"></div></div><span class="val">~0%</span></div>
+        </div>
+        <p class="cap">
+          Rev 1.1: identity enrich (ROE-022 T4) raised proteins/diet/role from ~20% → ~100%.
+          <strong>Still does not fix named-dish token match</strong> (§9b). Index <code>generatedAt</code>: 2026-09-06.
+          Remaining gaps: cuisine_region ~30%, gi_band ~0%, food_type ~71%.
+        </p>
+      </div>
+
+      <div class="chart-wrap">
+        <p class="chart-title">Registry usefulness for EDH product</p>
+        <div class="bars">
+          <div class="bar-row"><span class="label">Local USD rows</span><div class="track"><div class="fill ok" style="width:26%"></div></div><span class="val">727</span></div>
+          <div class="bar-row"><span class="label">India INR rows</span><div class="track"><div class="fill muted" style="width:74%"></div></div><span class="val">2045</span></div>
+          <div class="bar-row"><span class="label">Taste scores</span><div class="track"><div class="fill bad" style="width:2%"></div></div><span class="val">0</span></div>
+        </div>
+        <p class="cap">~74% of by_city rows never enter the culinary index (non-local filter).</p>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2 class="sec"><i>08</i> Postgres tables (prod schema + staging extras)</h2>
+
+      <h3>8.1 Production tables</h3>
+      <table>
+        <thead><tr><th>Table</th><th>Key columns</th><th>Public RLS</th><th>Link to registry/matrix</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>restaurants</code></td>
+            <td>name, cuisine, purity/oil/grain, <code>menu_items</code> JSONB, signature_dish, phone/address, promos URLs</td>
+            <td>SELECT</td>
+            <td>Names should align with matrix <code>menu_style</code> via aliases — not auto-synced</td>
+          </tr>
+          <tr>
+            <td><code>dishes</code></td>
+            <td>name, diet_class, dietary_*, oil/grain, glycemic_load, price, cooking_method, cuisine_region…</td>
+            <td>SELECT</td>
+            <td>Lab graph; richer than matrix; not the same as culinary-index</td>
+          </tr>
+          <tr>
+            <td><code>restaurant_sources</code></td>
+            <td>source_url, scraped_at, parse_confidence</td>
+            <td>SELECT</td>
+            <td>Ingest provenance (like matrix link, but for Lab)</td>
+          </tr>
+          <tr>
+            <td><code>active_promos</code></td>
+            <td>restaurant_id, deal fields</td>
+            <td>SELECT</td>
+            <td>None</td>
+          </tr>
+          <tr>
+            <td><code>outcome_selections</code></td>
+            <td>dish, restaurant, dials, check-in fields</td>
+            <td>Insert only</td>
+            <td>None (telemetry)</td>
+          </tr>
+          <tr>
+            <td><code>dishes_feedback</code></td>
+            <td>thumbs, dials_snapshot</td>
+            <td>No public</td>
+            <td>Lab QA</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>8.2 Staging-only experimental tables</h3>
+      <table>
+        <thead><tr><th>Table</th><th>Purpose</th><th>Maps closest to</th></tr></thead>
+        <tbody>
+          <tr><td><code>experimental_dish_knowledge</code></td><td>Dynamic dish facts + optional embedding</td><td>Slim culinary-index row</td></tr>
+          <tr><td><code>experimental_nutrition_quarantine</code></td><td>Unmapped ingredients</td><td>Failed nutrition enrich</td></tr>
+          <tr><td><code>experimental_llm_semantic_cache</code></td><td>Intent cache</td><td>—</td></tr>
+          <tr><td><code>experimental_outcome_feedback</code></td><td>Learning sandbox</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <div class="call">
+        Prod does <strong>not</strong> store the culinary matrix or dish_registry.
+        Those stay in git → compiled JSON (and staging knowledge table when flagged).
+      </div>
+
+      <div class="ascii"><span class="mu">Prod Postgres</span>                 <span class="mu">Git / build</span>                 <span class="mu">Staging only</span>
+restaurants.menu_items  ◄── Lab      matrix + registry ──► culinary-index.json
+dishes (attributes)                  (offline build)        experimental_dish_knowledge
+active_promos / outcomes                                    quarantine / cache</div>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <h2 class="sec"><i>09</i> Issues + remediations</h2>
+
+      <div class="fix">
+        <p><span class="lbl issue">Issue</span> Giant India registry (~74% of rows) is unused at product score time but costs repo weight and agent confusion.</p>
+        <p><span class="lbl impact">Impact</span> Slow clones; people may think INR/Zomato data drives EDH Readings.</p>
+        <p><span class="lbl fix">Fix</span> Split <code>dish_registry.local.json</code> (EDH/Folsom) from archive <code>dish_registry.india.json</code>. Build script reads local only. Document clearly in CONTEXT_PLAN.</p>
+      </div>
+
+      <div class="fix">
+        <p><span class="lbl issue">Issue</span> <code>taste_benchmark.score</code> is always null; links/provenance dropped at build.</p>
+        <p><span class="lbl impact">Impact</span> Dead schema noise; false hope of social proof from registry.</p>
+        <p><span class="lbl fix">Fix</span> Either populate from a trusted source with tier labels, or remove from product schema and keep only in research notes.</p>
+      </div>
+
+      <div class="fix">
+        <p><span class="lbl issue">Issue</span> Matrix source historically had sparse <code>identity</code>; <code>gi_band</code> still ~null; <code>cuisine_region</code> only ~30% on index after ROE-022.</p>
+        <p><span class="lbl impact">Impact</span> Protein Asks improved via enrich; GL lens still Edge-heavy; regional integrity still incomplete.</p>
+        <p><span class="lbl fix">Fix</span> Keep enrich in CI; finish cuisine_region per kitchen; backfill gi_band where method known; Vitest soak. <strong>Separate:</strong> match-rule P0 in §9b — identity alone does not fix “Butter chicken” → Butter Dosai.</p>
+      </div>
+
+      <div class="fix">
+        <p><span class="lbl issue">Issue</span> Dual catalogs: DB <code>menu_items</code> vs matrix kitchen list can drift (aliases, retired venues, new Lab commits).</p>
+        <p><span class="lbl impact">Impact</span> Enrich miss → weaker F(); or matrix dish without DB membership (catalog gate drops / honest miss).</p>
+        <p><span class="lbl fix">Fix</span> Add CI check: every matrix <code>menu_style</code> resolves to a DB restaurant (or allowlist). Lab commit optionally refreshes matrix stub. Alias table in one place.</p>
+      </div>
+
+      <div class="fix">
+        <p><span class="lbl issue">Issue</span> Appetizer/starter duplication doubles slots (416) for ~half unique mains conceptually.</p>
+        <p><span class="lbl impact">Impact</span> Noisy merges; course semantics unclear.</p>
+        <p><span class="lbl fix">Fix</span> Collapse to <code>starter</code> + <code>main</code> + <code>carrier</code> in next matrix revision; migrate builder COURSE_KEYS.</p>
+      </div>
+
+      <div class="fix">
+        <p><span class="lbl issue">Issue</span> Protein tree root (<code>meat</code>/<code>veggies</code>) can disagree with real dish proteins when identity missing.</p>
+        <p><span class="lbl impact">Impact</span> Classic soak: chicken-only kitchen ranks high for “meat not murgi”.</p>
+        <p><span class="lbl fix">Fix</span> Trust <code>identity.proteins</code> over tree root (already coded). Coverage now ~100% proteins/diet after ROE-022 — maintain via enrich CI. Remaining soak misses → Lab tags, not screenshot hotfixes.</p>
+      </div>
+
+      <div class="fix">
+        <p><span class="lbl issue">Issue</span> Index can lag matrix/registry edits if rebuild forgotten (mitigated when generatedAt is current).</p>
+        <p><span class="lbl impact">Impact</span> Stale enrich on Reading until redeploy.</p>
+        <p><span class="lbl fix">Fix</span> CI job: if matrix/registry hash changes, fail unless culinary-index rebuilt. Longer term: live culinary cache (combined upgrade proposal).</p>
+      </div>
+
+      <div class="fix">
+        <p><span class="lbl issue">Issue</span> Staging knowledge path vs prod static index — two mental models; staging Gemini/org access is separate from catalog.</p>
+        <p><span class="lbl impact">Impact</span> “Works on staging” enrich missing on prod; staging secrets may be unreachable from personal CLI.</p>
+        <p><span class="lbl fix">Fix</span> Promotion checklist: static rebuild for prod until live cache ships; never auto-promote Apify into <code>menu_items</code>; document staging org ownership.</p>
+      </div>
+    </section>
+
+    <!-- 9b Rev 1.1 -->
+    <section id="s9b">
+      <h2 class="sec"><i>09b</i> Ask-match / F() holes (Rev 1.1)</h2>
+      <p>
+        Catalog + identity answer “what exists.” <strong>Match rules</strong> answer “does this plate fulfill the Ask?”
+        Rev 1.0 and the matrix recommendations treated named-dish Asks as <em>low confusion</em>.
+        Personal soak <strong>6 Sep 2026</strong> shows that assumption is wrong while token match stays soft.
+      </p>
+
+      <div class="call danger">
+        <strong>Soak evidence:</strong> Ask <code>Butter chicken under 40</code> → hero <strong>Mylapore 100%</strong> with
+        <strong>Butter Dosai</strong> (veg tiffin). <strong>India Oven</strong> (exact Butter Chicken) sat in Alternatives.
+        Parse pill showed BUTTER CHICKEN — Gemini was fine; offline F() / ranking failed.
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Hole ID</th><th>Where</th><th>Failure mode</th><th>Why identity/math don’t clear it</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>M-01</code></td>
+            <td><code>namedDishMatchStrength</code></td>
+            <td>Multi-token Ask (“butter”+“chicken”) scores <strong>partial</strong> on shared garnish/fat token alone</td>
+            <td>Identity proteins on Dosai don’t remove the butter token hit</td>
+          </tr>
+          <tr>
+            <td><code>M-02</code></td>
+            <td>ROE-018 honesty in <code>veda.ts</code></td>
+            <td>~100% / “No exact dish” only when <code>dishMatch === "none"</code>; weak partial still looks like a win</td>
+            <td>J weights scale the same bad F signal</td>
+          </tr>
+          <tr>
+            <td><code>M-03</code></td>
+            <td><code>venueAskFulfillment</code></td>
+            <td><code>alignedCount ≥ 2</code> weak partials can promote level to <strong>full</strong> (“Ask fulfilled”)</td>
+            <td>Moving F to Edge (ROE-024) copies the bug unless rules change</td>
+          </tr>
+          <tr>
+            <td><code>M-04</code></td>
+            <td>Sort: fulfillment tier then score</td>
+            <td>When F tiers tie, purity / Sovereign / oil tags can crown the wrong kitchen</td>
+            <td>Pareto (ROE-025) diversifies slots among already-wrong winners</td>
+          </tr>
+          <tr>
+            <td><code>M-05</code></td>
+            <td>Protein Ask path vs named path</td>
+            <td>Preferred protein from tokens may not <em>veto</em> plates that only matched a non-protein token</td>
+            <td>Enrich helps “meat not chicken”; not butter-collision named dishes</td>
+          </tr>
+          <tr>
+            <td><code>M-06</code></td>
+            <td>Stop-word / synonym policy</td>
+            <td>Cooking fats (<code>butter</code>/<code>ghee</code>) are real dish tokens on South tiffin names — no “require protein when present” rule</td>
+            <td>Tags/DB freshness don’t redefine token policy</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Expected correct behavior (acceptance sketch)</h3>
+      <ul>
+        <li>Named Ask with a protein token → exact/strong F only if that protein (or synonym) appears on the plate/catalog line.</li>
+        <li>Butter-only overlap → at most “Closest” / capped confidence; never naked ~100% hero.</li>
+        <li>Kitchens with exact named dish outrank kitchens with garnish-only overlap (Ask-fulfillment first).</li>
+        <li>Vitest soak: <code>Butter chicken</code>, <code>Butter chicken under 40</code>, <code>ghee roast</code> (legitimate butter/ghee dish), <code>Mysore pak</code> (no false Mysore dosa).</li>
+      </ul>
+
+      <div class="call ok">
+        <strong>Ticket posture:</strong> treat M-01…M-06 as <strong>P0 / next free ROE</strong> (or explicit scope on ROE-023),
+        <em>before</em> relying on score-reading / Pareto to “fix Readings.” Documented remediations feed
+        <code>rasaoi-dish-matrix-recommendations</code> Rev 1.1 §03 / §06 / §08.
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <h2 class="sec"><i>10</i> Fix backlog (priority) — Rev 1.1</h2>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Remediation</th><th>Effort</th><th>Priority</th><th>Perf / quality win</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0</td>
+            <td><strong>P0 match rules:</strong> tighten <code>namedDishMatchStrength</code> + F() (M-01…M-06); honesty for weak partial; Vitest soak Butter chicken / Mysore pak / ghee roast</td>
+            <td><span class="pill warn">Med</span></td>
+            <td><span class="pill bad">P0</span></td>
+            <td>Named-dish hero correctness — blocks false 100%</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>CI: rebuild gate when matrix/registry change</td>
+            <td><span class="pill ok">Low</span></td>
+            <td>P1</td>
+            <td>Stops silent stale index</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Finish cuisine_region + food_type gaps; maintain proteins/diet enrich in CI (post ROE-022)</td>
+            <td><span class="pill ok">Low–Med</span></td>
+            <td>P1</td>
+            <td>Regional + type Ask signal</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Alias / name parity check matrix ↔ DB (ROE-022 T5 shipped — keep green)</td>
+            <td><span class="pill ok">Low</span></td>
+            <td>P1</td>
+            <td>Fewer enrich misses</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Split local vs India registry files</td>
+            <td><span class="pill warn">Med</span></td>
+            <td>P2</td>
+            <td>Repo clarity; smaller ops surface</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>Backfill gi_band where cooking method known; quarantine rest</td>
+            <td><span class="pill warn">Med</span></td>
+            <td>P2</td>
+            <td>Fewer Edge GL calls; clearer lens</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Drop or quarantine empty taste_benchmark from product path</td>
+            <td><span class="pill ok">Low</span></td>
+            <td>P3</td>
+            <td>Less schema noise</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>Collapse appetizer/starter in matrix vNext</td>
+            <td><span class="pill warn">Med</span></td>
+            <td>P3</td>
+            <td>Cleaner course semantics</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td>Live culinary cache + <code>score-reading</code> (combined upgrade) — <em>after</em> P0 match rules</td>
+            <td><span class="pill bad">High</span></td>
+            <td>P1 (architecture)</td>
+            <td>Freshness + payload — must carry fixed F()</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="call ok">
+        <strong>Keep:</strong> offline build (no AI at score time), catalog plate gate, Lab review before commit,
+        staging experimental tables off prod, dish-non-invention, Ask-fulfillment first <em>with honest F()</em>.
+      </div>
+    </section>
+
+    <footer>
+      Rasaoi Outcome Engine · Dish Registry &amp; Culinary Data Audit · <strong>Rev 1.1</strong> · 6 Sep 2026 ·
+      Sources: <code>dish_registry.json</code>, <code>el_dorado_folsom_culinary_matrix.json</code>,
+      <code>src/data/culinary-index.json</code>, <code>src/lib/dishIntent.ts</code>, <code>askFulfillment.ts</code>, <code>veda.ts</code>,
+      <code>scripts/personal/build-culinary-index.mjs</code>, CONTEXT_PLAN, ROE-018…022.
+      Companion: <code>docs/rasaoi-dish-matrix-recommendations.pdf</code> Rev 1.1.
+      DB status: anonymous gateway probe (prod + staging → Active / not paused).
+      <span class="no-print"> Print → Save as PDF (A4).</span>
+    </footer>
+  </main>
+  <script>
+    document.getElementById("printBtn").addEventListener("click", function () { window.print(); });
+  </script>
+</body>
+</html>

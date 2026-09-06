@@ -135,4 +135,43 @@ describe("ROE-019 ask fulfillment", () => {
     expect(f.alignedCount).toBeGreaterThanOrEqual(1);
     expect(f.level).not.toBe("none");
   });
+
+  it("ROE-023: Butter Chicken kitchen outranks Butter Dosai kitchen", () => {
+    const mylapore = mockRestaurant({
+      id: "myl",
+      name: "Mylapore",
+      purity_tier: "sovereign",
+      sovereign_seal: true,
+      oil_profile: "cold-pressed",
+      signature_dish: "Butter Dosai",
+      menu_items: [
+        { name: "Butter Dosai", diet_class: "veg" },
+        { name: "Masala Dosai", diet_class: "veg" },
+        { name: "Thali Meal", diet_class: "veg" },
+      ],
+    });
+    const indiaOven = mockRestaurant({
+      id: "io",
+      name: "India Oven",
+      purity_tier: "conscious",
+      signature_dish: "Butter Chicken",
+      menu_items: [
+        { name: "Butter Chicken", diet_class: "non_veg" },
+        { name: "Class Butter Chicken", diet_class: "non_veg" },
+        { name: "CRISPY PRAWNS KARAWARI", diet_class: "non_veg" },
+      ],
+    });
+    const ranked = scoreRestaurants(
+      [mylapore, indiaOven],
+      dials,
+      [],
+      undefined,
+      "Butter chicken",
+      "Indian",
+    );
+    expect(ranked[0].restaurant.name).toBe("India Oven");
+    expect(ranked[0].dishMatch).toBe("exact");
+    expect(ranked[0].fulfillment).toBe("full");
+    expect(ranked.find((x) => x.restaurant.name === "Mylapore")?.dishMatch).toBe("none");
+  });
 });

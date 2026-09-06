@@ -180,6 +180,7 @@ export function askAlignedDishScore(
     const strength = namedDishMatchStrength(name, desc, tokens);
     if (strength === "exact") score += 50;
     else if (strength === "partial") score += 22;
+    // ROE-023: strength "none" (fat-only / missing protein) adds nothing
   }
 
   if (riceMain && (id.food_type === "rice_main" || RICE_AS_MAIN_PATTERN.test(name))) {
@@ -265,10 +266,14 @@ export function venueAskFulfillment(
     }
   }
 
-  if (alignedCount >= 2) {
+  if (best >= 50) {
+    // One exact named (or strong) hit is enough — do not require two weak lines (M-03)
     return { level: "full", alignedCount, delta: 38, tag: "Ask fulfilled" };
   }
-  if (alignedCount === 1) {
+  if (alignedCount >= 2 && best >= 40) {
+    return { level: "full", alignedCount, delta: 38, tag: "Ask fulfilled" };
+  }
+  if (alignedCount >= 1 && best >= 22) {
     return { level: "partial", alignedCount, delta: 22, tag: "Partial Ask match" };
   }
   return {

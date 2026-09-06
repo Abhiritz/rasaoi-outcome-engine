@@ -140,7 +140,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize), `_share
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-021** (ROE-020 = exclusion aliases + Ask-align + auto soak — **awaiting approval**; ROE-019 on staging; ROE-016 staging live).
+1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-024** (ROE-023 = named-dish match rules P0; ROE-022 = Phase 0 + identity on feature branch; ROE-020+ on staging).
 2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
@@ -154,7 +154,10 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
 | Ticket | Status | Impact |
 |--------|--------|--------|
-| **ROE-020** Exclusion aliases + Ask-align + auto soak | Feature branch implemented; staging merge pending | `docs/ROE-020-exclusion-aliases-auto-soak-impact-analysis.md` |
+| **ROE-023** Named-dish Ask match rules (P0) | Feature branch; Vitest green | `docs/ROE-023-named-dish-match-rules-impact-analysis.md` |
+| **ROE-022** Combined upgrade Phase 0 + identity | Feature branch / staging PR | `docs/ROE-022-combined-upgrade-phase0-impact-analysis.md` |
+| **ROE-021** `no meat murgi` disambiguation | Feature branch; staging merge pending | `docs/ROE-021-no-meat-murgi-disambiguation-impact-analysis.md` |
+| **ROE-020** Exclusion aliases + Ask-align + auto soak | On staging (PR #33) | `docs/ROE-020-exclusion-aliases-auto-soak-impact-analysis.md` |
 | **ROE-019** Ask-fulfillment ranking + matrix identity | On staging (PR #31/#32) | `docs/ROE-019-ask-fulfillment-matrix-impact-analysis.md` |
 | **ROE-018** Catalog freshness & honest dish-match | Merged to staging (PR #30); seed/re-soak pending | `docs/ROE-018-catalog-freshness-honest-match-impact-analysis.md` |
 | **ROE-017** Staging soak fixes | On staging via ROE-018 tip | `docs/ROE-017-staging-soak-fixes-impact-analysis.md` |
@@ -167,9 +170,11 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 | **ROE-009** (FUL-001) contacts | Merged PR #21; ops + QA | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
 | ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
 
-Next free serial: **ROE-021**.
+Next free serial: **ROE-024**.
 
-Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dual audit: `fulfillment-and-ask-audit` canvas. Ask-fulfillment soak: `meat-no-chicken-scoring-audit` canvas + `.cursor/rules/ask-fulfillment.mdc`.
+Future (from Rev 1.1 / ROE-022 epic, renumbered): ROE-024 shared scoring + live cache; ROE-025 `score-reading`; ROE-026 Pareto/softmax; ROE-027 intent cache; ROE-028 telemetry/GL soft.
+
+Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Dish audit Rev 1.1 §9b + matrix recs §3b. Ask-fulfillment: `.cursor/rules/ask-fulfillment.mdc`.
 
 ---
 

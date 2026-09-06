@@ -176,6 +176,65 @@ export function isRiceAsMainIntent(phrase?: string): boolean {
 }
 
 /**
+ * Cooking-fat / garnish tokens — may appear in real dish names (Butter Dosai, Ghee Roast)
+ * but must never alone fulfill a multi-token named Ask (ROE-023 / M-01, M-06).
+ */
+export const FAT_GARNISH_TOKENS = new Set([
+  "butter",
+  "ghee",
+  "cream",
+  "malai",
+  "oil",
+]);
+
+/** Protein / primary-protein tokens that force a hit on the plate when present in the Ask. */
+export const ASK_PROTEIN_TOKENS = new Set([
+  "chicken",
+  "murgh",
+  "murg",
+  "goat",
+  "mutton",
+  "lamb",
+  "fish",
+  "shrimp",
+  "prawn",
+  "prawns",
+  "crab",
+  "lobster",
+  "egg",
+  "anda",
+  "beef",
+  "pork",
+  "duck",
+  "paneer",
+  "mushroom",
+  "khumb",
+]);
+
+/** Split Ask tokens into required (identity) vs optional (fat/garnish). */
+export function partitionAskTokens(tokens: string[]): {
+  required: string[];
+  optional: string[];
+  proteins: string[];
+} {
+  const required: string[] = [];
+  const optional: string[] = [];
+  const proteins: string[] = [];
+  for (const tok of tokens) {
+    const t = tok.toLowerCase();
+    if (ASK_PROTEIN_TOKENS.has(t)) proteins.push(t);
+    if (FAT_GARNISH_TOKENS.has(t)) optional.push(t);
+    else required.push(t);
+  }
+  // Ask that is only fat/garnish (rare): treat those tokens as required so we don't
+  // exact-match every butter dish from a bare "butter" craving.
+  if (!required.length && optional.length) {
+    return { required: [...optional], optional: [], proteins };
+  }
+  return { required, optional, proteins };
+}
+
+/**
  * ROE-018: concrete named-dish Ask (not mood-only / bare craving words).
  * Used to trigger honest "no exact dish" venue scoring.
  */
@@ -194,20 +253,42 @@ export function isNamedDishAsk(phrase?: string): boolean {
   return tokens.length >= 2 || /\b(clay|pot|biryani|tikka|dosa|curry|noodle|pizza|burger|soup|salad)\b/i.test(lc);
 }
 
-/** Score how well a menu line matches intent tokens (0 = none). */
+/**
+ * Score how well a menu line matches intent tokens (0 = none).
+ * ROE-023: required (non-fat) tokens drive exact/partial; fat/garnish alone → none.
+ */
 export function namedDishMatchStrength(
   name: string,
   desc: string,
   tokens: string[],
 ): "exact" | "partial" | "none" {
   if (!tokens.length) return "none";
-  const t = `${name} ${desc}`.toLowerCase();
-  const hits = tokens.filter((tok) => t.includes(tok));
-  if (!hits.length) return "none";
-  const ratio = hits.length / tokens.length;
-  // Multi-token asks (goat + clay + pot + rice): need majority overlap for exact
-  if (tokens.length >= 2 && ratio >= 0.5 && hits.length >= 2) return "exact";
-  if (tokens.length === 1 && hits.length === 1) return "exact";
+  const blob = `${name} ${desc}`.toLowerCase();
+  const { required, proteins } = partitionAskTokens(tokens);
+
+  const reqHits = required.filter((tok) => blob.includes(tok));
+  if (!reqHits.length) return "none";
+
+  // Protein Ask: plate must include at least one Ask protein (or synonym already in tokens)
+  if (proteins.length) {
+    const proteinHit = proteins.some((p) => blob.includes(p));
+    if (!proteinHit) return "none";
+  }
+
+  const ratio = reqHits.length / required.length;
+  if (required.length >= 2 && ratio >= 0.5 && reqHits.length >= 2) return "exact";
+  if (required.length === 1 && reqHits.length === 1) return "exact";
   if (ratio >= 0.34) return "partial";
   return "none";
+}
+
+/** True when a named Ask has only weak / garnish overlap (honesty should cap like a miss). */
+export function isWeakNamedDishOverlap(
+  name: string,
+  desc: string,
+  dishPhrase?: string,
+): boolean {
+  if (!isNamedDishAsk(dishPhrase)) return false;
+  const tokens = expandDishTokens(dishPhrase);
+  return namedDishMatchStrength(name, desc, tokens) === "none";
 }
