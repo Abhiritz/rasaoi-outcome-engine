@@ -2,7 +2,9 @@
 
 | Priority | Ticket | Status |
 |----------|--------|--------|
-| 1 | **[ROE-020] Exclusion aliases + Ask-align + auto soak** | Implemented — push / merge to staging |
+| 1 | **[ROE-022] Combined upgrade Phase 0 + identity** | On `feature/ROE-022-phase0-identity-safety` — T1–T6 implemented; staging PR pending |
+| — | **[ROE-021] `no meat murgi` disambiguation** | Feature branch; staging merge pending |
+| — | **[ROE-020] Exclusion aliases + Ask-align + auto soak** | Merged to staging (PR #33) |
 | — | **[ROE-019] Ask-fulfillment ranking + matrix identity** | On staging (after lint fix PR #32) |
 | — | **[ROE-018] Catalog freshness & honest dish-match** | Merged to `staging` (PR #30); staging SQL seed / re-soak still open |
 | — | **[ROE-017] Staging soak fixes** | Merged via ROE-018 PR tip |
@@ -21,7 +23,7 @@
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-016-experimental-infra` |
 
 Rules:
-1. **ROE-NNN** is the global serial — never skip. Next free after this queue: **ROE-020**.
+1. **ROE-NNN** is the global serial — never skip. Next free after this queue: **ROE-023**.
 2. **ABC-NNN** is the workstream alias when one exists (`ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles use the **same** format.
 4. Commit subject: dual tags then a short imperative phrase.
@@ -32,13 +34,15 @@ Triage: `docs/ROE-backlog-triage-2026-07-24.md`
 Experimental tickets: `docs/experimental/tickets/README.md`  
 Hallucination guard: `docs/ROE-016-hallucination-guard-impact-analysis.md` + `.cursor/rules/hallucination-guard.mdc`  
 Ask-fulfillment: `docs/ROE-019-ask-fulfillment-matrix-impact-analysis.md` + `.cursor/rules/ask-fulfillment.mdc`  
+Combined upgrade Phase 0: `docs/ROE-022-combined-upgrade-phase0-impact-analysis.md`  
 Staging runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`  
 Apify cron: `docs/experimental/APIFY_CLI_CRON_SETUP.md`  
 ROE-018 impact: `docs/ROE-018-catalog-freshness-honest-match-impact-analysis.md`  
 Progress: `TODO_PROGRESS.md`
 
 ### In progress / shipping
-- **[ROE-019] Ask-fulfillment + matrix identity** — coded on feature branch (AFR + culinary-index v2 identity)
+- **[ROE-022] Phase 0 + identity** — twin CI, edge rate limits, named J weights, identity enrich, alias parity
+- **[ROE-019] Ask-fulfillment + matrix identity** — on staging
 - **[ROE-018] Catalog freshness & honest match** — on staging; Bamboo seed / re-soak pending
 - **[ROE-016] Experimental infra (EXP-001)** — staging live (https://v0-rasaoi-staging.vercel.app); EXP-T1–T11 done; Apify weekly cron live; **develop merge** still locked
 - **[ROE-014] Intent situational layers** — unmerged
@@ -51,6 +55,7 @@ Progress: `TODO_PROGRESS.md`
 - **[ROE-008] / [ROE-007]** — merged; Pass pending
 
 ### Done
+- ROE-020 exclusion aliases (staging PR #33)
 - ROE-013 Ask intent chips (develop)
 - ROE-011 fulfillment order copy (PR #25)
 - ROE-010 delivery handoff URLs (PR #23)

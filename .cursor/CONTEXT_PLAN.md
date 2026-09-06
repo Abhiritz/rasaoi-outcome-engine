@@ -4,15 +4,15 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-019-impl
-last_verified_date: 2026-08-01
-branch: feature/ROE-019-ask-fulfillment-matrix
+last_verified_commit: pending-ROE-022-impl
+last_verified_date: 2026-09-06
+branch: feature/ROE-022-phase0-identity-safety
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-019 implemented: Ask-fulfillment ranking (venue sort + Ask-aligned plates),
-  culinary-index v2 identity fields, diet_class unknown + goat MEAT_MARKERS,
-  Limited menu for this Ask instead of Chef's selection spam. Staging merge pending.
-  Next free: ROE-020.
+  ROE-022 Phase 0 + identity: twin CI (npm run ci:twins), edge rate-limit helper,
+  named J weights (src/lib/scoreWeights.ts), identity enrich coverage raise,
+  matrix↔venue alias parity (npm run culinary:check-aliases). Scoring still client-side.
+  Next free: ROE-023 (shared scoring package + live culinary cache).
 ```
 
 ---

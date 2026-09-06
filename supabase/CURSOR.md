@@ -32,13 +32,15 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 |------|------|
 | `functions/_shared/ai-client.ts` | Gemini client (`geminiToolCall`, `geminiJsonObject`); reads `GEMINI_API_KEY` |
 | `functions/_shared/dietary.ts` | DIET-001 taxonomy: diet classes, modifiers, normalization, gatekeeper logic |
-| `functions/_shared/intent-sanitize.ts` | [ROE-007]/[ROE-008] transcript grounding, celebratory/carrier, `buildRestatedIntent` — sync with `src/lib/intentSanitize.ts` |
+| `functions/_shared/intent-sanitize.ts` | [ROE-007]/[ROE-008]/[ROE-020] transcript grounding, exclusion aliases, `buildRestatedIntent` — sync with `src/lib/intentSanitize.ts` |
+| `functions/_shared/rate-limit.ts` | **[ROE-022]** In-isolate invoke rate limiter (`checkRateLimit` / `rateLimitJsonResponse`); wired on `parse-intent`, `estimate-glycemic`, `ingest-menu` |
 | `functions/_shared/model-router.ts` | **[ROE-016]** LiteLLM-class gateway — **wired** into `parse-intent`, `estimate-glycemic`, `ingest-menu` on staging (Gemini fallback always). Non-Gemini providers only when staging secrets + `EXPERIMENTAL_MODEL_ROUTER=true` |
 | `functions/experimental-apify-webhook/` | **[ROE-016]** Apify normalize/upsert → `experimental_dish_knowledge` (`speculative`); supports batch payloads from Actor cron |
 
 **Sync pairs:**
 - `functions/_shared/dietary.ts` ↔ `src/lib/dietary.ts` — both must change together.
 - `functions/_shared/intent-sanitize.ts` ↔ `src/lib/intentSanitize.ts` — both must change together.
+- **[ROE-022]** CI gate: `npm run ci:twins` (also on PRs to `staging`).
 
 **Experimental schema:** `supabase/migrations_experimental/` — apply on **staging** only (`npm run experimental:apply-schema`). Never `db push` experimental SQL to production (`kiugplotjcnmpwjlxajc`). Staging project: `aotlzhdgnvovvqxmgyyx`. Migrations include pgvector knowledge, staging RLS, nutrition quarantine upsert, feedback check-in update. Runbook: `docs/experimental/STAGING_PREVIEW_SETUP.md`. Apify cron: `docs/experimental/APIFY_CLI_CRON_SETUP.md` (knowledge-only; no auto `menu_items`). Stakeholder URL: https://v0-rasaoi-staging.vercel.app. **ROE-017:** parse-intent sanitize adds `exclude_ingredients` (sync with `intent-sanitize.ts`).
 

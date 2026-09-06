@@ -137,16 +137,16 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 
 - [ ] New route → add in `App.tsx` above `*` catch-all
 - [ ] New edge call → wrap in `src/lib/*.ts`
-- [ ] Scoring change → update `veda.ts` + add regression in `veda.test.ts`
+- [ ] Scoring change → update `veda.ts` + add regression in `veda.test.ts` (and `scoreWeights.test.ts` when touching J weights)
+- [ ] Dietary change → also update `supabase/functions/_shared/dietary.ts` (+ `npm run ci:twins`)
+- [ ] Intent sanitizer / transcript grounding change → also update `supabase/functions/_shared/intent-sanitize.ts` (+ `intentSanitize.test.ts` + `npm run ci:twins`)
 - [ ] Intent / pairings / AI path → read `.cursor/rules/hallucination-guard.mdc`; run `pairings.test.ts` + `npm run experimental:sim` (target ≥98% on 520-seed corpus)
-- [ ] Dietary change → also update `supabase/functions/_shared/dietary.ts`
-- [ ] Intent sanitizer / transcript grounding change → also update `supabase/functions/_shared/intent-sanitize.ts` (+ `intentSanitize.test.ts`)
 - [ ] Wellness tag change → sync `WELLNESS_TAG_SLUGS` in `veda.ts` + `parse-intent` prompt
-- [ ] Mock fixture change → sync `testing/mock-places.json` + edge fixture
+- [ ] Mock fixture change → sync `testing/mock-places.json` + edge fixture (+ `npm run ci:twins`)
 - [ ] New component → domain logic in `components/`, primitives in `components/ui/`
 - [ ] Set `document.title` in page `useEffect`
 - [ ] Toast errors via `@/hooks/use-toast` on failure paths
-- [ ] Culinary matrix change → enrich identity if needed → rebuild `src/data/culinary-index.json` via personal script (`build-culinary-index.mjs` / `enrich-culinary-identity.mjs`)
+- [ ] Culinary matrix change → enrich identity if needed → rebuild `src/data/culinary-index.json` via personal script (`build-culinary-index.mjs` / `enrich-culinary-identity.mjs`); run `npm run culinary:check-aliases`
 - [ ] Scoring / plates → Ask-fulfillment: read `.cursor/rules/ask-fulfillment.mdc`; venues that cannot fulfill the Ask must not outrank those that can
 - [ ] Triple-outcome / carrier change → `pairings.test.ts` + check CRS-003 constraints in `TODO.md`
 - [ ] Run `npm test` before committing scoring/dietary/pairings changes
@@ -157,12 +157,13 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 
 | File | Responsibility |
 |------|----------------|
-| `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script). Optional overlay via `setCulinaryLookupOverlay` when staging dynamic culinary is on. **ROE-019:** emit/consume per-dish `identity` (proteins, diet_class, cuisine_region, food_type, dish_role) — trust over tree-root protein family |
+| `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script). Optional overlay via `setCulinaryLookupOverlay` when staging dynamic culinary is on. **ROE-019:** emit/consume per-dish `identity` (proteins, diet_class, cuisine_region, food_type, dish_role) — trust over tree-root protein family. **ROE-022:** enrich coverage + `npm run culinary:check-aliases` |
+| `scoreWeights.ts` | **[ROE-022]** Named J weights (`w_F…w_G`) + `computeJ` / parity helpers — still client-hosted until ROE-024 |
 | `dishIntent.ts` | Oceany/coastal + sweet/dessert + **carrier-only / celebratory mood** helpers (CRS-003, ROE-001, ROE-003); rice-as-main (ROE-018) |
 | `vedaDishes.ts` | Dish-level scoring; `cravingSweet` includes/boosts Dessert category |
 | `dietary.ts` | DIET-001 taxonomy (sync with `_shared/dietary.ts`); **ROE-019:** `unknown` must not hard-fail non_veg when meat markers match |
+| `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters. **ROE-019:** fulfillmentScore — rank by catalog Ask fulfillment before vibe composite. **ROE-022:** scales F/P via `scoreWeights`; attaches `jComponents` |
 | `pairings.ts` | Triple outcomes. Never invent dish from intent text. Coastal + sweet coherence; **never Best/Clean/Heritage = roti/naan alone** (ROE-003). **South Indian kitchens use Indian-South bank — never Dal Tadka** (ROE-004). Desserts get no rice/naan carrier. **ROE-017:** `exclude_ingredients` hard-strip; catalog gate via `catalogGuard`. **ROE-019:** Ask-aligned picks (protein/food_type); no Chef’s selection when eligible Ask dish exists |
-| `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters. **ROE-019:** fulfillmentScore — rank by catalog Ask fulfillment before vibe composite |
 | `catalogGuard.ts` | **[ROE-017]** menu ∪ matrix membership check before plate return |
 | `intent.ts` | Intent client + 90s parse cache; RateLimitError + backoff (ROE-002); **celebratory offline dials on exhausted 429** (ROE-003); **`normalizeParsedIntent`** (ROE-008 / IP-FIX-002) |
 | `intentSanitize.ts` | Transcript grounding + celebratory/carrier + **`buildRestatedIntent`** + **`extractExcludedIngredients`** / **`EXCLUDE_ALIASES`** **(SYNC PAIR** with `_shared/intent-sanitize.ts`) — ROE-007 / ROE-008 / ROE-017 / **ROE-020** |

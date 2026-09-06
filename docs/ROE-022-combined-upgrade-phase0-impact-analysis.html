@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ROE-022 — Combined Upgrade Phase 0 + Identity Impact Analysis</title>
+  <style>
+    :root {
+      --ink: #111827; --muted: #4b5563; --line: #d1d5db; --bg: #f3f4f6; --card: #fff;
+      --head: #0f3d2e; --accent: #1d4ed8; --accent-soft: #eff6ff; --gold: #b45309;
+      --ok: #047857; --danger: #b91c1c; --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+      --font: "Segoe UI", Calibri, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font); font-size: 14.5px; line-height: 1.5; color: var(--ink); background: var(--bg); }
+    .bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 0.7rem 1.1rem; background: #0b1220; color: #e5e7eb; border-bottom: 2px solid var(--accent); }
+    .bar b { color: #fff; font-size: 0.92rem; }
+    .bar span { display: block; font-size: 0.68rem; color: #94a3b8; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.1rem; }
+    .btn { appearance: none; border: none; border-radius: 6px; padding: 0.5rem 0.9rem; font: 600 0.72rem/1 var(--font);
+      letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; background: var(--accent); color: #fff; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 1.4rem 1.1rem 3rem; }
+    .hero { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.2rem 1.3rem; margin-bottom: 1rem; }
+    .eyebrow { margin: 0 0 0.4rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+    h1 { margin: 0 0 0.5rem; font-size: clamp(1.35rem, 3vw, 1.85rem); line-height: 1.15; color: var(--head); letter-spacing: -0.02em; }
+    .lede { margin: 0 0 1rem; color: var(--muted); max-width: 50rem; }
+    .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; }
+    .meta div { background: #f8fafc; border: 1px solid var(--line); border-radius: 6px; padding: 0.5rem 0.65rem; }
+    .meta kbd { display: block; font-family: var(--font); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.12rem; }
+    .meta p { margin: 0; font-size: 0.82rem; font-weight: 600; }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.1rem 1.2rem; margin-bottom: 0.9rem; page-break-inside: avoid; }
+    h2.sec { margin: 0 0 0.7rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--head); font-size: 1.1rem; color: var(--head);
+      display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; }
+    h2.sec i { font-style: normal; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em; color: var(--accent); }
+    p, li { color: #374151; } p { margin: 0 0 0.55rem; }
+    ul, ol { margin: 0 0 0.65rem; padding-left: 1.15rem; } li { margin: 0.2rem 0; }
+    strong { color: var(--ink); }
+    code { font-family: var(--mono); font-size: 0.78em; background: #f3f4f6; padding: 0.05em 0.28em; border-radius: 3px; }
+    .call { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 0.55rem 0.7rem; margin: 0.55rem 0; font-size: 0.86rem; }
+    .call.ok { border-left-color: var(--ok); background: #ecfdf5; }
+    .call.warn { border-left-color: var(--gold); background: #fffbeb; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.76rem; margin: 0.4rem 0 0.7rem; border: 1px solid var(--line); }
+    th, td { text-align: left; padding: 0.4rem 0.45rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: var(--head); color: #f8fafc; font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+    tr:nth-child(even) td { background: #f8fafc; } tr:last-child td { border-bottom: none; }
+    .ascii { background: #0b1220; color: #d1e0ff; border-radius: 6px; padding: 0.75rem 0.85rem; overflow-x: auto;
+      font: 500 0.62rem/1.42 var(--mono); margin: 0.5rem 0 0.7rem; white-space: pre; }
+    .pill { display: inline-block; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0.1rem 0.35rem; border-radius: 3px; white-space: nowrap; }
+    .pill.ok { background: #d1fae5; color: var(--ok); }
+    .pill.warn { background: #fef3c7; color: var(--gold); }
+    footer { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--line); font-size: 0.74rem; color: var(--muted); }
+    @media print {
+      @page { size: A4; margin: 10mm 11mm; }
+      body { background: #fff; font-size: 9.1pt; }
+      .bar, .no-print { display: none !important; }
+      .wrap { max-width: none; padding: 0; }
+      section, .hero { break-inside: avoid; border-color: #ccc; }
+      th, .ascii, .call, .pill { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .ascii { font-size: 6.2pt; } table { font-size: 7.5pt; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bar no-print">
+    <div>
+      <b>Rasaoi Outcome Engine</b>
+      <span>ROE-022 Impact Analysis · Phase 0 + Identity</span>
+    </div>
+    <button type="button" class="btn" id="printBtn">Print / Save as PDF</button>
+  </div>
+
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Impact analysis · Story + prioritized tasks</p>
+      <h1>ROE-022 — Combined upgrade Phase 0 + identity</h1>
+      <p class="lede">
+        Epic documents the full combined audit+upgrade and dish-matrix backlog.
+        This branch implements Phase 0 safety net plus identity enrich and venue alias parity only.
+        Phases 1–5 become ROE-023+.
+      </p>
+      <div class="meta">
+        <div><kbd>Ticket</kbd><p>ROE-022</p></div>
+        <div><kbd>Parent</kbd><p>origin/staging</p></div>
+        <div><kbd>Branch</kbd><p>feature/ROE-022-phase0-identity-safety</p></div>
+        <div><kbd>Scope</kbd><p>Phase 0 + Do now</p></div>
+        <div><kbd>Next free</kbd><p>ROE-023 (after ship)</p></div>
+        <div><kbd>Staging</kbd><p>v0-rasaoi-staging.vercel.app</p></div>
+      </div>
+    </header>
+
+    <section>
+      <h2 class="sec"><i>00</i> Story</h2>
+      <p>
+        Cognition still lives in the browser. Sync-pair twins can drift. Sparse dish identity makes vague and protein Asks
+        collapse toward the same staples. Combined proposal: move scoring to Edge with named <code>J(r)</code>.
+        Dish-matrix advice: hard gates + soft tags — not a 10-table join chain — and <strong>do now</strong> raise identity + alias parity.
+      </p>
+      <div class="call ok">
+        ROE-022 ships the safety net every later phase needs: twin CI, edge rate limits, named client weights + parity,
+        denser identity, alias checks. No dish invention. Lab promote gate stays.
+      </div>
+    </section>
+
+    <section>
+      <h2 class="sec"><i>01</i> Problem</h2>
+      <table>
+        <thead><tr><th>Layer</th><th>What hurts</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>Architecture</td><td>SPA owns veda/pairings; payload + jank</td><td>Combined §2–5</td></tr>
+          <tr><td>Maintainability</td><td>No CI drift gate on sync pairs</td><td>Backlog #1</td></tr>
+          <tr><td>Abuse / cost</td><td>Inconsistent edge rate limits</td><td>Backlog #2</td></tr>
+          <tr><td>Explainability</td><td>Weights not named as J components</td><td>Backlog #3</td></tr>
+          <tr><td>Catalog signal</td><td>Thin identity; venue key mismatches</td><td>Dish-matrix Do now</td></tr>
+          <tr><td>Vague Asks</td><td>Soft dials + overlapping menus → sameness</td><td>Dish-matrix §2–3</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2 class="sec"><i>02</i> Acceptance (T1–T6)</h2>
+      <ul>
+        <li><strong>T1</strong> Twin CI for dietary / sanitize / mock-places; quality on PRs to <code>staging</code></li>
+        <li><strong>T2</strong> Shared edge rate-limit helper; 429 shape; no secrets</li>
+        <li><strong>T3</strong> Named <code>w_F…w_G</code>; Vitest parity; still client scoring</li>
+        <li><strong>T4</strong> Identity enrich + rebuild <code>culinary-index.json</code>; no invented menus</li>
+        <li><strong>T5</strong> Matrix↔restaurant alias parity report; Lab promote for misses</li>
+        <li><strong>T6</strong> Docs sync; next free ROE-023; CI harden</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="sec"><i>03</i> Story + task commits</h2>
+      <div class="ascii">Story branch: feature/ROE-022-phase0-identity-safety  (from origin/staging)
+
+  [ROE-022][T1] add twin CI drift gate for dietary sanitize fixtures
+  [ROE-022][T2] add shared edge rate limits for invoke abuse control
+  [ROE-022][T3] name J score weights and add client parity fixtures
+  [ROE-022][T4] raise culinary identity coverage and rebuild index
+  [ROE-022][T5] add matrix restaurant alias parity check
+  [ROE-022][T6] sync docs and harden staging PR CI gates
+
+Final push → Mozilla soak → approve → PR → merge staging</div>
+      <table>
+        <thead><tr><th>Pri</th><th>Task</th><th>Commit</th><th>Done looks like</th></tr></thead>
+        <tbody>
+          <tr><td>P1</td><td>T1 Twin CI</td><td><code>[ROE-022][T1]</code></td><td>PR red on unpaired twin edit</td></tr>
+          <tr><td>P1</td><td>T2 Rate limits</td><td><code>[ROE-022][T2]</code></td><td>Burst → 429 + retry_after_ms</td></tr>
+          <tr><td>P1</td><td>T3 Named J</td><td><code>[ROE-022][T3]</code></td><td>Fixtures assert weights</td></tr>
+          <tr><td>P1</td><td>T4 Identity</td><td><code>[ROE-022][T4]</code></td><td>Coverage up; index rebuilt</td></tr>
+          <tr><td>P1</td><td>T5 Alias</td><td><code>[ROE-022][T5]</code></td><td>Matched / unmatched report</td></tr>
+          <tr><td>P1</td><td>T6 Docs/CI</td><td><code>[ROE-022][T6]</code></td><td>ROE-023 next; staging PR gates</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2 class="sec"><i>04</i> Epic map → future ROEs</h2>
+      <table>
+        <thead><tr><th>#</th><th>Work item</th><th>Phase</th><th>Now?</th><th>Ticket</th></tr></thead>
+        <tbody>
+          <tr><td>1–3 + Do now</td><td>Twin CI, rate limits, named J, identity, aliases</td><td>0</td><td><span class="pill ok">Yes</span></td><td>ROE-022 T1–T6</td></tr>
+          <tr><td>4–5</td><td>Shared scoring package + live culinary cache</td><td>1</td><td><span class="pill warn">No</span></td><td>ROE-023</td></tr>
+          <tr><td>6 (+8)</td><td>score-reading dual-run (+ Apify review queue)</td><td>2</td><td><span class="pill warn">No</span></td><td>ROE-024</td></tr>
+          <tr><td>7</td><td>Pareto plates + softmax alts on server</td><td>3</td><td><span class="pill warn">No</span></td><td>ROE-025</td></tr>
+          <tr><td>9</td><td>Model-router + intent cache (prod flag)</td><td>4</td><td><span class="pill warn">No</span></td><td>ROE-026</td></tr>
+          <tr><td>10–12</td><td>Telemetry loop, GL soft, server twin / Query</td><td>5</td><td><span class="pill warn">No</span></td><td>ROE-027+</td></tr>
+        </tbody>
+      </table>
+      <div class="call warn">
+        Explicit non-goals: 10-table join pipeline; gender hard-gates; clinical therapeutic ranking; auto-promote Apify → menu_items.
+      </div>
+    </section>
+
+    <section>
+      <h2 class="sec"><i>05</i> Test / deploy / guard</h2>
+      <p><strong>Gates:</strong> <code>npm test</code>, <code>npm run lint</code>, twin check script, Mozilla soak (vague Ask, meat not murgi, bare no meat, named-dish miss).</p>
+      <p><strong>Deploy:</strong> Merge to staging only; redeploy edge if T2 touches Deno; no develop/prod until ROE-016 unlock.</p>
+      <p><strong>Guard:</strong> Catalog plates only; sanitize after LLM; Ask-fulfillment first; Lab gate; no clinical claims.</p>
+    </section>
+
+    <footer>
+      Rasaoi Outcome Engine · ROE-022 Impact Analysis · 6 Sep 2026 ·
+      Sources: <code>docs/rasaoi-combined-audit-upgrade-proposal.pdf</code>,
+      <code>docs/rasaoi-dish-matrix-recommendations.pdf</code>,
+      markdown twin <code>docs/ROE-022-combined-upgrade-phase0-impact-analysis.md</code>.
+      <span class="no-print"> Print → Save as PDF (A4).</span>
+    </footer>
+  </main>
+  <script>
+    document.getElementById("printBtn").addEventListener("click", function () { window.print(); });
+  </script>
+</body>
+</html>
