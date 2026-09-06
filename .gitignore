@@ -33,3 +33,17 @@ dist-ssr
 scripts/experimental/fixtures/apify-actor-input.local.json
 scripts/experimental/apify-rasaoi-menu-sync/node_modules/
 scripts/experimental/apify-rasaoi-menu-sync/storage/
+
+# Local printable / research dumps — keep ROE-*-impact-analysis.md + docs/experimental/ tracked
+docs/rasaoi-architecture-*.html
+docs/rasaoi-architecture-*.pdf
+docs/rasaoi-combined-*.html
+docs/rasaoi-combined-*.pdf
+docs/rasaoi-design-*.html
+docs/rasaoi-design-*.pdf
+docs/rasaoi-project-overview-handoff.html
+docs/rasaoi_architecture_audit_report_v2.pdf
+folsom-edh-indian-menu-catalog.html
+indian_culinary_matrix.json
+local_indian_dishes.csv
+.cursor/issue-pdf-pages/
