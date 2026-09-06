@@ -27,8 +27,8 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 | 024 | Choice dim **S** (spice/mild) soft in Ask scoring | Pushed |
 | 025 | Shared scoring package + culinary cache facade | Shipped PR [#36](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/36) |
 | 026 | `score-reading` dual-run (Edge hosts J) | Shipped PR [#37](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/37) |
-| 027 | Pareto / softmax plates | **Shipped** PR [#38](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/38) |
-| 028 | Intent cache | Queued |
+| 027 | Pareto / softmax plates | Shipped PR [#38](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/38) |
+| 028 | Intent cache | **Shipped** (this branch) |
 | 029 | Telemetry / GL soft | Queued |
 
 ---
@@ -60,6 +60,12 @@ Fat/garnish-only token overlap no longer crowns ~100% heroes (Butter Dosai ≠ B
 - Softmax + cuisine diversify for MiniCard alternates
 - Pareto front on Ask-align × spice for Ask-aligned plate picks
 - Branch: `feature/ROE-027-pareto-softmax-plates` · PR #38
+
+### ROE-028 — Intent cache (2026-09-07)
+- Semantic-lite Jaccard ≥ 0.92 near-dup Ask cache; 15 min TTL; LRU 40
+- Always `normalizeParsedIntent` on hit (re-merge excludes)
+- `VITE_INTENT_SEMANTIC_CACHE` (default on); storage `rasaoi.parse_cache.v2`
+- Branch: `feature/ROE-028-intent-cache`
 
 ---
 

@@ -9,6 +9,17 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-028] Intent semantic-lite cache — implemented (feature)
+
+Impact: `docs/ROE-028-intent-cache-impact-analysis.md`  
+Story: `docs/ROE-upgrade-story.md`
+
+- [x] Jaccard ≥ 0.92 near-dup + 15m TTL + LRU
+- [x] Re-sanitize on cache hit
+- [ ] Staging soak / merge
+
+---
+
 ## [ROE-027] Pareto + softmax plates — implemented (feature)
 
 Impact: `docs/ROE-027-pareto-softmax-plates-impact-analysis.md`  

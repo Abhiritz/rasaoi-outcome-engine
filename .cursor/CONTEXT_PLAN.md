@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-027-impl
+last_verified_commit: pending-ROE-028-impl
 last_verified_date: 2026-09-07
-branch: feature/ROE-027-pareto-softmax-plates
+branch: feature/ROE-028-intent-cache
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-027 softmax alts + Pareto plate candidates. Story docs/ROE-upgrade-story.md.
-  Next free: ROE-028 intent cache.
+  ROE-028 intent semantic-lite cache (Jaccard ≥0.92, 15m TTL, re-sanitize on hit).
+  Story docs/ROE-upgrade-story.md. Next free: ROE-029 telemetry/GL.
 ```
 
 ---
@@ -288,7 +288,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact → approve → branch → implement + tests → sync plan/TODO/CONTEXT/CURSOR + **`docs/ROE-upgrade-story.md`** → PR/board. Next free serial: **ROE-028**.
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact → approve → branch → implement + tests → sync plan/TODO/CONTEXT/CURSOR + **`docs/ROE-upgrade-story.md`** → PR/board. Next free serial: **ROE-029**.
 
 | Trigger | Action |
 |---------|--------|

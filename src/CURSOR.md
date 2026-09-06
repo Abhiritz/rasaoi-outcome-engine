@@ -169,7 +169,8 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | `pairings.ts` | Triple outcomes. Never invent dish from intent text. Coastal + sweet coherence; **never Best/Clean/Heritage = roti/naan alone** (ROE-003). **South Indian kitchens use Indian-South bank — never Dal Tadka** (ROE-004). Desserts get no rice/naan carrier. **ROE-017:** `exclude_ingredients` hard-strip; catalog gate via `catalogGuard`. **ROE-019:** Ask-aligned picks (protein/food_type); no Chef’s selection when eligible Ask dish exists |
 | `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters. **ROE-019:** fulfillmentScore. **ROE-024/025:** spice S via `scaleByWeight`; `jComponents` snapshot |
 | `catalogGuard.ts` | **[ROE-017]** menu ∪ matrix membership check before plate return |
-| `intent.ts` | Intent client + 90s parse cache; RateLimitError + backoff (ROE-002); **celebratory offline dials on exhausted 429** (ROE-003); **`normalizeParsedIntent`** (ROE-008 / IP-FIX-002) |
+| `intent.ts` | Intent client + parse cache; RateLimitError + backoff (ROE-002); **celebratory offline dials on exhausted 429** (ROE-003); **`normalizeParsedIntent`** (ROE-008 / IP-FIX-002); **ROE-028** semantic-lite via `intentCache` |
+| `intentCache.ts` | **[ROE-028]** Exact + Jaccard ≥0.92 Ask cache (15m TTL); re-sanitize on hit |
 | `intentSanitize.ts` | Transcript grounding + celebratory/carrier + **`buildRestatedIntent`** + **`extractExcludedIngredients`** / **`EXCLUDE_ALIASES`** **(SYNC PAIR** with `_shared/intent-sanitize.ts`) — ROE-007 / ROE-008 / ROE-017 / **ROE-020** |
 | `google-places.ts` | Places search with mock interceptor |
 | `glycemic.ts` | Glycemic estimates + localStorage cache (matrix heuristics before edge, N≤8). Staging: optional experimental lens bind via `glycemicLensAdapter` |
