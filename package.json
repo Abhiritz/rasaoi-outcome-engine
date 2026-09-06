@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "culinary:build-index": "node scripts/personal/build-culinary-index.mjs",
     "culinary:enrich-identity": "node scripts/personal/enrich-culinary-identity.mjs",
+    "culinary:check-aliases": "node scripts/personal/check-matrix-venue-aliases.mjs",
     "soak:exclusions": "node scripts/experimental/soak-exclusions.mjs",
     "experimental:sim": "node scripts/experimental/adversarial-simulator.mjs",
     "experimental:expand-corpus": "node scripts/experimental/expand-chaotic-corpus.mjs",
