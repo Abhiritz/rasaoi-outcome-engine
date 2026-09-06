@@ -167,6 +167,15 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const rl = checkRateLimit(clientKeyFromRequest(req, "ingest-menu"), {
+    limit: envInt("RATE_LIMIT_INGEST_MENU", 10),
+    windowMs: envInt("RATE_LIMIT_WINDOW_MS", 60_000),
+  });
+  if (!rl.allowed) {
+    return rateLimitJsonResponse(corsHeaders, rl.retry_after_ms);
+  }
+
   try {
     const { restaurant_id, restaurant_name, source_url, model } = await req.json();
     if (!restaurant_id || !restaurant_name || !source_url) {
