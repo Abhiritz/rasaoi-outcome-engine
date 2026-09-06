@@ -13,12 +13,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  * Avoid `gemini-flash-latest` — shared free-tier quota / 503s; prefer a concrete GA id
  * that ListModels returns for the active Studio key (verified 2026-09-06: gemini-3.5-flash).
  */
-export const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash";
+export const DEFAULT_GEMINI_MODEL = "gemini-2.0-flash";
 
-/** ROE-032: fallbacks when primary model hits free-tier 429 / quota. */
+/** ROE-032/033: fallbacks when primary hits quota / empty tool / missing model. */
 export const GEMINI_MODEL_FALLBACKS = [
   "gemini-2.5-flash",
-  "gemini-2.0-flash",
+  "gemini-3.5-flash",
+  "gemini-1.5-flash",
   "gemini-flash-latest",
 ] as const;
 
@@ -27,11 +28,22 @@ function isGeminiRateLimitError(e: unknown): boolean {
   return /429|rate limit|quota|resource.?exhausted|too many requests/i.test(msg);
 }
 
+/** Retry-worthy: quota, overload, missing model, empty tool reply (common on Flash). */
+function isGeminiRetryableError(e: unknown): boolean {
+  const msg = e instanceof Error ? e.message : String(e);
+  return (
+    isGeminiRateLimitError(e) ||
+    /503|502|overloaded|unavailable|not found|is not found|not supported|no structured tool|empty tool|Failed to fetch|fetch failed/i.test(
+      msg,
+    )
+  );
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-/** Try primary then fallbacks; brief pause before each retry on rate-limit. */
+/** Try primary then fallbacks; brief pause before each retry on retryable errors. */
 async function withGeminiModelFallback<T>(
   primary: string,
   run: (model: string) => Promise<T>,
@@ -41,12 +53,14 @@ async function withGeminiModelFallback<T>(
   for (let i = 0; i < chain.length; i++) {
     const model = chain[i]!;
     try {
-      if (i > 0) await sleep(1200 * i);
+      if (i > 0) await sleep(900 * i);
       return await run(model);
     } catch (e) {
       lastErr = e;
-      if (!isGeminiRateLimitError(e) || i === chain.length - 1) throw e;
-      console.warn(`Gemini ${model} rate-limited; trying next fallback`);
+      if (!isGeminiRetryableError(e) || i === chain.length - 1) throw e;
+      console.warn(
+        `Gemini ${model} failed (${e instanceof Error ? e.message : e}); trying next fallback`,
+      );
     }
   }
   throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));

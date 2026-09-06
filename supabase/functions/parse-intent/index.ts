@@ -540,6 +540,7 @@ Deno.serve(async (req) => {
             error: "Veda is busy (AI rate limit). Wait a moment, then try again.",
             code: "rate_limit",
             retry_after_ms: 8000,
+            detail: msg.slice(0, 240),
           }),
           {
             status: 429,
@@ -548,10 +549,17 @@ Deno.serve(async (req) => {
         );
       }
       console.error("parse-intent Gemini error:", msg);
-      return new Response(JSON.stringify({ error: "Veda could not interpret that." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Veda could not interpret that.",
+          code: "parse_failed",
+          detail: msg.slice(0, 240),
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const sanitized = validateAndSanitize(parsed, trimmedTranscript);
