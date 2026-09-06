@@ -4,6 +4,8 @@ import {
   isCelebratoryMoodIntent,
   isCoastalDishIntent,
   isDessertDish,
+  isHeavyFriedDish,
+  isLightPrepDish,
   isNamedDishAsk,
   isRiceAsMainIntent,
   isSweetDishIntent,
@@ -105,5 +107,15 @@ describe("dishIntent (CRS-003a + ROE-001 + ROE-003)", () => {
     expect(spiceAlignDelta("Vijayawada Chicken Dosa", "", "mild")).toBeLessThan(0);
     expect(spiceAlignDelta("Butter Chicken", "", "mild")).toBeGreaterThan(0);
     expect(spiceAlignDelta("Chicken 65", "", "mild")).toBeLessThan(0);
+  });
+
+  it("ROE-031: heavy fry markers include pakora / 65 / fry", () => {
+    expect(isHeavyFriedDish("Chicken Pakora")).toBe(true);
+    expect(isHeavyFriedDish("Chicken 65")).toBe(true);
+    expect(isHeavyFriedDish("Fish Fry")).toBe(true);
+    expect(isHeavyFriedDish("Amritsari Fish")).toBe(true);
+    expect(isHeavyFriedDish("Chicken Tikka")).toBe(false);
+    expect(isLightPrepDish("Chicken Tikka")).toBe(true);
+    expect(isLightPrepDish("Chicken Pakora")).toBe(false);
   });
 });

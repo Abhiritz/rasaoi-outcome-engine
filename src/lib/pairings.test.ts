@@ -405,4 +405,25 @@ describe("ROE-004 South Indian / Mylapore plate integrity", () => {
     // Sanity: not forced into dosa-only South bank
     expect(picks.every((p) => /dosa|idli/i.test(p.dish))).toBe(false);
   });
+
+  it("ROE-031: low_oil Best prefers tikka over pakora when both on menu", () => {
+    const r = mockRestaurant({
+      id: "low-oil-chicken",
+      name: "Curries & Biryanis",
+      cuisine: "Indian",
+      signature_dish: "Chicken Pakora",
+      menu_items: [
+        { name: "Chicken Pakora", description: "deep fried fritters", diet_class: "non_veg" },
+        { name: "Chicken Tikka", description: "clay oven grilled", diet_class: "non_veg" },
+        { name: "Butter Chicken", description: "cream tomato", diet_class: "non_veg" },
+      ],
+    });
+    const picks = buildTripleOutcome(r, dials, {
+      dish: "chicken",
+      wellness_tags: ["low_oil"],
+      ask_text: "Chicken, not oily",
+    });
+    expect(picks[0].dish.toLowerCase()).toMatch(/tikka/);
+    expect(picks[0].dish.toLowerCase()).not.toMatch(/pakora|65|fry/);
+  });
 });

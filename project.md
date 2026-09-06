@@ -176,9 +176,9 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 | **ROE-009** (FUL-001) contacts | Merged PR #21; ops + QA | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
 | ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
 
-Next free serial: **ROE-031**.
+Next free serial: **ROE-032**.
 
-Future: staging soak; then ROE-031+ as needed.  
+Future: staging soak ROE-031 low-oil; then ROE-032+.  
 Story: `docs/ROE-upgrade-story.md`.
 
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Matrix Rev 1.2 flavor→S. Ask-fulfillment: `.cursor/rules/ask-fulfillment.mdc`.

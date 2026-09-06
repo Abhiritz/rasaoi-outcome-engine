@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-029-impl
+last_verified_commit: pending-ROE-031-impl
 last_verified_date: 2026-09-07
-branch: feature/ROE-029-telemetry-gl-soft
+branch: feature/ROE-031-low-oil-ask-plates
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-029 GL soft G in J when lens on + score telemetry ring.
-  Rev 1.2 epic 023–029 feature-complete. Next free: ROE-030. Story: docs/ROE-upgrade-story.md.
+  ROE-031 low-oil Ask: fry markers blocked on Best; not oily → low_oil parse;
+  honesty cap when only fried chicken remains. Next free: ROE-032.
 ```
 
 ---

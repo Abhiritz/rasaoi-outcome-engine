@@ -9,6 +9,8 @@ import {
   expandDishTokens,
   isCarrierOnlyDish,
   isDessertDish,
+  isHeavyFriedDish,
+  isLightPrepDish,
   isNamedDishAsk,
   isRiceAsMainIntent,
   isSweetDishIntent,
@@ -156,6 +158,15 @@ export interface AskFulfillmentOpts {
   /** ROE-024: restated Ask / transcript for soft choice dims (spice). */
   ask_text?: string;
   spice?: SpicePreference;
+  /** ROE-031: wellness slugs (low_oil / light) steer fry demotion. */
+  wellness_tags?: string[];
+}
+
+function wantsLowOilAsk(opts: AskFulfillmentOpts): boolean {
+  const tags = opts.wellness_tags ?? [];
+  if (tags.includes("low_oil") || tags.includes("light")) return true;
+  const blob = `${opts.dish ?? ""} ${opts.ask_text ?? ""}`;
+  return /\b(low[- ]?oil|not oily|non[- ]?oily|minimal oil|less oil|no oil)\b/i.test(blob);
 }
 
 /** Score how well one dish line fulfills the Ask (0 = not aligned). */
@@ -169,6 +180,13 @@ export function askAlignedDishScore(
   if (dishHitsExclusion(name, desc, opts.exclusions)) return 0;
 
   const id = resolveDishIdentity(name, desc, restaurantName);
+
+  // ROE-031: fry / fritter never fulfills a low-oil / light Ask
+  const lowOil = wantsLowOilAsk(opts);
+  if (lowOil && (isHeavyFriedDish(name, desc) || id.food_type === "fry")) {
+    return 0;
+  }
+
   const preferred = preferredProteinsFromAsk(opts.dish, opts.exclusions);
   const sweet = isSweetDishIntent(opts.dish);
   const named = isNamedDishAsk(opts.dish);
@@ -232,6 +250,13 @@ export function askAlignedDishScore(
     if (prots.some((p) => (MEAT_ASK_PROTEINS as readonly string[]).includes(p))) score += 30;
   }
 
+  // ROE-031: soft prefer grill / tikka / tandoori under low-oil
+  if (lowOil && score > 0 && isLightPrepDish(name, desc)) {
+    score += 14;
+  } else if (lowOil && score > 0 && /\b(butter|malai|cream|korma|makhani)\b/i.test(`${name} ${desc}`)) {
+    score -= 10;
+  }
+
   return score;
 }
 
@@ -247,7 +272,8 @@ export function venueAskFulfillment(
     isSweetDishIntent(opts.dish) ||
     isMeatCategoryAsk(opts.dish) ||
     (opts.exclusions?.length ?? 0) > 0 ||
-    Boolean(preferredProteinsFromAsk(opts.dish, opts.exclusions)?.length);
+    Boolean(preferredProteinsFromAsk(opts.dish, opts.exclusions)?.length) ||
+    wantsLowOilAsk(opts);
 
   if (!needs) return { level: "n/a", alignedCount: 0, delta: 0 };
 

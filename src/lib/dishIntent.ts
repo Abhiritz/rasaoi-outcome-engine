@@ -63,8 +63,13 @@ const SWEET_TOKEN = /^(sweet|sweets|dessert|desserts|mithai|treat)$/;
 export const DESSERT_NAME =
   /\b(gulab\s*jamun|rasmalai|rasgulla|kheer|kulfi|falooda|halwa|ladoo|laddu|jalebi|barfi|burfi|payasam|shrikhand|basundi|phirni|modak|mysore\s*pak|ice\s*cream|gelato|sorbet|cheesecake|tiramisu|brownie|pudding|cake|pastry|cookie|sundae|parfait|custard|mithai|dessert|mochi)\b/i;
 
+/** ROE-031: deep-fry / fritter prep — blocked for Best under low_oil / light Asks. */
 const HEAVY_FRIED =
-  /\b(samosa|pakora|bhaji|bhatura|poori|puri|deep[- ]?fried|fried rice|french fries|onion ring)\b/i;
+  /\b(samosa|pakora|bhaji|bhatura|poori|puri|chicken\s*65|\b65\b|deep[- ]?fry(?:ed)?|fry|fried|fried rice|french fries|onion ring|fish\s*fry|amritsari)\b/i;
+
+/** Grill / clay-oven / light dry heat — preferred under low_oil. */
+const LIGHT_PREP =
+  /\b(tandoori|tikka(?!\s*masala)|grill(?:ed)?|kebab|seekh|steam(?:ed)?|bak(?:e|ed)|roast(?:ed)?|saute|sauté|tawa|char(?:red)?)\b/i;
 
 const LIGHT_SWEET =
   /\b(fruit|rasmalai|kulfi|sorbet|yogurt|shrikhand|phirni|custard|mochi)\b/i;
@@ -140,6 +145,13 @@ export function isLightSweetDish(name: string, desc = ""): boolean {
 
 export function isHeavyFriedDish(name: string, desc = ""): boolean {
   return HEAVY_FRIED.test(`${name} ${desc}`);
+}
+
+/** ROE-031: lighter prep signals for low-oil Ask preference (catalog names only). */
+export function isLightPrepDish(name: string, desc = ""): boolean {
+  const blob = `${name} ${desc}`;
+  if (isHeavyFriedDish(name, desc)) return false;
+  return LIGHT_PREP.test(blob);
 }
 
 export function isStarchAccompaniment(name: string): boolean {

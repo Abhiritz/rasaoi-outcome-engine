@@ -53,8 +53,8 @@ WELLNESS & DIETARY CONCEPT EXTRACTION (CRITICAL):
   - "raw" — uncooked, raw vegetables, raw preparations
   - "fresh" — fresh, crisp, salad-forward, not stale or heavy
   - "gut_friendly" — gut-friendly, gut friendly, probiotic, fermented, digestive, microbiome
-  - "light" — light meal, low-oil, low oil, not heavy, lightly cooked
-  - "low_oil" — explicit low-oil / minimal oil requests
+  - "light" — light meal, not heavy, lightly cooked
+  - "low_oil" — explicit low-oil / minimal oil / "not oily" / "non oily" / "no oil"
   - "probiotic" — probiotic, fermented foods (kimchi, kanji, lassi, idli, dhokla, etc.)
 - These are NOT cuisines and must NEVER be placed in filters.dish or filters.cuisine.
 - When wellness modifiers appear, bump purity toward 78–92 (clean, restorative intent).
@@ -240,7 +240,10 @@ const TRANSCRIPT_WELLNESS_PATTERNS: { tag: WellnessTag; pattern: RegExp }[] = [
   { tag: "probiotic", pattern: /\bprobiotic\b|\bfermented\b|kanji\b|kimchi\b/i },
   // “light” without auto-including low-oil (low_oil has its own pattern)
   { tag: "light", pattern: /\blight\b|not heavy|lightly cooked/i },
-  { tag: "low_oil", pattern: /low[- ]?oil|minimal oil|less oil/i },
+  {
+    tag: "low_oil",
+    pattern: /low[- ]?oil|minimal oil|less oil|not oily|non[- ]?oily|\bno oil\b/i,
+  },
 ];
 
 const CULTURE_TAG_PATTERNS: { tag: string; cuisine?: string; pattern: RegExp }[] = [
@@ -469,11 +472,6 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
     obj.confidence === "high" || obj.confidence === "medium" || obj.confidence === "low"
       ? obj.confidence
       : "medium";
-
-  const modelRestated =
-    typeof obj.restated_intent === "string" && obj.restated_intent.trim()
-      ? obj.restated_intent.trim()
-      : undefined;
 
   // [ROE-008] (IP-FIX-002): priority segment assembly (dietary first; ≤60)
   const restated = buildRestatedIntent({

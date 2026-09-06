@@ -4,7 +4,7 @@ Living chronicle for the combined audit+upgrade epic (matrix Rev 1.2 + phased ro
 Update this file **when each ROE ticket ships** (commit + PR). Impact details stay in `docs/ROE-NNN-*-impact-analysis.md`.
 
 **Staging:** https://v0-rasaoi-staging.vercel.app  
-**Staging merge:** ROE-023…029 landed via [PR #40](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/40) (`3981748`, 2026-09-06).  
+**Staging merge:** ROE-023…030 on staging; **ROE-031** low-oil plates in flight.  
 **Next free serial:** see `project.md` / `.lovable/plan.md`
 
 ---
@@ -32,7 +32,8 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 | 027 | Pareto / softmax plates | Merged staging PR [#38](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/38) |
 | 028 | Intent cache | Merged staging PR [#39](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/39) |
 | 029 | Telemetry / GL soft | **Merged staging** PR [#40](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/40) |
-| 030 | Salvage 021+022 clean onto staging | **This branch** |
+| 030 | Salvage 021+022 clean onto staging | **Merged staging** PR [#41](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/41) |
+| 031 | Low-oil Ask — no fry Best (pakora/65) | **This branch** |
 
 **Rev 1.2 math epic queue (023–029) complete** on feature branches / PRs. Staging merges + soak remain.
 
