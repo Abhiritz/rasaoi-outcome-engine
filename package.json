@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "ci:twins": "node scripts/ci/check-sync-twins.mjs",
     "culinary:build-index": "node scripts/personal/build-culinary-index.mjs",
     "culinary:enrich-identity": "node scripts/personal/enrich-culinary-identity.mjs",
     "soak:exclusions": "node scripts/experimental/soak-exclusions.mjs",

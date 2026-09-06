@@ -9,6 +9,17 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-025] Shared scoring package + culinary cache — implemented (feature)
+
+Impact: `docs/ROE-025-shared-scoring-live-cache-impact-analysis.md`
+
+- [x] `scoreWeights` with **S** + Edge twin + `ci:twins`
+- [x] `veda` `scaleByWeight` for F/P/S + `jComponents`
+- [x] `culinaryCache` facade (static + experimental overlay)
+- [ ] Staging PR / merge; Edge `score-reading` → ROE-026
+
+---
+
 ## [ROE-020] Exclusion aliases + Ask-align + auto soak — implemented
 
 Impact: `docs/ROE-020-exclusion-aliases-auto-soak-impact-analysis.md`

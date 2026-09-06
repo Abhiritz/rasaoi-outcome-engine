@@ -252,6 +252,37 @@ describe("scoreRestaurants strict dietary gatekeeper (DIE-001)", () => {
   });
 });
 
+describe("scoreRestaurants J components (ROE-025)", () => {
+  it("exposes jComponents including S when spice Ask is set", () => {
+    const kitchen = mockRestaurant({
+      id: "spice-j",
+      name: "Spice Test Kitchen",
+      cuisine: "Indian",
+      signature_dish: "Butter Chicken",
+      menu_items: [
+        { name: "Butter Chicken", description: "mild creamy" },
+        { name: "Chicken 65", description: "spicy fry" },
+      ],
+    });
+
+    const scored = scoreRestaurants(
+      [kitchen],
+      baseDials,
+      [],
+      undefined,
+      "chicken",
+      "Indian",
+      undefined,
+      undefined,
+      undefined,
+      "chicken, non spicy",
+    );
+    expect(scored[0].jComponents).toBeDefined();
+    expect(scored[0].jComponents!.S).toBeGreaterThan(0.5);
+    expect(scored[0].inferenceTags.some((t) => t.includes("Milder"))).toBe(true);
+  });
+});
+
 describe("scoreRestaurants culinary matrix signals", () => {
   it("tags matrix-covered venue and boosts intent dish via matrix when menu is thin", () => {
     const bawarchi = mockRestaurant({

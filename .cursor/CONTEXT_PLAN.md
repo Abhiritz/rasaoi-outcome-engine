@@ -4,14 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-024-impl
+last_verified_commit: pending-ROE-025-impl
 last_verified_date: 2026-09-07
-branch: feature/ROE-024-choice-dimensions-spice
+branch: feature/ROE-025-shared-scoring-cache
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-024 choice dimensions: soft spice preference S in Ask/score/plates (mild/non-spicy).
-  Matrix recs Rev 1.2 maps table-chain flavor → J w_S·S. Next free: ROE-025 shared scoring+cache.
-  ROE-023 named-dish match on prior tip of this branch.
+  ROE-025 shared scoreWeights (+S) twin + culinaryCache facade; veda jComponents.
+  ROE-024 spice S soft axis; ROE-023 named-dish F(). Next free: ROE-026 score-reading.
 ```
 
 ---
@@ -170,7 +169,7 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 | `ingest-menu` | `supabase/functions/ingest-menu/index.ts` | Firecrawl scrape → Gemini parse | `GEMINI_API_KEY`, `FIRECRAWL_API_KEY` (optional) |
 | `commit-dishes` | `supabase/functions/commit-dishes/index.ts` | Insert dishes + rebuild `menu_items` | Auto: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` |
 
-**Shared:** `supabase/functions/_shared/ai-client.ts`, `supabase/functions/_shared/dietary.ts`, `supabase/functions/_shared/intent-sanitize.ts`, experimental `supabase/functions/_shared/model-router.ts` (unused by prod deploy until promotion).
+**Shared:** `supabase/functions/_shared/ai-client.ts`, `supabase/functions/_shared/dietary.ts`, `supabase/functions/_shared/intent-sanitize.ts`, `supabase/functions/_shared/score-weights.ts` (ROE-025 J incl. S; Edge score-reading ROE-026), experimental `supabase/functions/_shared/model-router.ts` (unused by prod deploy until promotion).
 
 **Deploy:** `npm run supabase:deploy:all` (prod 5). Staging also: `npm run supabase:deploy:experimental` (+ `experimental-apify-webhook`).
 
@@ -185,6 +184,9 @@ All JWT-disabled per `supabase/config.toml`. Invoked at `{SUPABASE_URL}/function
 2b. **`intentSanitize` sync pair** — transcript cuisine / dietary / lens / sweet helpers:
    - `src/lib/intentSanitize.ts`
    - `supabase/functions/_shared/intent-sanitize.ts`
+2c. **`scoreWeights` sync pair** — named J (F/D/P/B/W/**S**/G); gate: `npm run ci:twins`:
+   - `src/lib/scoreWeights.ts`
+   - `supabase/functions/_shared/score-weights.ts`
 3. **Mock fixtures sync pair:**
    - `src/testing/mock-places.json`
    - `supabase/functions/places-search/fixtures/mock-places.json`
@@ -285,7 +287,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` (or `origin/staging` for soak follow-ons) → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-025**.
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact `docs/ROE-NNN-*-impact-analysis.md` → approve → branch from `origin/develop` (or `origin/staging` for soak follow-ons) → implement + tests → sync plan/TODO/CONTEXT/CURSOR → PR/board → ops/QA. Naming in `project.md`. Next free serial: **ROE-026**.
 
 | Trigger | Action |
 |---------|--------|

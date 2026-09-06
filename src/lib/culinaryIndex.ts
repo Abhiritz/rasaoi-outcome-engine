@@ -164,6 +164,11 @@ export function getCulinaryIndex(): CulinaryIndex {
   return index;
 }
 
+/** Build metadata for cache status / score-reading prep (ROE-025). */
+export function getCulinaryIndexMeta(): { version: number; generatedAt: string } {
+  return { version: index.version, generatedAt: index.generatedAt };
+}
+
 /** Light / heavy classification from dish_type for scoring. */
 export function isLightDishType(dishType?: string | null): boolean {
   if (!dishType) return false;

@@ -158,11 +158,13 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 | File | Responsibility |
 |------|----------------|
 | `culinaryIndex.ts` | Compiled culinary matrix lookup (offline; rebuild via personal script). Optional overlay via `setCulinaryLookupOverlay` when staging dynamic culinary is on. **ROE-019:** emit/consume per-dish `identity` (proteins, diet_class, cuisine_region, food_type, dish_role) — trust over tree-root protein family |
-| `dishIntent.ts` | Oceany/coastal + sweet/dessert + **carrier-only / celebratory mood** helpers (CRS-003, ROE-001, ROE-003); rice-as-main (ROE-018) |
+| `culinaryCache.ts` | **[ROE-025]** Static culinary facts facade + optional experimental hydrate (`ensureCulinaryFactsHydrated`) |
+| `scoreWeights.ts` | **[ROE-025]** Named J weights F/D/P/B/W/**S**/G — SYNC PAIR with `_shared/score-weights.ts`; `npm run ci:twins` |
+| `dishIntent.ts` | Oceany/coastal + sweet/dessert + **carrier-only / celebratory mood** helpers (CRS-003, ROE-001, ROE-003); rice-as-main (ROE-018); **ROE-024** spice preference |
 | `vedaDishes.ts` | Dish-level scoring; `cravingSweet` includes/boosts Dessert category |
 | `dietary.ts` | DIET-001 taxonomy (sync with `_shared/dietary.ts`); **ROE-019:** `unknown` must not hard-fail non_veg when meat markers match |
 | `pairings.ts` | Triple outcomes. Never invent dish from intent text. Coastal + sweet coherence; **never Best/Clean/Heritage = roti/naan alone** (ROE-003). **South Indian kitchens use Indian-South bank — never Dal Tadka** (ROE-004). Desserts get no rice/naan carrier. **ROE-017:** `exclude_ingredients` hard-strip; catalog gate via `catalogGuard`. **ROE-019:** Ask-aligned picks (protein/food_type); no Chef’s selection when eligible Ask dish exists |
-| `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters. **ROE-019:** fulfillmentScore — rank by catalog Ask fulfillment before vibe composite |
+| `veda.ts` | Core scoring: dials, restaurant ranking, wellness/dietary filters. **ROE-019:** fulfillmentScore. **ROE-024/025:** spice S via `scaleByWeight`; `jComponents` snapshot |
 | `catalogGuard.ts` | **[ROE-017]** menu ∪ matrix membership check before plate return |
 | `intent.ts` | Intent client + 90s parse cache; RateLimitError + backoff (ROE-002); **celebratory offline dials on exhausted 429** (ROE-003); **`normalizeParsedIntent`** (ROE-008 / IP-FIX-002) |
 | `intentSanitize.ts` | Transcript grounding + celebratory/carrier + **`buildRestatedIntent`** + **`extractExcludedIngredients`** / **`EXCLUDE_ALIASES`** **(SYNC PAIR** with `_shared/intent-sanitize.ts`) — ROE-007 / ROE-008 / ROE-017 / **ROE-020** |
