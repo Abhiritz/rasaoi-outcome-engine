@@ -15,6 +15,12 @@ import {
   mergeExcludedIngredients,
   type StrictDietary,
 } from "../_shared/intent-sanitize.ts";
+import {
+  checkRateLimit,
+  clientKeyFromRequest,
+  envInt,
+  rateLimitJsonResponse,
+} from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -496,6 +502,18 @@ function validateAndSanitize(raw: unknown, transcript: string): ParsedPayload {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  const rl = checkRateLimit(clientKeyFromRequest(req, "parse-intent"), {
+    limit: envInt("RATE_LIMIT_PARSE_INTENT", 30),
+    windowMs: envInt("RATE_LIMIT_WINDOW_MS", 60_000),
+  });
+  if (!rl.allowed) {
+    return rateLimitJsonResponse(
+      corsHeaders,
+      rl.retry_after_ms,
+      "Veda is busy (request rate limit). Wait a moment, then try again.",
+    );
   }
 
   try {
