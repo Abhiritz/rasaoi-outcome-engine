@@ -54,7 +54,7 @@ Fat/garnish-only token overlap no longer crowns ~100% heroes (Butter Dosai ≠ B
 - Edge `score-reading` recomputes `J` / `edge_score` from `jComponents` via shared weights (+S)
 - Client `VITE_SCORE_READING_MODE=off|dual|edge` (default off); dual logs drift; edge merges Edge scores
 - Soft-fail to local compare; rate-limit on invoke; no dish invention
-- Branch: `feature/ROE-026-score-reading-dual-run`
+- Branch: `feature/ROE-026-score-reading-dual-run` · PR #37
 
 ---
 
