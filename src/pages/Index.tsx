@@ -11,7 +11,7 @@ import { VitalityPanel } from "@/components/VitalityPanel";
 import { CheckinBanner } from "@/components/CheckinBanner";
 import { IntentPill } from "@/components/IntentPill";
 import { searchPlaces } from "@/lib/google-places";
-import { scoreRestaurants, type DialState, type Restaurant, type Promo, type ScoredRestaurant } from "@/lib/veda";
+import { scoreRestaurants, type DialState, type Restaurant, type Promo, type ScoredRestaurant, type ScoreRestaurantOpts, type GlBand } from "@/lib/veda";
 import { loadTwin, getBloodSugarLens, setBloodSugarLens } from "@/lib/memory";
 import { loadIntent, clearIntent, findRestaurantByName, type ParsedIntent } from "@/lib/intent";
 import { estimateGlycemic, type GLEstimate } from "@/lib/glycemic";
@@ -22,6 +22,7 @@ import {
   mergeEdgeScores,
 } from "@/lib/scoreReading";
 import { orderAlternatesSoftmax } from "@/lib/paretoSoftmax";
+import { recordScoreTelemetry } from "@/lib/scoreTelemetry";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ArrowLeft, Info, Droplet } from "lucide-react";
 
@@ -179,6 +180,15 @@ const Index = () => {
 
   const glOrder: Record<string, number> = { low: 0, med: 1, high: 2 };
 
+  const scoreOpts = useMemo((): ScoreRestaurantOpts | undefined => {
+    if (!lens) return undefined;
+    const glBySignature: Record<string, GlBand> = {};
+    for (const [k, v] of Object.entries(glMap)) {
+      if (v?.glycemic_load) glBySignature[k] = v.glycemic_load;
+    }
+    return { bloodSugarLens: true, glBySignature };
+  }, [lens, glMap]);
+
   const scored = useMemo(() => {
     const askText = [intent?.restated_intent, intent?.filters?.dish].filter(Boolean).join(" · ");
     const all = scoreRestaurants(
@@ -192,6 +202,7 @@ const Index = () => {
       intent?.filters?.dietary,
       intent?.filters?.exclude_ingredients,
       askText || undefined,
+      scoreOpts,
     );
     const mode = getScoreReadingMode();
     const base =
@@ -218,7 +229,7 @@ const Index = () => {
       }
       return b.score - a.score;
     });
-  }, [restaurants, dials, promos, twin, cuisineFilter, intentCuisine, lens, glMap, intent, edgeScoreById]);
+  }, [restaurants, dials, promos, twin, cuisineFilter, intentCuisine, lens, glMap, intent, edgeScoreById, scoreOpts]);
 
   // ROE-026: dual/edge score-reading — soft compare; never invent dishes.
   useEffect(() => {
@@ -239,6 +250,7 @@ const Index = () => {
       intent?.filters?.dietary,
       intent?.filters?.exclude_ingredients,
       askText || undefined,
+      scoreOpts,
     );
     let cancelled = false;
     invokeScoreReading(clientScored, { lensOn: lens }).then((result) => {
@@ -247,6 +259,10 @@ const Index = () => {
       for (const v of result.venues) map[v.id] = v.edge_score;
       setEdgeScoreById(map);
       if (mode === "dual" && result.max_abs_drift > 0) {
+        recordScoreTelemetry("score_reading_dual", {
+          mean: Number(result.mean_abs_drift.toFixed(2)),
+          max: Number(result.max_abs_drift.toFixed(2)),
+        });
         console.info(
           `[score-reading dual] mean|drift|=${result.mean_abs_drift.toFixed(1)} max=${result.max_abs_drift.toFixed(1)} (${result.weights})`,
         );
@@ -255,7 +271,7 @@ const Index = () => {
     return () => {
       cancelled = true;
     };
-  }, [restaurants, dials, promos, twin, intent, lens]);
+  }, [restaurants, dials, promos, twin, intent, lens, scoreOpts]);
 
   // When lens is on, estimate GL for top-N visible signature dishes.
   useEffect(() => {
@@ -272,6 +288,7 @@ const Index = () => {
       intent?.filters?.dietary,
       intent?.filters?.exclude_ingredients,
       askText || undefined,
+      scoreOpts,
     );
     const topRestaurants = all.slice(0, 8).map((s) => s.restaurant);
     const dishes = topRestaurants
@@ -360,6 +377,7 @@ const Index = () => {
         intent?.filters?.dietary,
         intent?.filters?.exclude_ingredients,
         askText || undefined,
+        scoreOpts,
       )[0];
       if (pinnedScored) hero = pinnedScored;
     }

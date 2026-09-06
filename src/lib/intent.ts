@@ -242,12 +242,15 @@ function celebratoryOfflineIntent(transcript: string): ParsedIntent {
   );
 }
 
+import { recordScoreTelemetry } from "./scoreTelemetry";
+
 export async function parseIntent(transcript: string): Promise<ParsedIntent> {
   const trimmed = transcript.trim();
   if (!trimmed) throw new Error("transcript required");
 
   const cached = getCachedParse(trimmed);
   if (cached) {
+    recordScoreTelemetry("intent_cache_hit", { len: trimmed.length });
     saveIntent(cached);
     return cached;
   }

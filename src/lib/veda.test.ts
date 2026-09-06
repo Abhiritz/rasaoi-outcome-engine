@@ -281,6 +281,34 @@ describe("scoreRestaurants J components (ROE-025)", () => {
     expect(scored[0].jComponents!.S).toBeGreaterThan(0.5);
     expect(scored[0].inferenceTags.some((t) => t.includes("Milder"))).toBe(true);
   });
+
+  it("ROE-029: lens on raises G and tags Higher GL for high band", () => {
+    const kitchen = mockRestaurant({
+      id: "gl-j",
+      name: "GL Kitchen",
+      cuisine: "Indian",
+      signature_dish: "Biryani",
+      menu_items: [{ name: "Biryani" }],
+    });
+    const scored = scoreRestaurants(
+      [kitchen],
+      baseDials,
+      [],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      {
+        bloodSugarLens: true,
+        glBySignature: { biryani: "high" },
+      },
+    );
+    expect(scored[0].jComponents!.G).toBeGreaterThan(0.7);
+    expect(scored[0].inferenceTags).toContain("Higher GL");
+  });
 });
 
 describe("scoreRestaurants culinary matrix signals", () => {

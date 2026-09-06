@@ -15,12 +15,30 @@ import {
 } from "./askFulfillment";
 import {
   J_WEIGHTS_LENS_OFF,
+  J_WEIGHTS_LENS_ON,
   scaleByWeight,
   type JComponents,
 } from "./scoreWeights";
 
 export type Restaurant = Tables<"restaurants">;
 export type Promo = Tables<"active_promos">;
+
+/** ROE-029: optional blood-sugar soft constraint inputs for named J (G). */
+export type GlBand = "low" | "med" | "high";
+
+export interface ScoreRestaurantOpts {
+  bloodSugarLens?: boolean;
+  /** Signature-dish name (lower) → GL band from estimateGlycemic / matrix. */
+  glBySignature?: Record<string, GlBand>;
+}
+
+/** Map GL band → component G ∈ [0,1] for soft penalty. */
+export function glBandToG(band?: GlBand | null): number {
+  if (band === "low") return 0.2;
+  if (band === "high") return 0.9;
+  if (band === "med") return 0.55;
+  return 0.45; // unknown under lens: mild caution
+}
 
 export interface DialState {
   energy: number;    // 0 exhausted (low recovery) -> 100 peak
@@ -350,6 +368,8 @@ export function scoreRestaurants(
   excludeIngredients?: string[],
   /** ROE-024: restated Ask / transcript for soft choice dims (spice → S). */
   askText?: string,
+  /** ROE-029: blood-sugar lens soft G. */
+  scoreOpts?: ScoreRestaurantOpts,
 ): ScoredRestaurant[] {
   const eState = energyState(dials.energy);
   const cState = contextState(dials.context);
@@ -362,6 +382,9 @@ export function scoreRestaurants(
   const sweetIntent = isSweetDishIntent(intentDish);
   const namedAsk = isNamedDishAsk(intentDish);
   const spicePref = spicePreferenceFromAsk(intentDish, askText);
+  const lensOn = !!scoreOpts?.bloodSugarLens;
+  const jWeights = lensOn ? J_WEIGHTS_LENS_ON : J_WEIGHTS_LENS_OFF;
+  const glBySignature = scoreOpts?.glBySignature ?? {};
 
   // --- Hard-exclusion gatekeeper: non-compliant venues never enter ranking ---
   const eligible = strictDietary
@@ -490,7 +513,7 @@ export function scoreRestaurants(
       const fulfillment: FulfillmentLevel | undefined =
         fulfill.level === "n/a" ? undefined : fulfill.level;
       if (fulfill.level !== "n/a") {
-        score += scaleByWeight(fulfill.delta, "F", J_WEIGHTS_LENS_OFF);
+        score += scaleByWeight(fulfill.delta, "F", jWeights);
         if (fulfill.tag && !tags.includes(fulfill.tag)) tags.push(fulfill.tag);
       }
 
@@ -503,7 +526,7 @@ export function scoreRestaurants(
           bestS = Math.max(bestS, spiceAlignDelta(m.name, m.description ?? "", spicePref));
         }
         if (bestS === -99) bestS = 0;
-        score += scaleByWeight(bestS * 0.35, "S", J_WEIGHTS_LENS_OFF);
+        score += scaleByWeight(bestS * 0.35, "S", jWeights);
         if (bestS >= 12) tags.push(spicePref === "mild" ? "Milder plates" : "Heat-forward plates");
         else if (bestS <= -12) tags.push("Spice mismatch");
       }
@@ -512,7 +535,22 @@ export function scoreRestaurants(
       const userPurity = dials.purity;
       const rPurity = PURITY_RANK[r.purity_tier] ?? 50;
       const purityDelta = 100 - Math.abs(userPurity - rPurity);
-      score += scaleByWeight((purityDelta - 50) * 0.4, "P", J_WEIGHTS_LENS_OFF);
+      score += scaleByWeight((purityDelta - 50) * 0.4, "P", jWeights);
+
+      // ROE-029: soft GL constraint G when blood-sugar lens is on
+      let gComponent = 0;
+      if (lensOn) {
+        const sigKey = (r.signature_dish ?? "").toLowerCase();
+        const band = sigKey ? glBySignature[sigKey] : undefined;
+        gComponent = glBandToG(band);
+        // Historic soft points ~ −8…−24 mapped through w_G
+        const glDelta = -(8 + gComponent * 16);
+        score += scaleByWeight(glDelta, "G", jWeights);
+        if (band === "high") tags.push("Higher GL");
+        else if (band === "low") tags.push("Lower GL");
+        else if (band === "med") tags.push("Moderate GL");
+        else tags.push("GL estimated");
+      }
 
       if (dials.purity > 70 && r.sovereign_seal) {
         score += 12;
@@ -691,7 +729,7 @@ export function scoreRestaurants(
         W: wellnessTags.length ? Math.min(1, 0.55 + wellnessTags.length * 0.1) : 0.5,
         // spiceAlignDelta ≈ −24…+18 → map to [0,1]; neutral 0.5 when no spice Ask
         S: spicePref ? Math.max(0, Math.min(1, (bestS + 24) / 42)) : 0.5,
-        G: 0, // populated when blood-sugar lens path raises soft GL (ROE-029)
+        G: gComponent,
       };
       return {
         restaurant: restaurantOut,

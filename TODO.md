@@ -9,6 +9,17 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-029] GL soft + score telemetry — implemented (feature)
+
+Impact: `docs/ROE-029-telemetry-gl-soft-impact-analysis.md`  
+Story: `docs/ROE-upgrade-story.md`
+
+- [x] Lens on → `jComponents.G` + soft penalty via lens-on weights
+- [x] Session score telemetry ring
+- [ ] Staging soak / merge; Dirichlet nudge deferred
+
+---
+
 ## [ROE-028] Intent semantic-lite cache — implemented (feature)
 
 Impact: `docs/ROE-028-intent-cache-impact-analysis.md`  

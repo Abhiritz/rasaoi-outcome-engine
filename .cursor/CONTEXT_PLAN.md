@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-028-impl
+last_verified_commit: pending-ROE-029-impl
 last_verified_date: 2026-09-07
-branch: feature/ROE-028-intent-cache
+branch: feature/ROE-029-telemetry-gl-soft
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-028 intent semantic-lite cache (Jaccard ≥0.92, 15m TTL, re-sanitize on hit).
-  Story docs/ROE-upgrade-story.md. Next free: ROE-029 telemetry/GL.
+  ROE-029 GL soft G in J when lens on + score telemetry ring.
+  Rev 1.2 epic 023–029 feature-complete. Next free: ROE-030. Story: docs/ROE-upgrade-story.md.
 ```
 
 ---
@@ -288,7 +288,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact → approve → branch → implement + tests → sync plan/TODO/CONTEXT/CURSOR + **`docs/ROE-upgrade-story.md`** → PR/board. Next free serial: **ROE-029**.
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact → approve → branch → implement + tests → sync plan/TODO/CONTEXT/CURSOR + **`docs/ROE-upgrade-story.md`** → PR/board. Next free serial: **ROE-030**.
 
 | Trigger | Action |
 |---------|--------|
