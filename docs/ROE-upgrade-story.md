@@ -4,6 +4,7 @@ Living chronicle for the combined audit+upgrade epic (matrix Rev 1.2 + phased ro
 Update this file **when each ROE ticket ships** (commit + PR). Impact details stay in `docs/ROE-NNN-*-impact-analysis.md`.
 
 **Staging:** https://v0-rasaoi-staging.vercel.app  
+**Staging merge:** ROE-023…029 landed via [PR #40](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/40) (`3981748`, 2026-09-06).  
 **Next free serial:** see `project.md` / `.lovable/plan.md`
 
 ---
