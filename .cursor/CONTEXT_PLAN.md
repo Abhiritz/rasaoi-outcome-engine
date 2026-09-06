@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-031-impl
+last_verified_commit: pending-ROE-032-impl
 last_verified_date: 2026-09-07
-branch: feature/ROE-031-low-oil-ask-plates
+branch: feature/ROE-032-rate-limit-lock-hardening
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-031 low-oil Ask: fry markers blocked on Best; not oily → low_oil parse;
-  honesty cap when only fried chicken remains. Next free: ROE-032.
+  ROE-032: no-op auth lock (LockManager); Gemini 429 fallback Flash chain.
+  Next free: ROE-033.
 ```
 
 ---

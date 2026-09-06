@@ -33,7 +33,8 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 | 028 | Intent cache | Merged staging PR [#39](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/39) |
 | 029 | Telemetry / GL soft | **Merged staging** PR [#40](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/40) |
 | 030 | Salvage 021+022 clean onto staging | **Merged staging** PR [#41](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/41) |
-| 031 | Low-oil Ask — no fry Best (pakora/65) | **This branch** |
+| 031 | Low-oil Ask — no fry Best (pakora/65) | **Merged staging** PR [#42](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/42) |
+| 032 | Rate-limit toast + LockManager harden | **This branch** |
 
 **Rev 1.2 math epic queue (023–029) complete** on feature branches / PRs. Staging merges + soak remain.
 

@@ -27,6 +27,9 @@ function getClient(): SupabaseClient<Database> {
       storage: localStorage,
       persistSession: true,
       autoRefreshToken: true,
+      // ROE-032: Navigator LockManager fails in Firefox private / multi-HMR and can
+      // surface as uncaught promise noise (and race functions.invoke). Ask uses anon key.
+      lock: async (_name, _acquireTimeout, fn) => fn(),
     },
   });
   globalForSupabase.__rasaoiSupabase = client;
