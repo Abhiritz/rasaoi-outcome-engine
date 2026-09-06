@@ -59,7 +59,7 @@ Fat/garnish-only token overlap no longer crowns ~100% heroes (Butter Dosai ≠ B
 ### ROE-027 — Pareto + softmax (2026-09-07)
 - Softmax + cuisine diversify for MiniCard alternates
 - Pareto front on Ask-align × spice for Ask-aligned plate picks
-- Branch: `feature/ROE-027-pareto-softmax-plates`
+- Branch: `feature/ROE-027-pareto-softmax-plates` · PR #38
 
 ---
 
