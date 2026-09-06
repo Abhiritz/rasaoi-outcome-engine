@@ -24,13 +24,13 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 | ROE | Theme | Status |
 |-----|--------|--------|
 | 022 | Phase 0 safety net + identity / alias parity | Feature branch |
-| 023 | Named-dish F() match rules | Pushed |
-| 024 | Choice dim **S** (spice/mild) soft in Ask scoring | Pushed |
-| 025 | Shared scoring package + culinary cache facade | Shipped PR [#36](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/36) |
-| 026 | `score-reading` dual-run (Edge hosts J) | Shipped PR [#37](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/37) |
-| 027 | Pareto / softmax plates | Shipped PR [#38](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/38) |
-| 028 | Intent cache | Shipped PR [#39](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/39) |
-| 029 | Telemetry / GL soft | **Shipped** PR [#40](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/40) |
+| 023 | Named-dish F() match rules | **Merged staging** (via #40) |
+| 024 | Choice dim **S** (spice/mild) soft in Ask scoring | **Merged staging** (via #40) |
+| 025 | Shared scoring package + culinary cache facade | Merged staging PR [#36](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/36) |
+| 026 | `score-reading` dual-run (Edge hosts J) | Merged staging PR [#37](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/37) |
+| 027 | Pareto / softmax plates | Merged staging PR [#38](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/38) |
+| 028 | Intent cache | Merged staging PR [#39](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/39) |
+| 029 | Telemetry / GL soft | **Merged staging** PR [#40](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/40) |
 
 **Rev 1.2 math epic queue (023–029) complete** on feature branches / PRs. Staging merges + soak remain.
 
