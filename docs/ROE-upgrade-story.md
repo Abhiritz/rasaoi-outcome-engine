@@ -4,7 +4,7 @@ Living chronicle for the combined audit+upgrade epic (matrix Rev 1.2 + phased ro
 Update this file **when each ROE ticket ships** (commit + PR). Impact details stay in `docs/ROE-NNN-*-impact-analysis.md`.
 
 **Staging:** https://v0-rasaoi-staging.vercel.app  
-**Staging merge:** ROE-023…030 on staging; **ROE-031** low-oil plates in flight.  
+**Staging merge:** ROE-023…034 on staging; **ROE-035** LLM attempt telemetry in flight.  
 **Next free serial:** see `project.md` / `.lovable/plan.md`
 
 ---
@@ -34,7 +34,10 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 | 029 | Telemetry / GL soft | **Merged staging** PR [#40](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/40) |
 | 030 | Salvage 021+022 clean onto staging | **Merged staging** PR [#41](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/41) |
 | 031 | Low-oil Ask — no fry Best (pakora/65) | **Merged staging** PR [#42](https://github.com/Abhiritz/rasaoi-outcome-engine/pull/42) |
-| 032 | Rate-limit toast + LockManager harden | **This branch** |
+| 032 | Rate-limit toast + LockManager harden | **Merged staging** |
+| 033 | Broader Gemini retry + model pin | **Merged staging** |
+| 034 | Offline Ask on rate-limit | **Merged staging** |
+| 035 | LLM call attempt telemetry (retries) | **This branch** |
 
 **Rev 1.2 math epic queue (023–029) complete** on feature branches / PRs. Staging merges + soak remain.
 
@@ -84,6 +87,12 @@ Fat/garnish-only token overlap no longer crowns ~100% heroes (Butter Dosai ≠ B
 - 021: `no meat murgi` meat Ask + chicken exclude (sanitize twin)
 - 022: Gemini 3.5 Flash, MitraPact a11y, client singleton, alias check, twin CI step, RL on ingest/glycemic
 - Branch: `feature/ROE-030-salvage-021-022-clean`
+
+### ROE-035 — LLM call telemetry (2026-09-07)
+- Edge `rasaoi_llm_attempt` / `rasaoi_llm_summary` JSON logs (retries included)
+- `parse-intent` response `llm: { attempts, models, ok }`
+- Client `scoreTelemetry` kinds `intent_invoke` / `intent_llm_summary` / `intent_rate_limit*`
+- Branch: `feature/ROE-035-llm-call-telemetry`
 
 ---
 

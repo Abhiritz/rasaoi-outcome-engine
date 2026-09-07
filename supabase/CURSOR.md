@@ -31,7 +31,8 @@ All deployed with `--no-verify-jwt` (anon-key + CORS browser calls). Configured 
 
 | File | Role |
 |------|------|
-| `functions/_shared/ai-client.ts` | Gemini client (`geminiToolCall`, `geminiJsonObject`); reads `GEMINI_API_KEY` |
+| `functions/_shared/ai-client.ts` | Gemini client (`geminiToolCall`, `geminiJsonObject`); reads `GEMINI_API_KEY`; **ROE-035** records each model try via `llm-telemetry.ts` |
+| `functions/_shared/llm-telemetry.ts` | **[ROE-035]** `rasaoi_llm_attempt` / `rasaoi_llm_summary` Edge log lines; `parse-intent` embeds `llm` meta |
 | `functions/_shared/dietary.ts` | DIET-001 taxonomy: diet classes, modifiers, normalization, gatekeeper logic |
 | `functions/_shared/intent-sanitize.ts` | [ROE-007]/[ROE-008] transcript grounding, celebratory/carrier, `buildRestatedIntent` — sync with `src/lib/intentSanitize.ts` |
 | `functions/_shared/score-weights.ts` | **[ROE-025]/[ROE-026]** Named J (incl. S) — sync with `src/lib/scoreWeights.ts`; used by `score-reading` |

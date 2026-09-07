@@ -6,7 +6,14 @@
 const KEY = "rasaoi.score_telemetry.v1";
 const MAX = 80;
 
-export type ScoreTelemetryKind = "gl_soft" | "score_reading_dual" | "intent_cache_hit";
+export type ScoreTelemetryKind =
+  | "gl_soft"
+  | "score_reading_dual"
+  | "intent_cache_hit"
+  | "intent_invoke"
+  | "intent_rate_limit"
+  | "intent_rate_limit_offline"
+  | "intent_llm_summary";
 
 export interface ScoreTelemetryEvent {
   kind: ScoreTelemetryKind;

@@ -4,13 +4,13 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-032-impl
+last_verified_commit: pending-ROE-035-impl
 last_verified_date: 2026-09-07
-branch: feature/ROE-032-rate-limit-lock-hardening
+branch: feature/ROE-035-llm-call-telemetry
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-032: no-op auth lock (LockManager); Gemini 429 fallback Flash chain.
-  Next free: ROE-033.
+  ROE-035: Edge rasaoi_llm_attempt/summary logs + parse-intent llm meta + client intent_llm_summary.
+  Next free: ROE-036.
 ```
 
 ---

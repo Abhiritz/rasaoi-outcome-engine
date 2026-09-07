@@ -9,6 +9,17 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-035] LLM call attempt telemetry — implemented (feature)
+
+Impact: `docs/ROE-035-llm-call-telemetry-impact-analysis.md`  
+Story: `docs/ROE-upgrade-story.md`
+
+- [x] Edge `rasaoi_llm_attempt` / `rasaoi_llm_summary` (retries included)
+- [x] `parse-intent` response `llm` meta + client scoreTelemetry kinds
+- [ ] Merge + Edge redeploy `parse-intent` on staging; read counts in Dashboard logs
+
+---
+
 ## [ROE-029] GL soft + score telemetry — implemented (feature)
 
 Impact: `docs/ROE-029-telemetry-gl-soft-impact-analysis.md`  

@@ -2,6 +2,7 @@
 // Uses native Google Gemini API with tool-calling for reliable structured output.
 
 import { routedToolCall } from "../_shared/model-router.ts";
+import { summarizeLlmAttempts } from "../_shared/llm-telemetry.ts";
 import { DIETARY_INTENT_SLUGS } from "../_shared/dietary.ts";
 import {
   buildRestatedIntent,
@@ -534,6 +535,7 @@ Deno.serve(async (req) => {
       );
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
+      const llm = summarizeLlmAttempts("parse_intent");
       if (/429|rate limit|quota/i.test(msg)) {
         return new Response(
           JSON.stringify({
@@ -541,6 +543,7 @@ Deno.serve(async (req) => {
             code: "rate_limit",
             retry_after_ms: 8000,
             detail: msg.slice(0, 240),
+            llm,
           }),
           {
             status: 429,
@@ -554,6 +557,7 @@ Deno.serve(async (req) => {
           error: "Veda could not interpret that.",
           code: "parse_failed",
           detail: msg.slice(0, 240),
+          llm,
         }),
         {
           status: 500,
@@ -563,7 +567,8 @@ Deno.serve(async (req) => {
     }
 
     const sanitized = validateAndSanitize(parsed, trimmedTranscript);
-    return new Response(JSON.stringify(sanitized), {
+    const llm = summarizeLlmAttempts("parse_intent");
+    return new Response(JSON.stringify({ ...sanitized, llm }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

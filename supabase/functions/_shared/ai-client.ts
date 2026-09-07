@@ -7,6 +7,10 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  recordLlmAttempt,
+  resetLlmAttempts,
+} from "./llm-telemetry.ts";
 
 /**
  * Pinned Flash id for tool calling.
@@ -48,18 +52,24 @@ async function withGeminiModelFallback<T>(
   primary: string,
   run: (model: string) => Promise<T>,
 ): Promise<T> {
+  resetLlmAttempts();
   const chain = [primary, ...GEMINI_MODEL_FALLBACKS.filter((m) => m !== primary)];
   let lastErr: unknown;
   for (let i = 0; i < chain.length; i++) {
     const model = chain[i]!;
+    const t0 = Date.now();
     try {
       if (i > 0) await sleep(900 * i);
-      return await run(model);
+      const out = await run(model);
+      recordLlmAttempt({ model, ok: true, ms: Date.now() - t0 });
+      return out;
     } catch (e) {
       lastErr = e;
+      const msg = e instanceof Error ? e.message : String(e);
+      recordLlmAttempt({ model, ok: false, ms: Date.now() - t0, error: msg });
       if (!isGeminiRetryableError(e) || i === chain.length - 1) throw e;
       console.warn(
-        `Gemini ${model} failed (${e instanceof Error ? e.message : e}); trying next fallback`,
+        `Gemini ${model} failed (${msg}); trying next fallback`,
       );
     }
   }

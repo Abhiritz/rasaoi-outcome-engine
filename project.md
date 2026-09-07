@@ -140,7 +140,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize), `_share
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-033** (ROE-032 = rate-limit/lock; ROE-031 = low-oil Ask).
+1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-036** (ROE-035 = LLM call telemetry).
 2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
@@ -154,7 +154,12 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
 | Ticket | Status | Impact |
 |--------|--------|--------|
-| **ROE-029** GL soft in J + score telemetry | Feature branch | `docs/ROE-029-telemetry-gl-soft-impact-analysis.md` |
+| **ROE-035** LLM call attempt telemetry (retries) | Feature branch | `docs/ROE-035-llm-call-telemetry-impact-analysis.md` |
+| **ROE-034** Rate-limit offline Ask grounding | Merged staging | `docs/ROE-034-rate-limit-offline-intent-impact-analysis.md` |
+| **ROE-033** Broader Gemini retry + flash pin | Merged staging | (ai-client / model-router) |
+| **ROE-032** LockManager + 429 fallbacks | Merged staging | (client + ai-client) |
+| **ROE-031** Low-oil Ask plates | Merged staging | `docs/ROE-031-low-oil-ask-plates-impact-analysis.md` |
+| **ROE-029** GL soft in J + score telemetry | Merged staging | `docs/ROE-029-telemetry-gl-soft-impact-analysis.md` |
 | **ROE-028** Intent semantic-lite cache | Feature branch / PR #39 | `docs/ROE-028-intent-cache-impact-analysis.md` |
 | **ROE-027** Pareto plates + softmax alts | Feature branch / PR #38 | `docs/ROE-027-pareto-softmax-plates-impact-analysis.md` |
 | **ROE-026** Edge score-reading dual-run | Feature branch / PR #37 | `docs/ROE-026-score-reading-dual-run-impact-analysis.md` |
@@ -176,9 +181,9 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 | **ROE-009** (FUL-001) contacts | Merged PR #21; ops + QA | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
 | ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
 
-Next free serial: **ROE-033**.
+Next free serial: **ROE-036**.
 
-Future: staging soak; then ROE-033+.  
+Future: staging soak; Edge redeploy `parse-intent` for ROE-035 logs.  
 Story: `docs/ROE-upgrade-story.md`.
 
 Triage: `docs/ROE-backlog-triage-2026-07-24.md`. Matrix Rev 1.2 flavor→S. Ask-fulfillment: `.cursor/rules/ask-fulfillment.mdc`.
