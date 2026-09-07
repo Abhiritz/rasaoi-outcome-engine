@@ -22,6 +22,7 @@ import {
   lookupIntentCacheRaw,
   putIntentCacheRaw,
 } from "@/lib/intentCache";
+import { recordScoreTelemetry } from "./scoreTelemetry";
 import type { DialState, Restaurant } from "./veda";
 
 export interface ParsedIntent {
@@ -55,10 +56,18 @@ export interface ParsedIntent {
 export class RateLimitError extends Error {
   readonly code = "rate_limit" as const;
   readonly retryAfterMs: number;
-  constructor(message?: string, retryAfterMs = 8000) {
+  readonly llmAttempts?: number;
+  readonly llmModels?: string;
+  constructor(
+    message?: string,
+    retryAfterMs = 8000,
+    llm?: { attempts?: number; models?: string[] },
+  ) {
     super(message || RATE_LIMIT_USER_MSG);
     this.name = "RateLimitError";
     this.retryAfterMs = retryAfterMs;
+    if (typeof llm?.attempts === "number") this.llmAttempts = llm.attempts;
+    if (llm?.models?.length) this.llmModels = llm.models.join(",");
   }
 }
 
@@ -180,11 +189,15 @@ async function readInvokeError(error: { message?: string; context?: Response }):
   code?: string;
   retryAfterMs?: number;
   status?: number;
+  llmAttempts?: number;
+  llmModels?: string[];
 }> {
   let msg = error.message || "parse-intent failed";
   let code: string | undefined;
   let retryAfterMs: number | undefined;
   let status: number | undefined;
+  let llmAttempts: number | undefined;
+  let llmModels: string[] | undefined;
   try {
     const ctx = error.context;
     if (ctx) {
@@ -194,6 +207,13 @@ async function readInvokeError(error: { message?: string; context?: Response }):
         if (body?.error && typeof body.error === "string") msg = body.error;
         if (body?.code && typeof body.code === "string") code = body.code;
         if (typeof body?.retry_after_ms === "number") retryAfterMs = body.retry_after_ms;
+        const llm = body?.llm;
+        if (llm && typeof llm === "object") {
+          if (typeof llm.attempts === "number") llmAttempts = llm.attempts;
+          if (Array.isArray(llm.models)) {
+            llmModels = llm.models.filter((m: unknown) => typeof m === "string");
+          }
+        }
       }
     }
   } catch {
@@ -202,20 +222,36 @@ async function readInvokeError(error: { message?: string; context?: Response }):
   if (/Unexpected end of JSON input/i.test(msg)) {
     msg = "Veda returned an empty response. Please try again.";
   }
-  return { msg, code, retryAfterMs, status };
+  return { msg, code, retryAfterMs, status, llmAttempts, llmModels };
 }
 
 async function invokeParseOnce(transcript: string): Promise<ParsedIntent> {
+  recordScoreTelemetry("intent_invoke", { len: transcript.length });
   const { data, error } = await supabase.functions.invoke("parse-intent", {
     body: { transcript },
   });
 
   if (error) {
-    const { msg, code, retryAfterMs, status } = await readInvokeError(
+    const { msg, code, retryAfterMs, status, llmAttempts, llmModels } = await readInvokeError(
       error as { message?: string; context?: Response },
     );
+    if (typeof llmAttempts === "number") {
+      recordScoreTelemetry("intent_llm_summary", {
+        attempts: llmAttempts,
+        models: llmModels?.join(",") ?? null,
+        ok: false,
+        status: status ?? null,
+      });
+    }
     if (status === 429 || isRateLimitMessage(msg, { code })) {
-      throw new RateLimitError(RATE_LIMIT_USER_MSG, retryAfterMs ?? 8000);
+      recordScoreTelemetry("intent_rate_limit", {
+        attempts: llmAttempts ?? null,
+        models: llmModels?.join(",") ?? null,
+      });
+      throw new RateLimitError(RATE_LIMIT_USER_MSG, retryAfterMs ?? 8000, {
+        attempts: llmAttempts,
+        models: llmModels,
+      });
     }
     throw new Error(msg);
   }
@@ -223,12 +259,38 @@ async function invokeParseOnce(transcript: string): Promise<ParsedIntent> {
   if (!data || typeof data !== "object") {
     throw new Error("Veda returned an empty response. Please try again.");
   }
-  const errBody = data as { error?: string; code?: string; retry_after_ms?: number };
+  const errBody = data as {
+    error?: string;
+    code?: string;
+    retry_after_ms?: number;
+    llm?: { attempts?: number; models?: string[]; ok?: boolean };
+  };
   if (errBody.error) {
+    if (typeof errBody.llm?.attempts === "number") {
+      recordScoreTelemetry("intent_llm_summary", {
+        attempts: errBody.llm.attempts,
+        models: errBody.llm.models?.join(",") ?? null,
+        ok: false,
+      });
+    }
     if (isRateLimitMessage(errBody.error, { code: errBody.code })) {
-      throw new RateLimitError(RATE_LIMIT_USER_MSG, errBody.retry_after_ms ?? 8000);
+      recordScoreTelemetry("intent_rate_limit", {
+        attempts: errBody.llm?.attempts ?? null,
+      });
+      throw new RateLimitError(RATE_LIMIT_USER_MSG, errBody.retry_after_ms ?? 8000, {
+        attempts: errBody.llm?.attempts,
+        models: errBody.llm?.models,
+      });
     }
     throw new Error(errBody.error);
+  }
+
+  if (typeof errBody.llm?.attempts === "number") {
+    recordScoreTelemetry("intent_llm_summary", {
+      attempts: errBody.llm.attempts,
+      models: errBody.llm.models?.join(",") ?? null,
+      ok: errBody.llm.ok !== false,
+    });
   }
 
   return normalizeParsedIntent(data, transcript);
@@ -339,8 +401,6 @@ function rateLimitOfflineIntent(transcript: string): ParsedIntent | null {
     transcript,
   );
 }
-
-import { recordScoreTelemetry } from "./scoreTelemetry";
 
 export async function parseIntent(transcript: string): Promise<ParsedIntent> {
   const trimmed = transcript.trim();
