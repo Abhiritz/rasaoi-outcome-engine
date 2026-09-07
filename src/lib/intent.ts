@@ -4,12 +4,17 @@ import {
   celebratoryMoodDials,
   celebratoryRestatedIntent,
   clampDial,
+  extractCuisineFromTranscript,
+  extractDietaryFromTranscript,
+  extractDishFromTranscript,
   extractExcludedIngredients,
   isCelebratoryMoodIntent,
   isDietaryIntent,
   mergeExcludedIngredients,
+  buildRestatedIntent,
   RESTATED_MAX_CHARS,
   WELLNESS_TAG_SLUGS,
+  type WellnessTag,
 } from "@/lib/intentSanitize";
 import {
   clearIntentCache,
@@ -242,6 +247,99 @@ function celebratoryOfflineIntent(transcript: string): ParsedIntent {
   );
 }
 
+/** Transcript wellness → slugs (mirror edge TRANSCRIPT_WELLNESS_PATTERNS; offline only). */
+function extractWellnessFromTranscript(transcript: string): WellnessTag[] {
+  const tags: WellnessTag[] = [];
+  if (/\braw\b/i.test(transcript)) tags.push("raw");
+  if (/\bfresh\b|\bcrisp\b/i.test(transcript)) tags.push("fresh");
+  if (/gut[- ]?friendly|digestive health|good for (my )?gut|microbiome/i.test(transcript)) {
+    tags.push("gut_friendly");
+  }
+  if (/\bprobiotic\b|\bfermented\b|kanji\b|kimchi\b/i.test(transcript)) tags.push("probiotic");
+  if (/\blight\b|not heavy|lightly cooked/i.test(transcript)) tags.push("light");
+  if (/low[- ]?oil|minimal oil|less oil|not oily|non[- ]?oily|\bno oil\b/i.test(transcript)) {
+    tags.push("low_oil");
+  }
+  return [...new Set(tags)];
+}
+
+/**
+ * ROE-034: when Gemini quota is exhausted, ground Ask from transcript only
+ * (no dish invention). Returns null when nothing groundable — then toast rate limit.
+ */
+function rateLimitOfflineIntent(transcript: string): ParsedIntent | null {
+  if (isCelebratoryMoodIntent(transcript)) {
+    return celebratoryOfflineIntent(transcript);
+  }
+
+  let dish = extractDishFromTranscript(transcript);
+  if (!dish) {
+    const protein = transcript.match(
+      /\b(chicken|mutton|lamb|goat|beef|pork|fish|shrimp|prawn|paneer|egg|eggs|biryani|dosa|idli)\b/i,
+    );
+    if (protein?.[1]) dish = protein[1].toLowerCase() === "eggs" ? "egg" : protein[1].toLowerCase();
+  }
+
+  const dietary =
+    extractDietaryFromTranscript(transcript) ||
+    (/\b(chicken|mutton|lamb|goat|beef|pork|fish|shrimp|prawn|meat|non[- ]?veg)\b/i.test(transcript)
+      ? "non_veg"
+      : undefined);
+  const cuisine = extractCuisineFromTranscript(transcript);
+  const wellness_tags = extractWellnessFromTranscript(transcript);
+  const exclude_ingredients = mergeExcludedIngredients(undefined, transcript);
+  const sweetCraving = /\b(sweet|dessert|mithai)\b/i.test(transcript);
+  const celebratoryMood = false;
+
+  if (
+    !dish &&
+    !dietary &&
+    !cuisine &&
+    !wellness_tags.length &&
+    !(exclude_ingredients?.length) &&
+    !sweetCraving
+  ) {
+    return null;
+  }
+
+  const purity =
+    wellness_tags.includes("low_oil") || wellness_tags.includes("light")
+      ? 82
+      : sweetCraving
+        ? 35
+        : 70;
+
+  const restated = buildRestatedIntent({
+    modelRestated: undefined,
+    dietary,
+    sweetCraving,
+    celebratoryMood,
+    transcript,
+    cuisine,
+    wellness_tags,
+    exclude_ingredients,
+    dish,
+  });
+
+  const filters: Record<string, unknown> = {};
+  if (dish) filters.dish = dish;
+  if (dietary) filters.dietary = dietary;
+  if (cuisine) filters.cuisine = cuisine;
+  if (wellness_tags.length) filters.wellness_tags = wellness_tags;
+  if (exclude_ingredients?.length) filters.exclude_ingredients = exclude_ingredients;
+
+  return normalizeParsedIntent(
+    {
+      restated_intent: restated,
+      dials: { energy: 50, context: 40, budget: 50, purity },
+      filters,
+      confidence: "low",
+      lens: /\b(diabet|blood[- ]?sugar|low[- ]?carb|keto)/i.test(transcript) ? "blood_sugar" : undefined,
+    },
+    transcript,
+  );
+}
+
 import { recordScoreTelemetry } from "./scoreTelemetry";
 
 export async function parseIntent(transcript: string): Promise<ParsedIntent> {
@@ -269,11 +367,12 @@ export async function parseIntent(transcript: string): Promise<ParsedIntent> {
         continue;
       }
       if (e instanceof RateLimitError) {
-        // ROE-003: mood-only celebration can proceed offline without inventing a dish
-        if (isCelebratoryMoodIntent(trimmed)) {
-          const offline = celebratoryOfflineIntent(trimmed);
+        // ROE-003 / ROE-034: offline transcript grounding when Gemini quota is exhausted
+        const offline = rateLimitOfflineIntent(trimmed);
+        if (offline) {
           putCachedParse(offline);
           saveIntent(offline);
+          recordScoreTelemetry("intent_rate_limit_offline", { len: trimmed.length });
           return offline;
         }
         throw e;

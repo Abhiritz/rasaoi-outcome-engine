@@ -114,6 +114,29 @@ describe("parseIntent ROE-002 rate limit + cache", () => {
     expect(intent.filters.dish).toBeUndefined();
     expect(invoke).toHaveBeenCalledTimes(3);
   }, 15000);
+
+  it("ROE-034: offline grounds chicken not spicy when rate-limited", async () => {
+    invoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: "Edge Function returned a non-2xx status code",
+        context: {
+          status: 429,
+          json: async () => ({
+            error: "Rate limit",
+            code: "rate_limit",
+            retry_after_ms: 5,
+          }),
+        },
+      },
+    });
+
+    const intent = await parseIntent("chicken, not spicy");
+    expect(intent.confidence).toBe("low");
+    expect(intent.filters.dish?.toLowerCase()).toMatch(/chicken/);
+    expect(intent.filters.dietary).toBe("non_veg");
+    expect(invoke).toHaveBeenCalledTimes(3);
+  }, 15000);
 });
 
 describe("normalizeParsedIntent [ROE-008] (IP-FIX-002)", () => {
