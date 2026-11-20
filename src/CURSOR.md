@@ -6,7 +6,7 @@
 
 ## Stack
 
-- **React 18** + **Vite 5** + **TypeScript**
+- **React 18** + **Vite 6** + **TypeScript**
 - **React Router 6** — client-side routing
 - **Tailwind CSS 3** + **shadcn/ui** (Radix primitives)
 - **Supabase JS client** — sole network layer (no axios)
@@ -102,7 +102,7 @@ Add new routes in `App.tsx` **above** the `*` catch-all.
 - **Surface style:** `rounded-sm` on key cards, `shadow-elegant`, `transition-elegant`
 - **Icons:** `lucide-react`
 - **Toasts:** dual system — Radix `Toaster` + `sonner`
-- **Forms:** `react-hook-form` + `zod` via shadcn `form.tsx`
+- **Forms:** `react-hook-form` via shadcn `form.tsx` (the unused `zod` dependency was removed in ROE-037; do not re-add Zod 3)
 - **Dark mode:** configured (`darkMode: ["class"]`) but only light tokens defined
 
 Extend shadcn variants in `components/ui/` — do not bypass the design system with raw HTML.
@@ -214,6 +214,7 @@ Extend shadcn variants in `components/ui/` — do not bypass the design system w
 ```bash
 npm test          # run once (includes src/lib/experimental/experimental.test.ts)
 npm run test:watch  # watch mode
+npm run audit:ci    # fail on GitHub advisory severity high or critical (ROE-037)
 npm run experimental:sim   # adversarial gate (≥98%; 520 seeds on staging branch)
 npm run experimental:verify-telemetry-loop  # ROE-017 check-in → guardrails proof
 ```

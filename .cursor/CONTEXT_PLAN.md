@@ -4,13 +4,14 @@
 > **Read this file before any code change.** Update when architecture shifts.
 
 ```yaml
-last_verified_commit: pending-ROE-035-impl
-last_verified_date: 2026-09-07
-branch: feature/ROE-035-llm-call-telemetry
+last_verified_commit: pending-ROE-037-impl
+last_verified_date: 2026-11-20
+branch: feature/ROE-037-github-advisory-fixes
 update_policy: "Update when adding routes, edge functions, tables, or cross-module sync pairs"
 recent_notes: >
-  ROE-035: Edge rasaoi_llm_attempt/summary logs + parse-intent llm meta + client intent_llm_summary.
-  Next free: ROE-036.
+  ROE-037: critical/high GitHub advisories patched (Vite 6.4.6, Vitest 4.1.12, react-router-dom 6.30.6, PostCSS 8.5.33). Unused Zod 3 removed. Deploy workflows fail npm audit --audit-level=high and refuse a prod/staging Vercel project mix-up.
+  ROE-036 stays the drafted centralized reco-host ticket (not this change).
+  Next free: ROE-038.
 ```
 
 ---
@@ -288,7 +289,7 @@ Defer to these for feature status — not model memory:
 
 ## M. Maintenance Protocol
 
-**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact → approve → branch → implement + tests → sync plan/TODO/CONTEXT/CURSOR + **`docs/ROE-upgrade-story.md`** → PR/board. Next free serial: **ROE-030**.
+**ROE ticket flow (standing):** `.cursor/rules/roe-ticket-flow.mdc` — audit → impact → approve → branch → implement + tests → sync plan/TODO/CONTEXT/CURSOR + **`docs/ROE-upgrade-story.md`** → PR/board. Next free serial: **ROE-038**.
 
 | Trigger | Action |
 |---------|--------|

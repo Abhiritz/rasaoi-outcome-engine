@@ -44,7 +44,7 @@ Lab: `Lab.tsx` → `ingest-menu` → review → `commit-dishes`.
 
 ## Frontend Implementation
 
-**Stack:** React 18, Vite 5, TypeScript, React Router 6, Tailwind + shadcn/ui, Supabase JS, Vitest.
+**Stack:** React 18, Vite 6, TypeScript, React Router 6, Tailwind + shadcn/ui, Supabase JS, Vitest 4.
 
 **Routes** (`src/App.tsx`):
 
@@ -140,7 +140,7 @@ Shared: `_shared/ai-client.ts` (`gemini-flash-latest`, schema sanitize), `_share
 | Commit | `[ROE-NNN][ABC-NNN] imperative message` | `[ROE-009][FUL-001] add restaurant phone and address` |
 | Branch | `feature/ROE-NNN-kebab-slug` | `feature/ROE-009-fulfillment-contacts` |
 
-1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-036** (ROE-035 = LLM call telemetry).
+1. **ROE-NNN** — global serial (never skip). Next free after assigned queue: **ROE-038** (ROE-037 = GitHub advisory fixes; ROE-036 stays the reco-host draft).
 2. **ABC-NNN** — workstream alias when applicable (`FUL-001`, `ASK-001`, `EXP-001`, …). Omit when none.
 3. Issue and PR titles match exactly so the board and GitHub stay consistent.
 
@@ -154,7 +154,9 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 
 | Ticket | Status | Impact |
 |--------|--------|--------|
-| **ROE-035** LLM call attempt telemetry (retries) | Feature branch | `docs/ROE-035-llm-call-telemetry-impact-analysis.md` |
+| **ROE-037** Critical/high GitHub advisory fixes | This branch | `docs/ROE-037-dependency-advisories-impact-analysis.md` |
+| **ROE-036** Centralized recommendation host | Reserved — draft only, not this PR | — |
+| **ROE-035** LLM call attempt telemetry (retries) | Merged staging | `docs/ROE-035-llm-call-telemetry-impact-analysis.md` |
 | **ROE-034** Rate-limit offline Ask grounding | Merged staging | `docs/ROE-034-rate-limit-offline-intent-impact-analysis.md` |
 | **ROE-033** Broader Gemini retry + flash pin | Merged staging | (ai-client / model-router) |
 | **ROE-032** LockManager + 429 fallbacks | Merged staging | (client + ai-client) |
@@ -181,7 +183,7 @@ Standing Cursor rule: `.cursor/rules/roe-ticket-flow.mdc`
 | **ROE-009** (FUL-001) contacts | Merged PR #21; ops + QA | `docs/ROE-009-fulfillment-contacts-impact-analysis.md` |
 | ROE-007 / ROE-008 | Merged; board QA | IP-FIX-001 / IP-FIX-002 |
 
-Next free serial: **ROE-036**.
+Next free serial: **ROE-038**.
 
 Future: staging soak; Edge redeploy `parse-intent` for ROE-035 logs.  
 Story: `docs/ROE-upgrade-story.md`.

@@ -9,6 +9,21 @@ This file is designed as a portable summary so the system can be reasoned about 
 
 ---
 
+## [ROE-037] Critical and high GitHub advisories — implemented (feature)
+
+Impact: `docs/ROE-037-dependency-advisories-impact-analysis.md`  
+Story: `docs/ROE-upgrade-story.md`
+
+- [x] Vite 6.4.6, Vitest 4.1.12, react-router-dom 6.30.6, PostCSS 8.5.33
+- [x] Removed unused Zod 3 (`GHSA-mrhx-c7xc-m3w5` has no 3.x patch)
+- [x] `npm run audit:ci` on quality and both deploy jobs
+- [x] Production/staging Vercel project-id split enforced in deploy workflows
+- [ ] Merge; confirm Dependabot clears critical/high on the updated lockfile
+
+`src/lib/memory.ts` reviewed: localStorage vitality/consent only. No change.
+
+---
+
 ## [ROE-035] LLM call attempt telemetry — implemented (feature)
 
 Impact: `docs/ROE-035-llm-call-telemetry-impact-analysis.md`  
