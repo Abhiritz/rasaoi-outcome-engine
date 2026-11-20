@@ -20,14 +20,24 @@ describe("deploy workflow safety", () => {
   it("refuses a production deploy from the wrong ref or the staging project", () => {
     expect(prod).toContain("refs/heads/main");
     expect(prod).toContain("refs/heads/develop");
+    expect(prod).toContain(
+      "VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID VERCEL_STAGING_PROJECT_ID",
+    );
     expect(prod).toContain("VERCEL_PROJECT_ID must not equal VERCEL_STAGING_PROJECT_ID");
-    expect(prod).toContain('github.event_name == \'push\'');
+    expect(prod).toContain("github.event_name == 'push'");
   });
 
   it("refuses a staging deploy onto the production project", () => {
     expect(staging).toContain("refs/heads/staging");
     expect(staging).toContain("VERCEL_STAGING_PROJECT_ID must not equal VERCEL_PROJECT_ID");
     expect(staging).toContain('export VERCEL_PROJECT_ID="$VERCEL_STAGING_PROJECT_ID"');
+  });
+
+  it("audits the Apify actor lockfile for critical and high advisories", () => {
+    const actorAudit =
+      "npm audit --audit-level=high --prefix scripts/experimental/apify-rasaoi-menu-sync";
+    expect(prod).toContain(actorAudit);
+    expect(staging).toContain(actorAudit);
   });
 
   it("pins the Vercel CLI and keeps the token out of process arguments", () => {

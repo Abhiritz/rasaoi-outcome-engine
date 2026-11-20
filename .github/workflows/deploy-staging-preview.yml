@@ -39,6 +39,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run audit:ci
+      - name: Audit Apify actor critical and high advisories
+        run: |
+          npm ci --ignore-scripts --prefix scripts/experimental/apify-rasaoi-menu-sync
+          npm audit --audit-level=high --prefix scripts/experimental/apify-rasaoi-menu-sync
       - run: test -f .cursor/CONTEXT_PLAN.md
       - run: npm run lint
       - run: npm test

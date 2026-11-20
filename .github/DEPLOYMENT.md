@@ -24,7 +24,7 @@ Staging URL: https://rasaoi-staging.vercel.app (**separate** Vercel project — 
 6. **Environment protection** — optional manual approval on the `production` environment (see below).
 7. **CI placeholders** — build step uses non-secret placeholder Supabase URLs; real `VITE_*` vars live in Vercel project settings.
 8. **Advisory gate** — `npm run audit:ci` (`npm audit --audit-level=high`) runs in Quality gates and again in the deploy job. Critical and high fail the job. Moderate findings do not.
-9. **Deploy target split** — production refuses a `VERCEL_PROJECT_ID` that matches `VERCEL_STAGING_PROJECT_ID` or a known Supabase project ref. Staging refuses the reverse, and only `staging` / `feature/ROE-016-experimental-infra`.
+9. **Deploy target split** — production **requires** `VERCEL_STAGING_PROJECT_ID` and refuses a `VERCEL_PROJECT_ID` that matches it or a known Supabase project ref. Staging refuses the reverse, and only `staging` / `feature/ROE-016-experimental-infra`.
 10. **Pinned Vercel CLI** — `vercel@66.5.0`. The token is passed as `VERCEL_TOKEN`, not `--token` (process arguments).
 
 ## One-time GitHub setup
@@ -103,8 +103,8 @@ npm run build
 | Symptom | Fix |
 |---------|-----|
 | Deploy skipped | Check branch (`develop`/`main`), event type (`push` not `pull_request`), repo name |
-| Missing secret error | Add all three `VERCEL_*` secrets in GitHub |
+| Missing secret error | Add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, and `VERCEL_STAGING_PROJECT_ID` |
 | Build passes in CI but fails on Vercel | Set `VITE_*` vars in Vercel dashboard |
 | Production deploy waiting forever | Remove or approve required reviewers on the `production` environment |
 | Double deploy | Turn off Vercel Git auto-deploy; keep Actions only |
-| CLI outdated / deploy API error | Workflow installs `vercel@latest` (do not pin amondnet/vercel-action@v25) |
+| CLI outdated / deploy API error | Workflow installs `vercel@66.5.0` (do not pin amondnet/vercel-action@v25) |

@@ -20,7 +20,7 @@ GitHub Actions advisories at critical/high do not affect `actions/checkout`, `ac
 4. **PostCSS** `^8.5.6` → `^8.5.33`. Transitive Rollup resolves to 4.68.7.
 5. **Remove `zod`.** Nothing in `src/` imported it. The high (`GHSA-mrhx-c7xc-m3w5`) is fixed only in Zod `>=4.6.6`, a breaking major, so the unused package is dropped instead of upgraded.
 6. **`npm run audit:ci`** (`npm audit --audit-level=high`) in Quality gates and again inside both deploy jobs.
-7. **Deploy safety checks** in `ci-cd.yml` and `deploy-staging-preview.yml`: ref allow-list, repository allow-list, prod/staging Vercel project ids must differ, Supabase refs rejected as a Vercel project id, Vercel CLI pinned to `66.5.0`, token not passed as `--token`.
+7. **Deploy safety checks** in `ci-cd.yml` and `deploy-staging-preview.yml`: ref allow-list, repository allow-list, production **requires** `VERCEL_STAGING_PROJECT_ID` and refuses a match with `VERCEL_PROJECT_ID`, Supabase refs rejected as a Vercel project id, Vercel CLI pinned to `66.5.0`, token not passed as `--token`. Quality also audits the Apify actor lockfile.
 8. **Apify actor** `scripts/experimental/apify-rasaoi-menu-sync`: lockfile refreshed to the patched parent, and `basic-ftp` overridden to `6.2.6` so the Apify → proxy-agent → basic-ftp high chain clears. Remaining actor findings are moderate.
 
 ## Reviewed, no code change

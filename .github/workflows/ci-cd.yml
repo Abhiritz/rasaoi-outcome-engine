@@ -39,6 +39,11 @@ jobs:
       - name: Audit critical and high advisories
         run: npm run audit:ci
 
+      - name: Audit Apify actor critical and high advisories
+        run: |
+          npm ci --ignore-scripts --prefix scripts/experimental/apify-rasaoi-menu-sync
+          npm audit --audit-level=high --prefix scripts/experimental/apify-rasaoi-menu-sync
+
       - name: Context plan present
         run: |
           test -f .cursor/CONTEXT_PLAN.md
@@ -94,13 +99,13 @@ jobs:
             exit 1
           fi
           missing=0
-          for secret in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+          for secret in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID VERCEL_STAGING_PROJECT_ID; do
             if [ -z "${!secret}" ]; then
               echo "::error::Missing required secret: $secret"
               missing=1
             fi
           done
-          if [ -n "${VERCEL_STAGING_PROJECT_ID}" ] && [ "${VERCEL_PROJECT_ID}" = "${VERCEL_STAGING_PROJECT_ID}" ]; then
+          if [ "${VERCEL_PROJECT_ID}" = "${VERCEL_STAGING_PROJECT_ID}" ]; then
             echo "::error::VERCEL_PROJECT_ID must not equal VERCEL_STAGING_PROJECT_ID"
             missing=1
           fi
