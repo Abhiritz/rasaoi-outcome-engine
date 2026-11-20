@@ -4,7 +4,7 @@ Living chronicle for the combined audit+upgrade epic (matrix Rev 1.2 + phased ro
 Update this file **when each ROE ticket ships** (commit + PR). Impact details stay in `docs/ROE-NNN-*-impact-analysis.md`.
 
 **Staging:** https://v0-rasaoi-staging.vercel.app  
-**Staging merge:** ROE-023…034 on staging; **ROE-035** LLM attempt telemetry in flight.  
+**Staging merge:** ROE-023…035 on staging. **ROE-037** patches critical/high dependency advisories.  
 **Next free serial:** see `project.md` / `.lovable/plan.md`
 
 ---
@@ -37,7 +37,9 @@ Hard gates stay forever: dish-non-invention, catalog plate gate, sanitize-after-
 | 032 | Rate-limit toast + LockManager harden | **Merged staging** |
 | 033 | Broader Gemini retry + model pin | **Merged staging** |
 | 034 | Offline Ask on rate-limit | **Merged staging** |
-| 035 | LLM call attempt telemetry (retries) | **This branch** |
+| 035 | LLM call attempt telemetry (retries) | **Merged staging** |
+| 036 | Centralized reco host | Reserved draft; not this PR |
+| 037 | Critical/high GitHub advisory patches + deploy safety gate | **This branch** |
 
 **Rev 1.2 math epic queue (023–029) complete** on feature branches / PRs. Staging merges + soak remain.
 
@@ -87,6 +89,13 @@ Fat/garnish-only token overlap no longer crowns ~100% heroes (Butter Dosai ≠ B
 - 021: `no meat murgi` meat Ask + chicken exclude (sanitize twin)
 - 022: Gemini 3.5 Flash, MitraPact a11y, client singleton, alias check, twin CI step, RL on ingest/glycemic
 - Branch: `feature/ROE-030-salvage-021-022-clean`
+
+### ROE-037 — Dependency advisories (2026-11-20)
+- Critical: Vitest `<3.2.6` file read/exec (`GHSA-5xrq-8626-4rwp`) and Tinypool prototype-pollution RCE — cleared by Vitest 4.1.12 (Tinypool no longer in the tree)
+- High: Vite `<=6.4.3` launch-editor bypass → 6.4.6; `@remix-run/router` `<1.23.2` → 1.23.4 via react-router-dom 6.30.6; PostCSS `<=8.5.22` → 8.5.33; Rollup `<4.59` → 4.68.7; unused Zod 3 removed (`GHSA-mrhx-c7xc-m3w5` patches only on 4.6.6+)
+- `npm run audit:ci` gates quality and both Vercel deploy jobs. Moderate advisories remain and are out of scope
+- `src/lib/memory.ts` unchanged (localStorage only)
+- Branch: `feature/ROE-037-github-advisory-fixes`
 
 ### ROE-035 — LLM call telemetry (2026-09-07)
 - Edge `rasaoi_llm_attempt` / `rasaoi_llm_summary` JSON logs (retries included)

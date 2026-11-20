@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit critical and high advisories
+        run: npm run audit:ci
+
       - name: Context plan present
         run: |
           test -f .cursor/CONTEXT_PLAN.md
@@ -64,7 +67,7 @@ jobs:
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') &&
       github.repository == 'Abhiritz/rasaoi-outcome-engine'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     environment:
       name: production
       url: https://rasaoi-delta.vercel.app
@@ -72,8 +75,24 @@ jobs:
       contents: read
       deployments: write
     steps:
-      - name: Validate Vercel secrets
+      - name: Deploy safety checks
         run: |
+          set -euo pipefail
+          if [ "${GITHUB_EVENT_NAME}" != "push" ]; then
+            echo "::error::Production deploy is push-only"
+            exit 1
+          fi
+          case "${GITHUB_REF}" in
+            refs/heads/main|refs/heads/develop) ;;
+            *)
+              echo "::error::Refusing production deploy from ${GITHUB_REF}"
+              exit 1
+              ;;
+          esac
+          if [ "${GITHUB_REPOSITORY}" != "Abhiritz/rasaoi-outcome-engine" ]; then
+            echo "::error::Refusing deploy from ${GITHUB_REPOSITORY}"
+            exit 1
+          fi
           missing=0
           for secret in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
             if [ -z "${!secret}" ]; then
@@ -81,11 +100,20 @@ jobs:
               missing=1
             fi
           done
-          exit $missing
+          if [ -n "${VERCEL_STAGING_PROJECT_ID}" ] && [ "${VERCEL_PROJECT_ID}" = "${VERCEL_STAGING_PROJECT_ID}" ]; then
+            echo "::error::VERCEL_PROJECT_ID must not equal VERCEL_STAGING_PROJECT_ID"
+            missing=1
+          fi
+          if [ "${VERCEL_PROJECT_ID}" = "aotlzhdgnvovvqxmgyyx" ] || [ "${VERCEL_PROJECT_ID}" = "kiugplotjcnmpwjlxajc" ]; then
+            echo "::error::Refusing a Supabase project ref as the Vercel project id"
+            missing=1
+          fi
+          exit "$missing"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_STAGING_PROJECT_ID: ${{ secrets.VERCEL_STAGING_PROJECT_ID }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -96,13 +124,21 @@ jobs:
           node-version: "20"
           cache: npm
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Re-check critical and high advisories
+        run: npm run audit:ci
+
       - name: Install Vercel CLI
-        run: npm install -g vercel@latest
+        run: npm install -g vercel@66.5.0
 
       - name: Deploy to Vercel (production)
         id: deploy
         run: |
-          url=$(vercel deploy --prod --yes --token="$VERCEL_TOKEN")
+          set -euo pipefail
+          # Token stays in VERCEL_TOKEN; do not pass --token (it lands in process args).
+          url=$(vercel deploy --prod --yes)
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed: $url"
         env:

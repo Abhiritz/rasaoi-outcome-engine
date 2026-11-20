@@ -9,5 +9,8 @@
   },
   "scripts": {
     "start": "node src/main.js"
+  },
+  "overrides": {
+    "basic-ftp": "6.2.6"
   }
 }

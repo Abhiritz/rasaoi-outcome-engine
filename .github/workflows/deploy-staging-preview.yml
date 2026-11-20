@@ -38,6 +38,7 @@ jobs:
           node-version: "20"
           cache: npm
       - run: npm ci
+      - run: npm run audit:ci
       - run: test -f .cursor/CONTEXT_PLAN.md
       - run: npm run lint
       - run: npm test
@@ -48,13 +49,25 @@ jobs:
     needs: quality
     if: github.repository == 'Abhiritz/rasaoi-outcome-engine'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     environment:
       name: staging
       url: https://rasaoi-i8.vercel.app
     steps:
-      - name: Validate secrets
+      - name: Deploy safety checks
         run: |
+          set -euo pipefail
+          case "${GITHUB_REF}" in
+            refs/heads/staging|refs/heads/feature/ROE-016-experimental-infra) ;;
+            *)
+              echo "::error::Refusing staging deploy from ${GITHUB_REF}"
+              exit 1
+              ;;
+          esac
+          if [ "${GITHUB_REPOSITORY}" != "Abhiritz/rasaoi-outcome-engine" ]; then
+            echo "::error::Refusing deploy from ${GITHUB_REPOSITORY}"
+            exit 1
+          fi
           missing=0
           for secret in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_STAGING_PROJECT_ID \
             STAGING_VITE_SUPABASE_URL STAGING_VITE_SUPABASE_PUBLISHABLE_KEY STAGING_VITE_SUPABASE_PROJECT_ID; do
@@ -63,10 +76,18 @@ jobs:
               missing=1
             fi
           done
-          exit $missing
+          if [ -z "${VERCEL_PROJECT_ID}" ]; then
+            echo "::error::Missing VERCEL_PROJECT_ID (needed to prove staging is not production)"
+            missing=1
+          elif [ "${VERCEL_STAGING_PROJECT_ID}" = "${VERCEL_PROJECT_ID}" ]; then
+            echo "::error::VERCEL_STAGING_PROJECT_ID must not equal VERCEL_PROJECT_ID"
+            missing=1
+          fi
+          exit "$missing"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_STAGING_PROJECT_ID: ${{ secrets.VERCEL_STAGING_PROJECT_ID }}
           STAGING_VITE_SUPABASE_URL: ${{ secrets.STAGING_VITE_SUPABASE_URL }}
           STAGING_VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STAGING_VITE_SUPABASE_PUBLISHABLE_KEY }}
@@ -79,8 +100,14 @@ jobs:
           node-version: "20"
           cache: npm
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Re-check critical and high advisories
+        run: npm run audit:ci
+
       - name: Install Vercel CLI
-        run: npm install -g vercel@latest
+        run: npm install -g vercel@66.5.0
 
       - name: Deploy to staging project (--prod on staging project only)
         id: deploy
@@ -90,7 +117,8 @@ jobs:
           export VERCEL_ORG_ID="$VERCEL_ORG_ID"
           export VERCEL_PROJECT_ID="$VERCEL_STAGING_PROJECT_ID"
 
-          url=$(vercel deploy --prod --yes --token="$VERCEL_TOKEN" \
+          # Token stays in VERCEL_TOKEN; do not pass --token (it lands in process args).
+          url=$(vercel deploy --prod --yes \
             --build-env VITE_SUPABASE_URL="$STAGING_VITE_SUPABASE_URL" \
             --build-env VITE_SUPABASE_PUBLISHABLE_KEY="$STAGING_VITE_SUPABASE_PUBLISHABLE_KEY" \
             --build-env VITE_SUPABASE_PROJECT_ID="$STAGING_VITE_SUPABASE_PROJECT_ID" \

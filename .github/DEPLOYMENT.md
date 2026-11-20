@@ -23,6 +23,9 @@ Staging URL: https://rasaoi-staging.vercel.app (**separate** Vercel project — 
 5. **Secret validation** — deploy fails fast if Vercel secrets are missing.
 6. **Environment protection** — optional manual approval on the `production` environment (see below).
 7. **CI placeholders** — build step uses non-secret placeholder Supabase URLs; real `VITE_*` vars live in Vercel project settings.
+8. **Advisory gate** — `npm run audit:ci` (`npm audit --audit-level=high`) runs in Quality gates and again in the deploy job. Critical and high fail the job. Moderate findings do not.
+9. **Deploy target split** — production refuses a `VERCEL_PROJECT_ID` that matches `VERCEL_STAGING_PROJECT_ID` or a known Supabase project ref. Staging refuses the reverse, and only `staging` / `feature/ROE-016-experimental-infra`.
+10. **Pinned Vercel CLI** — `vercel@66.5.0`. The token is passed as `VERCEL_TOKEN`, not `--token` (process arguments).
 
 ## One-time GitHub setup
 
