@@ -6,7 +6,7 @@ Pipeline: [`.github/workflows/ci-cd.yml`](workflows/ci-cd.yml)
 
 | Branch | CI (lint/test/build) | Vercel deploy |
 |--------|----------------------|---------------|
-| PR → `main` / `develop` | Yes | No |
+| PR → `main` / `develop` / `staging` | Yes | No |
 | `develop` push | Yes | **Production** (`--prod`) → rasaoi-delta |
 | `main` push | Yes | **Production** (`--prod`) → rasaoi-delta |
 | `feature/ROE-016-experimental-infra` / `staging` push | Staging workflow | **Staging** (`--prod` on **rasaoi-staging** project) → rasaoi-staging.vercel.app |

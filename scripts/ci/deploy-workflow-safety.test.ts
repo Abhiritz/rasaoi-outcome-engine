@@ -25,6 +25,7 @@ describe("deploy workflow safety", () => {
     );
     expect(prod).toContain("VERCEL_PROJECT_ID must not equal VERCEL_STAGING_PROJECT_ID");
     expect(prod).toContain("github.event_name == 'push'");
+    expect(prod).toContain("branches: [main, develop, staging]");
   });
 
   it("refuses a staging deploy onto the production project", () => {
